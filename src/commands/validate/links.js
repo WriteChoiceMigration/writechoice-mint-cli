@@ -6,11 +6,11 @@
  * JavaScript-rendered Mintlify pages.
  */
 
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'fs';
-import { join, relative, resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { chromium } from 'playwright';
-import chalk from 'chalk';
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "fs";
+import { join, relative, resolve, dirname } from "path";
+import { fileURLToPath } from "url";
+import { chromium } from "playwright";
+import chalk from "chalk";
 import {
   cleanHeadingText,
   toKebabCase,
@@ -20,22 +20,24 @@ import {
   findLineNumber,
   removeCodeBlocksAndFrontmatter,
   resolvePath as resolvePathUtil,
-} from '../../utils/helpers.js';
+} from "../../utils/helpers.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Configuration
-const DEFAULT_BASE_URL = 'https://docs.nebius.com';
-const EXCLUDED_DIRS = ['snippets'];
-const MDX_DIRS = ['.'];
+const DEFAULT_BASE_URL = "https://docs.nebius.com";
+const EXCLUDED_DIRS = ["snippets"];
+const MDX_DIRS = ["."];
 const DEFAULT_TIMEOUT = 30000; // 30 seconds
 const DEFAULT_CONCURRENCY = 25;
 
 // Link extraction patterns
 const LINK_PATTERNS = {
   markdown: /\[([^\]]+?)\]\(([^)]+?)\)/g,
+  markdownImage: /!\[([^\]]*?)\]\(([^)]+?)\)/g,
   htmlAnchor: /<a\s+href=["'](.*?)["'][^>]*?>(.*?)<\/a>/gs,
+  htmlImage: /<img[^>]+src=["'](.*?)["'][^>]*?>/gi,
   jsxCard: /<Card[^>]+?href=["'](.*?)["'][^>]*?(?:title=["'](.*?)["'])?[^>]*?>/g,
   jsxButton: /<Button[^>]+?href=["'](.*?)["'][^>]*?>(.*?)<\/Button>/gs,
 };
@@ -73,7 +75,7 @@ class ValidationResult {
     actualHeading = null,
     actualHeadingKebab = null,
     errorMessage = null,
-    validationTimeMs = 0
+    validationTimeMs = 0,
   ) {
     this.source = source;
     this.targetUrl = targetUrl;
@@ -104,10 +106,10 @@ function urlToFilePath(url, baseUrl, repoRoot) {
     }
   }
 
-  path = path.replace(/^\/+/, '');
+  path = path.replace(/^\/+/, "");
 
-  if (!path || path === '/') {
-    const indexPath = join(repoRoot, 'index.mdx');
+  if (!path || path === "/") {
+    const indexPath = join(repoRoot, "index.mdx");
     return existsSync(indexPath) ? indexPath : null;
   }
 
@@ -116,7 +118,7 @@ function urlToFilePath(url, baseUrl, repoRoot) {
     return mdxPath;
   }
 
-  const indexPath = join(repoRoot, path, 'index.mdx');
+  const indexPath = join(repoRoot, path, "index.mdx");
   if (existsSync(indexPath)) {
     return indexPath;
   }
@@ -130,44 +132,44 @@ function resolvePath(mdxFilePath, href, baseUrl, repoRoot) {
   }
 
   let path, anchor;
-  if (href.includes('#')) {
-    [path, anchor] = href.split('#', 2);
+  if (href.includes("#")) {
+    [path, anchor] = href.split("#", 2);
   } else {
     path = href;
-    anchor = '';
+    anchor = "";
   }
 
   if (!path && anchor) {
     const relPath = relative(repoRoot, mdxFilePath);
-    const urlPath = relPath.replace(/\.mdx$/, '');
+    const urlPath = relPath.replace(/\.mdx$/, "");
     const fullUrl = normalizeUrl(`${baseUrl}/${urlPath}`);
     return `${fullUrl}#${anchor}`;
   }
 
   let fullUrl;
 
-  if (path.startsWith('/')) {
+  if (path.startsWith("/")) {
     fullUrl = normalizeUrl(baseUrl + path);
   } else {
     const mdxDir = dirname(mdxFilePath);
 
-    if (path.startsWith('./')) {
+    if (path.startsWith("./")) {
       path = path.slice(2);
     }
 
     const resolved = resolve(mdxDir, path);
 
     const relToRoot = relative(repoRoot, resolved);
-    if (relToRoot.startsWith('..')) {
+    if (relToRoot.startsWith("..")) {
       return null;
     }
 
-    const urlPath = relToRoot.replace(/\.mdx$/, '');
+    const urlPath = relToRoot.replace(/\.mdx$/, "");
     fullUrl = normalizeUrl(`${baseUrl}/${urlPath}`);
   }
 
   if (anchor) {
-    fullUrl += '#' + anchor;
+    fullUrl += "#" + anchor;
   }
 
   return fullUrl;
@@ -177,7 +179,7 @@ function resolvePath(mdxFilePath, href, baseUrl, repoRoot) {
 
 function extractMdxHeadings(filePath) {
   try {
-    const content = readFileSync(filePath, 'utf-8');
+    const content = readFileSync(filePath, "utf-8");
     const { cleanedContent } = removeCodeBlocksAndFrontmatter(content);
 
     const headingPattern = /^#{1,6}\s+(.+)$/gm;
@@ -187,7 +189,7 @@ function extractMdxHeadings(filePath) {
     while ((match = headingPattern.exec(cleanedContent)) !== null) {
       let headingText = match[1].trim();
       // Remove any trailing {#custom-id} syntax if present
-      headingText = headingText.replace(/\s*\{#[^}]+\}\s*$/, '');
+      headingText = headingText.replace(/\s*\{#[^}]+\}\s*$/, "");
       headings.push(headingText);
     }
 
@@ -204,7 +206,7 @@ function extractLinksFromFile(filePath, baseUrl, repoRoot, verbose = false) {
 
   let content;
   try {
-    content = readFileSync(filePath, 'utf-8');
+    content = readFileSync(filePath, "utf-8");
   } catch (error) {
     console.error(`Error reading ${filePath}: ${error.message}`);
     return [];
@@ -213,9 +215,31 @@ function extractLinksFromFile(filePath, baseUrl, repoRoot, verbose = false) {
   const { cleanedContent } = removeCodeBlocksAndFrontmatter(content);
   const links = [];
 
-  // Extract markdown links [text](url)
+  // Collect all image positions to skip them
+  const imagePositions = new Set();
+
+  // Find all markdown images ![alt](url)
+  const markdownImages = [...cleanedContent.matchAll(LINK_PATTERNS.markdownImage)];
+  for (const match of markdownImages) {
+    imagePositions.add(match.index);
+  }
+
+  // Find all HTML images <img src="url">
+  const htmlImages = [...cleanedContent.matchAll(LINK_PATTERNS.htmlImage)];
+  for (const match of htmlImages) {
+    imagePositions.add(match.index);
+  }
+
+  // Extract markdown links [text](url) - skip images
   const markdownMatches = [...cleanedContent.matchAll(LINK_PATTERNS.markdown)];
   for (const match of markdownMatches) {
+    // Check if this is actually an image by looking at the character before '['
+    const charBefore = match.index > 0 ? cleanedContent[match.index - 1] : "";
+    if (charBefore === "!") {
+      // This is a markdown image ![alt](url), skip it
+      continue;
+    }
+
     const linkText = match[1];
     const href = match[2];
 
@@ -228,21 +252,13 @@ function extractLinksFromFile(filePath, baseUrl, repoRoot, verbose = false) {
         findLineNumber(content, match.index),
         linkText.trim(),
         href,
-        'markdown'
+        "markdown",
       );
 
-      const [basePath, anchor = ''] = targetUrl.split('#');
+      const [basePath, anchor = ""] = targetUrl.split("#");
       const expectedSlug = new URL(targetUrl).pathname;
 
-      links.push(
-        new Link(
-          location,
-          targetUrl,
-          basePath,
-          anchor || null,
-          expectedSlug
-        )
-      );
+      links.push(new Link(location, targetUrl, basePath, anchor || null, expectedSlug));
     }
   }
 
@@ -261,21 +277,13 @@ function extractLinksFromFile(filePath, baseUrl, repoRoot, verbose = false) {
         findLineNumber(content, match.index),
         linkText.trim(),
         href,
-        'html'
+        "html",
       );
 
-      const [basePath, anchor = ''] = targetUrl.split('#');
+      const [basePath, anchor = ""] = targetUrl.split("#");
       const expectedSlug = new URL(targetUrl).pathname;
 
-      links.push(
-        new Link(
-          location,
-          targetUrl,
-          basePath,
-          anchor || null,
-          expectedSlug
-        )
-      );
+      links.push(new Link(location, targetUrl, basePath, anchor || null, expectedSlug));
     }
   }
 
@@ -294,21 +302,13 @@ function extractLinksFromFile(filePath, baseUrl, repoRoot, verbose = false) {
         findLineNumber(content, match.index),
         linkText.trim(),
         href,
-        'jsx'
+        "jsx",
       );
 
-      const [basePath, anchor = ''] = targetUrl.split('#');
+      const [basePath, anchor = ""] = targetUrl.split("#");
       const expectedSlug = new URL(targetUrl).pathname;
 
-      links.push(
-        new Link(
-          location,
-          targetUrl,
-          basePath,
-          anchor || null,
-          expectedSlug
-        )
-      );
+      links.push(new Link(location, targetUrl, basePath, anchor || null, expectedSlug));
     }
   }
 
@@ -327,21 +327,13 @@ function extractLinksFromFile(filePath, baseUrl, repoRoot, verbose = false) {
         findLineNumber(content, match.index),
         linkText.trim(),
         href,
-        'jsx'
+        "jsx",
       );
 
-      const [basePath, anchor = ''] = targetUrl.split('#');
+      const [basePath, anchor = ""] = targetUrl.split("#");
       const expectedSlug = new URL(targetUrl).pathname;
 
-      links.push(
-        new Link(
-          location,
-          targetUrl,
-          basePath,
-          anchor || null,
-          expectedSlug
-        )
-      );
+      links.push(new Link(location, targetUrl, basePath, anchor || null, expectedSlug));
     }
   }
 
@@ -354,9 +346,7 @@ function findMdxFiles(repoRoot, directory = null, file = null) {
     return existsSync(fullPath) ? [fullPath] : [];
   }
 
-  const searchDirs = directory
-    ? [resolve(repoRoot, directory)]
-    : MDX_DIRS.map(d => join(repoRoot, d));
+  const searchDirs = directory ? [resolve(repoRoot, directory)] : MDX_DIRS.map((d) => join(repoRoot, d));
 
   const files = [];
 
@@ -369,10 +359,10 @@ function findMdxFiles(repoRoot, directory = null, file = null) {
       const stat = statSync(fullPath);
 
       if (stat.isDirectory()) {
-        if (!EXCLUDED_DIRS.some(excluded => fullPath.includes(excluded))) {
+        if (!EXCLUDED_DIRS.some((excluded) => fullPath.includes(excluded))) {
           walkDir(fullPath);
         }
-      } else if (entry.endsWith('.mdx')) {
+      } else if (entry.endsWith(".mdx")) {
         files.push(fullPath);
       }
     }
@@ -387,7 +377,7 @@ function findMdxFiles(repoRoot, directory = null, file = null) {
 
 // Playwright Validation Functions
 
-async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, progress = '') {
+async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, progress = "") {
   const startTime = Date.now();
 
   try {
@@ -399,12 +389,12 @@ async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, pr
     const mdxFilePath = urlToFilePath(link.basePath, baseUrl, repoRoot);
     if (mdxFilePath && existsSync(mdxFilePath)) {
       const mdxHeadings = extractMdxHeadings(mdxFilePath);
-      const mdxHeadingsKebab = mdxHeadings.map(h => toKebabCase(h));
+      const mdxHeadingsKebab = mdxHeadings.map((h) => toKebabCase(h));
 
       if (mdxHeadingsKebab.includes(link.anchor)) {
-        const heading = mdxHeadings.find(h => toKebabCase(h) === link.anchor);
+        const heading = mdxHeadings.find((h) => toKebabCase(h) === link.anchor);
         if (verbose) {
-          console.log(`${progress}      ✓ Anchor validated locally in MDX file`);
+          console.log(`                   ✓ Anchor validated locally in MDX file`);
         }
         return new ValidationResult(
           link.source,
@@ -412,20 +402,20 @@ async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, pr
           link.basePath,
           link.anchor,
           link.expectedSlug,
-          'success',
+          "success",
           link.basePath,
           heading,
           link.anchor,
           null,
-          Date.now() - startTime
+          Date.now() - startTime,
         );
       } else if (verbose) {
-        console.log(`${progress}      Anchor not found in local MDX, checking online...`);
+        console.log(`                   Anchor not found in local MDX, checking online...`);
       }
     }
 
     // Navigate to base page
-    await page.goto(link.basePath, { waitUntil: 'networkidle', timeout: DEFAULT_TIMEOUT });
+    await page.goto(link.basePath, { waitUntil: "networkidle", timeout: DEFAULT_TIMEOUT });
 
     // Try to find heading by anchor
     let heading = await page.$(`#${link.anchor}`);
@@ -441,12 +431,12 @@ async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, pr
         link.basePath,
         link.anchor,
         link.expectedSlug,
-        'failure',
+        "failure",
         null,
         null,
         null,
         `Anchor #${link.anchor} not found on page`,
-        Date.now() - startTime
+        Date.now() - startTime,
       );
     }
 
@@ -458,7 +448,7 @@ async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, pr
     // Extract headings from the TARGET MDX file to verify
     const mdxFilePath2 = urlToFilePath(link.basePath, baseUrl, repoRoot);
     const mdxHeadings = mdxFilePath2 ? extractMdxHeadings(mdxFilePath2) : [];
-    const mdxHeadingsKebab = mdxHeadings.map(h => toKebabCase(h));
+    const mdxHeadingsKebab = mdxHeadings.map((h) => toKebabCase(h));
 
     const matchesMdx = mdxHeadingsKebab.includes(actualKebab);
 
@@ -470,12 +460,12 @@ async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, pr
           link.basePath,
           link.anchor,
           link.expectedSlug,
-          'success',
+          "success",
           link.basePath,
           actualTextClean,
           actualKebab,
           null,
-          Date.now() - startTime
+          Date.now() - startTime,
         );
       } else {
         return new ValidationResult(
@@ -484,12 +474,12 @@ async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, pr
           link.basePath,
           link.anchor,
           link.expectedSlug,
-          'failure',
+          "failure",
           null,
           actualTextClean,
           actualKebab,
           `Anchor "#${link.anchor}" matches page heading "${actualTextClean}" but this heading is not found in the MDX file`,
-          Date.now() - startTime
+          Date.now() - startTime,
         );
       }
     } else {
@@ -500,12 +490,12 @@ async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, pr
           link.basePath,
           link.anchor,
           link.expectedSlug,
-          'failure',
+          "failure",
           null,
           actualTextClean,
           actualKebab,
           `Expected anchor "#${link.anchor}" but page heading "${actualTextClean}" should use "#${actualKebab}"`,
-          Date.now() - startTime
+          Date.now() - startTime,
         );
       } else {
         return new ValidationResult(
@@ -514,12 +504,12 @@ async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, pr
           link.basePath,
           link.anchor,
           link.expectedSlug,
-          'failure',
+          "failure",
           null,
           actualTextClean,
           actualKebab,
           `Expected anchor "#${link.anchor}" but found heading "${actualTextClean}" (#${actualKebab}) which is not in the MDX file`,
-          Date.now() - startTime
+          Date.now() - startTime,
         );
       }
     }
@@ -530,17 +520,17 @@ async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, pr
       link.basePath,
       link.anchor,
       link.expectedSlug,
-      'error',
+      "error",
       null,
       null,
       null,
       `Error validating anchor: ${error.message}`,
-      Date.now() - startTime
+      Date.now() - startTime,
     );
   }
 }
 
-async function validateNormalLink(page, link, baseUrl, repoRoot, verbose = false, progress = '') {
+async function validateNormalLink(page, link, baseUrl, repoRoot, verbose = false, progress = "") {
   const startTime = Date.now();
 
   try {
@@ -552,7 +542,7 @@ async function validateNormalLink(page, link, baseUrl, repoRoot, verbose = false
     const mdxFilePath = urlToFilePath(link.targetUrl, baseUrl, repoRoot);
     if (mdxFilePath && existsSync(mdxFilePath)) {
       if (verbose) {
-        console.log(`${progress}      ✓ Link validated locally (file exists)`);
+        console.log(`                   ✓ Link validated locally (file exists)`);
       }
       return new ValidationResult(
         link.source,
@@ -560,19 +550,19 @@ async function validateNormalLink(page, link, baseUrl, repoRoot, verbose = false
         link.basePath,
         link.anchor,
         link.expectedSlug,
-        'success',
+        "success",
         link.targetUrl,
         null,
         null,
         null,
-        Date.now() - startTime
+        Date.now() - startTime,
       );
     } else if (verbose) {
-      console.log(`${progress}      File not found locally, checking online...`);
+      console.log(`                   File not found locally, checking online...`);
     }
 
     // Navigate to the target URL
-    const response = await page.goto(link.targetUrl, { waitUntil: 'networkidle', timeout: DEFAULT_TIMEOUT });
+    const response = await page.goto(link.targetUrl, { waitUntil: "networkidle", timeout: DEFAULT_TIMEOUT });
 
     if (!response) {
       return new ValidationResult(
@@ -581,12 +571,12 @@ async function validateNormalLink(page, link, baseUrl, repoRoot, verbose = false
         link.basePath,
         link.anchor,
         link.expectedSlug,
-        'error',
+        "error",
         null,
         null,
         null,
-        'No response received',
-        Date.now() - startTime
+        "No response received",
+        Date.now() - startTime,
       );
     }
 
@@ -599,12 +589,12 @@ async function validateNormalLink(page, link, baseUrl, repoRoot, verbose = false
         link.basePath,
         link.anchor,
         link.expectedSlug,
-        'failure',
+        "failure",
         actualUrl,
         null,
         null,
         `HTTP ${response.status()}: ${response.statusText()}`,
-        Date.now() - startTime
+        Date.now() - startTime,
       );
     }
 
@@ -614,12 +604,12 @@ async function validateNormalLink(page, link, baseUrl, repoRoot, verbose = false
       link.basePath,
       link.anchor,
       link.expectedSlug,
-      'success',
+      "success",
       actualUrl,
       null,
       null,
       null,
-      Date.now() - startTime
+      Date.now() - startTime,
     );
   } catch (error) {
     return new ValidationResult(
@@ -628,17 +618,17 @@ async function validateNormalLink(page, link, baseUrl, repoRoot, verbose = false
       link.basePath,
       link.anchor,
       link.expectedSlug,
-      'error',
+      "error",
       null,
       null,
       null,
       `Error validating link: ${error.message}`,
-      Date.now() - startTime
+      Date.now() - startTime,
     );
   }
 }
 
-async function validateLink(page, link, baseUrl, repoRoot, verbose = false, progress = '') {
+async function validateLink(page, link, baseUrl, repoRoot, verbose = false, progress = "") {
   if (link.anchor) {
     return await validateAnchor(page, link, baseUrl, repoRoot, verbose, progress);
   } else {
@@ -653,14 +643,16 @@ async function validateLinksAsync(links, baseUrl, repoRoot, concurrency, headles
   try {
     browser = await chromium.launch({ headless });
   } catch (error) {
-    if (error.message.includes('Executable doesn\'t exist') ||
-        error.message.includes('Browser was not installed') ||
-        error.message.includes('browserType.launch')) {
-      console.error(chalk.red('\n✗ Playwright browsers are not installed!'));
-      console.error(chalk.yellow('\nTo install Playwright browsers, run:'));
-      console.error(chalk.cyan('  npx playwright install chromium\n'));
-      console.error('Or install all browsers with:');
-      console.error(chalk.cyan('  npx playwright install\n'));
+    if (
+      error.message.includes("Executable doesn't exist") ||
+      error.message.includes("Browser was not installed") ||
+      error.message.includes("browserType.launch")
+    ) {
+      console.error(chalk.red("\n✗ Playwright browsers are not installed!"));
+      console.error(chalk.yellow("\nTo install Playwright browsers, run:"));
+      console.error(chalk.cyan("  npx playwright install chromium\n"));
+      console.error("Or install all browsers with:");
+      console.error(chalk.cyan("  npx playwright install\n"));
       process.exit(1);
     }
     throw error;
@@ -672,7 +664,7 @@ async function validateLinksAsync(links, baseUrl, repoRoot, concurrency, headles
   async function validateWithSemaphore(link) {
     counter++;
     const current = counter;
-    const progress = verbose ? `[${current}/${links.length}] ` : '';
+    const progress = verbose ? `[${current}/${links.length}] ` : "";
 
     const context = await browser.newContext();
     const page = await context.newPage();
@@ -692,7 +684,7 @@ async function validateLinksAsync(links, baseUrl, repoRoot, concurrency, headles
   // Process links with concurrency control
   for (let i = 0; i < links.length; i += concurrency) {
     const batch = links.slice(i, i + concurrency);
-    const batchResults = await Promise.all(batch.map(link => validateWithSemaphore(link)));
+    const batchResults = await Promise.all(batch.map((link) => validateWithSemaphore(link)));
     results.push(...batchResults);
   }
 
@@ -711,7 +703,7 @@ function fixLinksFromReport(reportPath, repoRoot, verbose = false) {
 
   let reportData;
   try {
-    reportData = JSON.parse(readFileSync(reportPath, 'utf-8'));
+    reportData = JSON.parse(readFileSync(reportPath, "utf-8"));
   } catch (error) {
     console.error(`Error reading report file: ${error.message}`);
     return {};
@@ -721,7 +713,7 @@ function fixLinksFromReport(reportPath, repoRoot, verbose = false) {
 
   if (Object.keys(resultsByFile).length === 0) {
     if (verbose) {
-      console.log('No failures found in report.');
+      console.log("No failures found in report.");
     }
     return {};
   }
@@ -738,15 +730,13 @@ function fixLinksFromReport(reportPath, repoRoot, verbose = false) {
       continue;
     }
 
-    const fixableFailures = failures.filter(
-      f => f.status === 'failure' && f.actual_heading_kebab && f.anchor
-    );
+    const fixableFailures = failures.filter((f) => f.status === "failure" && f.actual_heading_kebab && f.anchor);
 
     if (fixableFailures.length === 0) continue;
 
     try {
-      const content = readFileSync(fullPath, 'utf-8');
-      let lines = content.split('\n');
+      const content = readFileSync(fullPath, "utf-8");
+      let lines = content.split("\n");
       let modified = false;
       let fixesCount = 0;
 
@@ -767,7 +757,7 @@ function fixLinksFromReport(reportPath, repoRoot, verbose = false) {
         const newAnchor = failure.actual_heading_kebab;
         const linkType = failure.source.link_type;
 
-        const pathPart = oldHref.includes('#') ? oldHref.split('#')[0] : oldHref;
+        const pathPart = oldHref.includes("#") ? oldHref.split("#")[0] : oldHref;
         const newHref = pathPart ? `${pathPart}#${newAnchor}` : `#${newAnchor}`;
 
         if (oldHref === newHref) {
@@ -779,14 +769,14 @@ function fixLinksFromReport(reportPath, repoRoot, verbose = false) {
 
         let replaced = false;
 
-        if (linkType === 'markdown') {
+        if (linkType === "markdown") {
           const oldPattern = `(${oldHref})`;
           const newPattern = `(${newHref})`;
           if (line.includes(oldPattern)) {
             line = line.replace(oldPattern, newPattern);
             replaced = true;
           }
-        } else if (linkType === 'html' || linkType === 'jsx') {
+        } else if (linkType === "html" || linkType === "jsx") {
           for (const quote of ['"', "'"]) {
             const oldPattern = `href=${quote}${oldHref}${quote}`;
             const newPattern = `href=${quote}${newHref}${quote}`;
@@ -814,8 +804,8 @@ function fixLinksFromReport(reportPath, repoRoot, verbose = false) {
       }
 
       if (modified) {
-        const newContent = lines.join('\n');
-        writeFileSync(fullPath, newContent, 'utf-8');
+        const newContent = lines.join("\n");
+        writeFileSync(fullPath, newContent, "utf-8");
         fixesApplied[filePath] = fixesCount;
 
         if (verbose) {
@@ -836,7 +826,7 @@ function fixLinks(results, repoRoot, verbose = false) {
   const failuresByFile = {};
 
   for (const result of results) {
-    if (result.status !== 'failure' || !result.actualHeadingKebab || !result.anchor) {
+    if (result.status !== "failure" || !result.actualHeadingKebab || !result.anchor) {
       continue;
     }
 
@@ -861,8 +851,8 @@ function fixLinks(results, repoRoot, verbose = false) {
     }
 
     try {
-      const content = readFileSync(fullPath, 'utf-8');
-      let lines = content.split('\n');
+      const content = readFileSync(fullPath, "utf-8");
+      let lines = content.split("\n");
       let modified = false;
       let fixesCount = 0;
 
@@ -882,7 +872,7 @@ function fixLinks(results, repoRoot, verbose = false) {
         const oldHref = failure.source.rawHref;
         const linkType = failure.source.linkType;
 
-        const pathPart = oldHref.includes('#') ? oldHref.split('#')[0] : oldHref;
+        const pathPart = oldHref.includes("#") ? oldHref.split("#")[0] : oldHref;
         const newHref = pathPart ? `${pathPart}#${failure.actualHeadingKebab}` : `#${failure.actualHeadingKebab}`;
 
         if (oldHref === newHref) {
@@ -894,14 +884,14 @@ function fixLinks(results, repoRoot, verbose = false) {
 
         let replaced = false;
 
-        if (linkType === 'markdown') {
+        if (linkType === "markdown") {
           const oldPattern = `(${oldHref})`;
           const newPattern = `(${newHref})`;
           if (line.includes(oldPattern)) {
             line = line.replace(oldPattern, newPattern);
             replaced = true;
           }
-        } else if (linkType === 'html' || linkType === 'jsx') {
+        } else if (linkType === "html" || linkType === "jsx") {
           for (const quote of ['"', "'"]) {
             const oldPattern = `href=${quote}${oldHref}${quote}`;
             const newPattern = `href=${quote}${newHref}${quote}`;
@@ -929,8 +919,8 @@ function fixLinks(results, repoRoot, verbose = false) {
       }
 
       if (modified) {
-        const newContent = lines.join('\n');
-        writeFileSync(fullPath, newContent, 'utf-8');
+        const newContent = lines.join("\n");
+        writeFileSync(fullPath, newContent, "utf-8");
         fixesApplied[filePath] = fixesCount;
 
         if (verbose) {
@@ -951,9 +941,9 @@ function fixLinks(results, repoRoot, verbose = false) {
 
 function generateReport(results, config, outputPath) {
   const total = results.length;
-  const success = results.filter(r => r.status === 'success').length;
-  const failure = results.filter(r => r.status === 'failure').length;
-  const error = results.filter(r => r.status === 'error').length;
+  const success = results.filter((r) => r.status === "success").length;
+  const failure = results.filter((r) => r.status === "failure").length;
+  const error = results.filter((r) => r.status === "error").length;
 
   const summaryByFile = {};
   for (const result of results) {
@@ -968,7 +958,7 @@ function generateReport(results, config, outputPath) {
 
   const resultsByFile = {};
   for (const result of results) {
-    if (result.status === 'success') continue;
+    if (result.status === "success") continue;
 
     const filePath = result.source.filePath;
     if (!resultsByFile[filePath]) {
@@ -991,7 +981,7 @@ function generateReport(results, config, outputPath) {
     results_by_file: resultsByFile,
   };
 
-  writeFileSync(outputPath, JSON.stringify(report, null, 2), 'utf-8');
+  writeFileSync(outputPath, JSON.stringify(report, null, 2), "utf-8");
 
   return report;
 }
@@ -1004,19 +994,14 @@ export async function validateLinks(baseUrl, options) {
   // Handle --fix-from-report mode
   if (options.fixFromReport !== undefined) {
     // If flag is passed with a path, use that path; otherwise use default
-    const reportPath = typeof options.fixFromReport === 'string' && options.fixFromReport
-      ? options.fixFromReport
-      : 'links_report.json';
+    const reportPath =
+      typeof options.fixFromReport === "string" && options.fixFromReport ? options.fixFromReport : "links_report.json";
 
     if (!options.quiet) {
       console.log(`Applying fixes from report: ${reportPath}`);
     }
 
-    const fixesApplied = fixLinksFromReport(
-      reportPath,
-      repoRoot,
-      options.verbose && !options.quiet
-    );
+    const fixesApplied = fixLinksFromReport(reportPath, repoRoot, options.verbose && !options.quiet);
 
     if (!options.quiet) {
       if (Object.keys(fixesApplied).length > 0) {
@@ -1025,9 +1010,9 @@ export async function validateLinks(baseUrl, options) {
         for (const [filePath, count] of Object.entries(fixesApplied)) {
           console.log(`  ${filePath}: ${count} fix(es)`);
         }
-        console.log('\nRun validation again to verify the fixes.');
+        console.log("\nRun validation again to verify the fixes.");
       } else {
-        console.log('\nNo fixable issues found in report.');
+        console.log("\nNo fixable issues found in report.");
       }
     }
 
@@ -1036,20 +1021,20 @@ export async function validateLinks(baseUrl, options) {
 
   // Normalize base URL - add https:// if not present
   let normalizedBaseUrl = baseUrl;
-  if (!normalizedBaseUrl.startsWith('http://') && !normalizedBaseUrl.startsWith('https://')) {
-    normalizedBaseUrl = 'https://' + normalizedBaseUrl;
+  if (!normalizedBaseUrl.startsWith("http://") && !normalizedBaseUrl.startsWith("https://")) {
+    normalizedBaseUrl = "https://" + normalizedBaseUrl;
   }
   // Remove trailing slash
-  normalizedBaseUrl = normalizedBaseUrl.replace(/\/+$/, '');
+  normalizedBaseUrl = normalizedBaseUrl.replace(/\/+$/, "");
 
   if (options.verbose && !options.quiet) {
-    console.log('Finding MDX files...');
+    console.log("Finding MDX files...");
   }
 
   const mdxFiles = findMdxFiles(repoRoot, options.dir, options.file);
 
   if (mdxFiles.length === 0) {
-    console.error('No MDX files found.');
+    console.error("No MDX files found.");
     process.exit(1);
   }
 
@@ -1058,7 +1043,7 @@ export async function validateLinks(baseUrl, options) {
   }
 
   if (options.verbose && !options.quiet) {
-    console.log('Extracting links...');
+    console.log("Extracting links...");
   }
 
   const allLinks = [];
@@ -1068,7 +1053,7 @@ export async function validateLinks(baseUrl, options) {
   }
 
   if (allLinks.length === 0) {
-    console.log('No internal links found.');
+    console.log("No internal links found.");
     return;
   }
 
@@ -1077,7 +1062,7 @@ export async function validateLinks(baseUrl, options) {
   }
 
   if (options.dryRun) {
-    console.log('\nExtracted links:');
+    console.log("\nExtracted links:");
     allLinks.forEach((link, i) => {
       console.log(`\n${i + 1}. ${link.source.filePath}:${link.source.lineNumber}`);
       console.log(`   Text: ${link.source.linkText}`);
@@ -1093,7 +1078,7 @@ export async function validateLinks(baseUrl, options) {
   const startTime = Date.now();
 
   if (!options.quiet) {
-    console.log('\nValidating links...');
+    console.log("\nValidating links...");
   }
 
   const results = await validateLinksAsync(
@@ -1102,14 +1087,14 @@ export async function validateLinks(baseUrl, options) {
     repoRoot,
     parseInt(options.concurrency) || DEFAULT_CONCURRENCY,
     options.headless !== false,
-    options.verbose && !options.quiet
+    options.verbose && !options.quiet,
   );
 
   const executionTime = (Date.now() - startTime) / 1000;
 
   if (options.fix) {
     if (!options.quiet) {
-      console.log('\nApplying fixes...');
+      console.log("\nApplying fixes...");
     }
 
     const fixesApplied = fixLinks(results, repoRoot, options.verbose && !options.quiet);
@@ -1121,9 +1106,9 @@ export async function validateLinks(baseUrl, options) {
         for (const [filePath, count] of Object.entries(fixesApplied)) {
           console.log(`  ${filePath}: ${count} fix(es)`);
         }
-        console.log('\nRun validation again to verify the fixes.');
+        console.log("\nRun validation again to verify the fixes.");
       } else {
-        console.log('\nNo fixable issues found.');
+        console.log("\nNo fixable issues found.");
       }
     }
   }
@@ -1136,23 +1121,23 @@ export async function validateLinks(baseUrl, options) {
     execution_time_seconds: Math.round(executionTime * 100) / 100,
   };
 
-  const report = generateReport(results, config, options.output || 'links_report.json');
+  const report = generateReport(results, config, options.output || "links_report.json");
 
   if (!options.quiet) {
-    console.log(`\n${'='.repeat(60)}`);
-    console.log('VALIDATION SUMMARY');
-    console.log('='.repeat(60));
+    console.log(`\n${"=".repeat(60)}`);
+    console.log("VALIDATION SUMMARY");
+    console.log("=".repeat(60));
     console.log(`Total links:    ${report.summary.total_links}`);
-    console.log(`Success:        ${chalk.green(report.summary.success + ' ✓')}`);
-    console.log(`Failure:        ${chalk.red(report.summary.failure + ' ✗')}`);
-    console.log(`Error:          ${chalk.yellow(report.summary.error + ' ⚠')}`);
+    console.log(`Success:        ${chalk.green(report.summary.success + " ✓")}`);
+    console.log(`Failure:        ${chalk.red(report.summary.failure + " ✗")}`);
+    console.log(`Error:          ${chalk.yellow(report.summary.error + " ⚠")}`);
     console.log(`Execution time: ${executionTime.toFixed(2)}s`);
-    console.log(`\nReport saved to: ${options.output || 'links_report.json'}`);
+    console.log(`\nReport saved to: ${options.output || "links_report.json"}`);
 
     if (report.summary.failure > 0 || report.summary.error > 0) {
-      console.log(`\n${'='.repeat(60)}`);
-      console.log('ISSUES FOUND');
-      console.log('='.repeat(60));
+      console.log(`\n${"=".repeat(60)}`);
+      console.log("ISSUES FOUND");
+      console.log("=".repeat(60));
       let shown = 0;
 
       for (const [filePath, fileResults] of Object.entries(report.results_by_file)) {
@@ -1172,7 +1157,9 @@ export async function validateLinks(baseUrl, options) {
 
       if (shown < report.summary.failure + report.summary.error) {
         const remaining = report.summary.failure + report.summary.error - shown;
-        console.log(`\n... and ${remaining} more issues. See ${options.output || 'links_report.json'} for full details.`);
+        console.log(
+          `\n... and ${remaining} more issues. See ${options.output || "links_report.json"} for full details.`,
+        );
       }
     }
   }

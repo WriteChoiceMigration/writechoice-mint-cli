@@ -40,6 +40,26 @@ npm link
 
 ## Usage
 
+### Check Version
+
+Check the installed version:
+
+```bash
+writechoice --version
+# or
+writechoice -V
+```
+
+### Update to Latest Version
+
+Update to the latest version from npm:
+
+```bash
+writechoice update
+```
+
+The CLI also automatically checks for updates and displays a notification when a new version is available.
+
 ### Validate Links
 
 Validate all internal links and anchors in your MDX documentation:
@@ -63,16 +83,10 @@ writechoice check links docs.example.com -f path/to/file.mdx
 # Validate links in a specific directory
 writechoice check links docs.example.com -d path/to/docs
 
-# Use short aliases for common flags
-writechoice check links docs.example.com -v -o my_report.json
-
 # Dry run (extract links without validating)
 writechoice check links docs.example.com --dry-run
 
-# Verbose output
-writechoice check links docs.example.com -v
-
-# Quiet mode (only generate report)
+# Quiet mode (suppress terminal output, only generate report)
 writechoice check links docs.example.com --quiet
 
 # Custom output path for report
@@ -103,13 +117,14 @@ writechoice check links docs.example.com --fix-from-report custom_report.json
 | `--dir <path>`             | `-d`  | Validate links in a specific directory                                   | -                   |
 | `--output <path>`          | `-o`  | Output path for JSON report                                              | `links_report.json` |
 | `--dry-run`                | -     | Extract and show links without validating                                | `false`             |
-| `--verbose`                | `-v`  | Print detailed progress information                                      | `false`             |
-| `--quiet`                  | -     | Suppress stdout output (only generate report)                            | `false`             |
+| `--quiet`                  | -     | Suppress terminal output (only generate report)                          | `false`             |
 | `--concurrency <number>`   | `-c`  | Number of concurrent browser tabs                                        | `25`                |
 | `--headless`               | -     | Run browser in headless mode                                             | `true`              |
 | `--no-headless`            | -     | Show browser window (for debugging)                                      | -                   |
 | `--fix`                    | -     | Automatically fix anchor links in MDX files                              | `false`             |
 | `--fix-from-report [path]` | -     | Fix anchor links from report file (optional path)                        | `links_report.json` |
+
+**Note:** Detailed progress output is shown by default. Use `--quiet` to suppress terminal output.
 
 ## How It Works
 
@@ -121,6 +136,10 @@ The tool extracts internal links from MDX files in the following formats:
 2. **HTML anchors**: `<a href="/path/to/page#anchor">Link Text</a>`
 3. **JSX Card components**: `<Card href="/path/to/page" title="Card Title" />`
 4. **JSX Button components**: `<Button href="/path/to/page#anchor">Button Text</Button>`
+
+**Images are automatically ignored:**
+- Markdown images: `![Alt Text](./image.png)`
+- HTML images: `<img src="./image.png" />`
 
 ### Validation Process
 
@@ -209,6 +228,27 @@ writechoice check links docs.example.com -o my_report.json
 writechoice check links docs.example.com --fix-from-report my_report.json
 ```
 
+## Updates
+
+The CLI automatically checks for new versions and displays a notification when an update is available:
+
+```
+┌─────────────────────────────────────────────────┐
+│  Update available: 0.0.2 → 0.0.3                │
+│  Run: writechoice update                        │
+└─────────────────────────────────────────────────┘
+```
+
+To update manually:
+
+```bash
+# Using the built-in update command (recommended)
+writechoice update
+
+# Or using npm directly
+npm install -g @writechoice/mint-cli@latest
+```
+
 ## Configuration
 
 ### Excluded Directories
@@ -228,16 +268,22 @@ The default concurrency is set to 25 concurrent browser tabs. Adjust this based 
 
 ## Examples
 
-### Validate all links with verbose output
+### Validate all links (with progress output)
 
 ```bash
-writechoice check links docs.example.com -v
+writechoice check links docs.example.com
+```
+
+### Validate quietly (suppress terminal output)
+
+```bash
+writechoice check links docs.example.com --quiet
 ```
 
 ### Validate and fix issues in one command
 
 ```bash
-writechoice check links docs.example.com --fix -v
+writechoice check links docs.example.com --fix
 ```
 
 ### Two-step fix workflow
@@ -256,7 +302,7 @@ writechoice check links docs.example.com --fix-from-report
 ### Validate specific directory
 
 ```bash
-writechoice check links docs.example.com -d docs/api -v
+writechoice check links docs.example.com -d docs/api
 ```
 
 ## Troubleshooting
