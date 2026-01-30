@@ -47,7 +47,7 @@ Check the installed version:
 ```bash
 writechoice --version
 # or
-writechoice -V
+writechoice -v
 ```
 
 ### Update to Latest Version
@@ -73,6 +73,37 @@ You can also omit the `https://` prefix:
 ```bash
 writechoice check links docs.example.com
 ```
+
+**Using a Validation Base URL**
+
+When validating anchor links online, the tool can use a different base URL (e.g., a local development server or staging environment) to click on headings and extract the generated anchors:
+
+```bash
+# Use localhost:3000 for validation (default)
+writechoice check links docs.example.com
+
+# Use a custom validation URL
+writechoice check links docs.example.com http://localhost:3000
+
+# Use a staging environment
+writechoice check links docs.example.com https://staging.example.com
+```
+
+The validation base URL is only used for online checks. Local file validation remains unchanged for optimal performance.
+
+**How the two-step validation works:**
+
+For anchor links, the tool performs a smart validation:
+
+1. Navigates to your production docs (base URL) to find the actual heading the anchor points to
+2. Then navigates to your local dev server (validation URL) and clicks the same heading to see what anchor it generates
+3. Compares the two anchors to detect mismatches
+
+This is useful because:
+
+- Link text in MDX files may differ from actual heading text
+- Handles pages with duplicate headings correctly by matching position
+- Validates against your local development environment before deploying
 
 ### Common Options
 
@@ -110,19 +141,20 @@ writechoice check links docs.example.com --fix-from-report custom_report.json
 
 ### Complete Options
 
-| Option                     | Alias | Description                                                              | Default             |
-| -------------------------- | ----- | ------------------------------------------------------------------------ | ------------------- |
-| `<baseUrl>`                | -     | Base URL for the documentation site (required, with or without https://) | -                   |
-| `--file <path>`            | `-f`  | Validate links in a single MDX file                                      | -                   |
-| `--dir <path>`             | `-d`  | Validate links in a specific directory                                   | -                   |
-| `--output <path>`          | `-o`  | Output path for JSON report                                              | `links_report.json` |
-| `--dry-run`                | -     | Extract and show links without validating                                | `false`             |
-| `--quiet`                  | -     | Suppress terminal output (only generate report)                          | `false`             |
-| `--concurrency <number>`   | `-c`  | Number of concurrent browser tabs                                        | `25`                |
-| `--headless`               | -     | Run browser in headless mode                                             | `true`              |
-| `--no-headless`            | -     | Show browser window (for debugging)                                      | -                   |
-| `--fix`                    | -     | Automatically fix anchor links in MDX files                              | `false`             |
-| `--fix-from-report [path]` | -     | Fix anchor links from report file (optional path)                        | `links_report.json` |
+| Option                     | Alias | Description                                                               | Default                 |
+| -------------------------- | ----- | ------------------------------------------------------------------------- | ----------------------- |
+| `<baseUrl>`                | -     | Base URL for the documentation site (required, with or without https://)  | -                       |
+| `[validationBaseUrl]`      | -     | Base URL for online validation (optional, clicks headings to get anchors) | `http://localhost:3000` |
+| `--file <path>`            | `-f`  | Validate links in a single MDX file                                       | -                       |
+| `--dir <path>`             | `-d`  | Validate links in a specific directory                                    | -                       |
+| `--output <path>`          | `-o`  | Output path for JSON report                                               | `links_report.json`     |
+| `--dry-run`                | -     | Extract and show links without validating                                 | `false`                 |
+| `--quiet`                  | -     | Suppress terminal output (only generate report)                           | `false`                 |
+| `--concurrency <number>`   | `-c`  | Number of concurrent browser tabs                                         | `25`                    |
+| `--headless`               | -     | Run browser in headless mode                                              | `true`                  |
+| `--no-headless`            | -     | Show browser window (for debugging)                                       | -                       |
+| `--fix`                    | -     | Automatically fix anchor links in MDX files                               | `false`                 |
+| `--fix-from-report [path]` | -     | Fix anchor links from report file (optional path)                         | `links_report.json`     |
 
 **Note:** Detailed progress output is shown by default. Use `--quiet` to suppress terminal output.
 
@@ -138,15 +170,23 @@ The tool extracts internal links from MDX files in the following formats:
 4. **JSX Button components**: `<Button href="/path/to/page#anchor">Button Text</Button>`
 
 **Images are automatically ignored:**
+
 - Markdown images: `![Alt Text](./image.png)`
 - HTML images: `<img src="./image.png" />`
 
 ### Validation Process
 
 1. **Local Validation**: First checks if the target MDX file exists locally
-2. **Online Validation**: If local check fails, uses Playwright to navigate to the live URL
-3. **Anchor Validation**: For anchor links, verifies the heading exists and matches the anchor format
-4. **Kebab-case Checking**: Ensures anchors follow the correct kebab-case format
+   - For normal links: Verifies the file exists in the repository
+   - For anchor links: Checks if the heading exists in the MDX file with matching kebab-case format
+2. **Online Validation**: If local check fails, performs a two-step validation process
+   - For normal links: Navigates to the validation base URL and verifies the page loads successfully
+   - For anchor links (two-step process):
+     1. **Step 1 - Find the target heading**: Navigates to the base URL (production docs) with the anchor to identify which heading the anchor points to and its position (handles duplicate headings)
+     2. **Step 2 - Get generated anchor**: Navigates to the validation base URL (e.g., localhost:3000), finds the same heading (by text and position), clicks it to trigger anchor generation, and extracts the generated anchor from the URL
+     3. Compares the generated anchor with the expected anchor from the MDX file
+3. **Validation Base URL**: By default uses `http://localhost:3000` for online validation, or you can specify a custom URL (e.g., staging environment). This allows testing against a local development server or staging environment while validating links meant for production.
+4. **Auto-Fix**: When issues are found, can automatically update MDX files with the correct anchors
 
 ### Report Format
 
@@ -167,14 +207,6 @@ The tool generates a JSON report with the following structure:
     "success": 240,
     "failure": 8,
     "error": 2
-  },
-  "summary_by_file": {
-    "docs/getting-started.mdx": {
-      "total": 10,
-      "success": 9,
-      "failure": 1,
-      "error": 0
-    }
   },
   "results_by_file": {
     "docs/getting-started.mdx": [

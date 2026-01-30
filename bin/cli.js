@@ -24,7 +24,7 @@ const check = program.command("check").description("Validation commands for docu
 
 // Validate links subcommand
 check
-  .command("links <baseUrl>")
+  .command("links <baseUrl> [validationBaseUrl]")
   .description("Validate internal links and anchors in MDX documentation files")
   .option("-f, --file <path>", "Validate links in a single MDX file")
   .option("-d, --dir <path>", "Validate links in a specific directory")
@@ -36,10 +36,12 @@ check
   .option("--no-headless", "Show browser window (for debugging)")
   .option("--fix", "Automatically fix anchor links in MDX files")
   .option("--fix-from-report [path]", "Fix anchor links from report file (default: links_report.json)")
-  .action(async (baseUrl, options) => {
+  .action(async (baseUrl, validationBaseUrl, options) => {
     const { validateLinks } = await import("../src/commands/validate/links.js");
     // Verbose is now default (true unless --quiet is specified)
     options.verbose = !options.quiet;
+    // Set validation base URL to localhost:3000 if not provided
+    options.validationBaseUrl = validationBaseUrl || "http://localhost:3000";
     await validateLinks(baseUrl, options);
   });
 

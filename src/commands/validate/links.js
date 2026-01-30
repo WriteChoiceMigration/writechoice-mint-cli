@@ -26,6 +26,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Configuration
+
+const DEFAULT_SPACE = "                   ";
 const DEFAULT_BASE_URL = "https://docs.nebius.com";
 const EXCLUDED_DIRS = ["snippets"];
 const MDX_DIRS = ["."];
@@ -44,12 +46,14 @@ const LINK_PATTERNS = {
 
 // Data Structures
 class LinkLocation {
-  constructor(filePath, lineNumber, linkText, rawHref, linkType) {
+  constructor(filePath, lineNumber, linkText, rawHref, linkType, sourceUrl, targetUrl) {
     this.filePath = filePath;
     this.lineNumber = lineNumber;
     this.linkText = linkText;
     this.rawHref = rawHref;
     this.linkType = linkType;
+    this.sourceUrl = sourceUrl;
+    this.targetUrl = targetUrl;
   }
 }
 
@@ -66,6 +70,7 @@ class Link {
 class ValidationResult {
   constructor(
     source,
+    sourceUrl,
     targetUrl,
     basePath,
     anchor,
@@ -73,11 +78,12 @@ class ValidationResult {
     status,
     actualUrl = null,
     actualHeading = null,
-    actualHeadingKebab = null,
+    actualHeadingAnchor = null,
     errorMessage = null,
     validationTimeMs = 0,
   ) {
     this.source = source;
+    this.sourceUrl = sourceUrl;
     this.targetUrl = targetUrl;
     this.basePath = basePath;
     this.anchor = anchor;
@@ -85,7 +91,7 @@ class ValidationResult {
     this.status = status;
     this.actualUrl = actualUrl;
     this.actualHeading = actualHeading;
-    this.actualHeadingKebab = actualHeadingKebab;
+    this.actualHeadingAnchor = actualHeadingAnchor;
     this.errorMessage = errorMessage;
     this.validationTimeMs = validationTimeMs;
   }
@@ -199,7 +205,7 @@ function extractMdxHeadings(filePath) {
   }
 }
 
-function extractLinksFromFile(filePath, baseUrl, repoRoot, verbose = false) {
+function extractLinksFromFile(filePath, baseUrl, validationBaseUrl, repoRoot, verbose = false) {
   if (verbose) {
     console.log(`  Extracting links from ${relative(repoRoot, filePath)}`);
   }
@@ -214,6 +220,12 @@ function extractLinksFromFile(filePath, baseUrl, repoRoot, verbose = false) {
 
   const { cleanedContent } = removeCodeBlocksAndFrontmatter(content);
   const links = [];
+
+  // Calculate source URLs from file path
+  const relativeFilePath = relative(repoRoot, filePath);
+  const urlPath = relativeFilePath.replace(/\.mdx$/, "").replace(/\/index$/, "");
+  const fileSourceUrl = normalizeUrl(`${baseUrl}/${urlPath}`);
+  const fileTargetUrl = normalizeUrl(`${validationBaseUrl}/${urlPath}`);
 
   // Collect all image positions to skip them
   const imagePositions = new Set();
@@ -253,6 +265,8 @@ function extractLinksFromFile(filePath, baseUrl, repoRoot, verbose = false) {
         linkText.trim(),
         href,
         "markdown",
+        fileSourceUrl,
+        fileTargetUrl,
       );
 
       const [basePath, anchor = ""] = targetUrl.split("#");
@@ -278,6 +292,8 @@ function extractLinksFromFile(filePath, baseUrl, repoRoot, verbose = false) {
         linkText.trim(),
         href,
         "html",
+        fileSourceUrl,
+        fileTargetUrl,
       );
 
       const [basePath, anchor = ""] = targetUrl.split("#");
@@ -303,6 +319,8 @@ function extractLinksFromFile(filePath, baseUrl, repoRoot, verbose = false) {
         linkText.trim(),
         href,
         "jsx",
+        fileSourceUrl,
+        fileTargetUrl,
       );
 
       const [basePath, anchor = ""] = targetUrl.split("#");
@@ -328,6 +346,8 @@ function extractLinksFromFile(filePath, baseUrl, repoRoot, verbose = false) {
         linkText.trim(),
         href,
         "jsx",
+        fileSourceUrl,
+        fileTargetUrl,
       );
 
       const [basePath, anchor = ""] = targetUrl.split("#");
@@ -377,15 +397,15 @@ function findMdxFiles(repoRoot, directory = null, file = null) {
 
 // Playwright Validation Functions
 
-async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, progress = "") {
+async function validateAnchor(page, link, baseUrl, validationBaseUrl, repoRoot, verbose = false, progress = "") {
   const startTime = Date.now();
 
   try {
     if (verbose) {
-      console.log(`${progress}    Validating anchor: ${link.anchor}`);
+      console.log(`${progress} -> Validating anchor: ${link.anchor}`);
     }
 
-    // OPTIMIZATION: Check if anchor exists in local MDX file first
+    // OPTIMIZATION: Check if anchor exists in local MDX file first (local validation)
     const mdxFilePath = urlToFilePath(link.basePath, baseUrl, repoRoot);
     if (mdxFilePath && existsSync(mdxFilePath)) {
       const mdxHeadings = extractMdxHeadings(mdxFilePath);
@@ -394,11 +414,14 @@ async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, pr
       if (mdxHeadingsKebab.includes(link.anchor)) {
         const heading = mdxHeadings.find((h) => toKebabCase(h) === link.anchor);
         if (verbose) {
-          console.log(`                   ✓ Anchor validated locally in MDX file`);
+          console.log(`${DEFAULT_SPACE}✓ Anchor validated locally in MDX file`);
         }
+        // Construct validation URL
+        const validationTargetUrl = link.targetUrl.replace(baseUrl, validationBaseUrl);
         return new ValidationResult(
           link.source,
-          link.targetUrl,
+          link.targetUrl, // sourceUrl (production)
+          validationTargetUrl, // targetUrl (validation)
           link.basePath,
           link.anchor,
           link.expectedSlug,
@@ -410,24 +433,53 @@ async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, pr
           Date.now() - startTime,
         );
       } else if (verbose) {
-        console.log(`                   Anchor not found in local MDX, checking online...`);
+        console.log(`${DEFAULT_SPACE}Anchor not found in local MDX, checking online...`);
       }
     }
 
-    // Navigate to base page
-    await page.goto(link.basePath, { waitUntil: "networkidle", timeout: DEFAULT_TIMEOUT });
-
-    // Try to find heading by anchor
-    let heading = await page.$(`#${link.anchor}`);
-
-    if (!heading) {
-      heading = await page.$(`[id="${link.anchor}"]`);
+    // ONLINE VALIDATION: Two-step process
+    // Step 1: Navigate to the base URL (production docs) to find the actual heading
+    if (verbose) {
+      console.log(`${DEFAULT_SPACE}Step 1: Navigating to base URL to find heading: ${link.targetUrl}`);
     }
 
-    if (!heading) {
+    await page.goto(link.targetUrl, { waitUntil: "networkidle", timeout: DEFAULT_TIMEOUT });
+
+    // Try to find the heading by the anchor ID
+    let targetHeading = await page.$(`#${link.anchor}`);
+    if (!targetHeading) {
+      targetHeading = await page.$(`[id="${link.anchor}"]`);
+    }
+
+    // If we still can't find it, try scrolling to the anchor via hash navigation
+    if (!targetHeading) {
+      if (verbose) {
+        console.log(`${DEFAULT_SPACE}Heading not found by ID, checking if page scrolled to anchor...`);
+      }
+
+      // Get all headings and see if any are in the viewport (likely scrolled to)
+      const headings = await page.$$("h1, h2, h3, h4, h5, h6");
+      for (const heading of headings) {
+        const isInViewport = await heading.isVisible();
+        const boundingBox = await heading.boundingBox();
+
+        // Check if heading is near the top of the viewport (likely the anchor target)
+        if (isInViewport && boundingBox && boundingBox.y < 300) {
+          const headingId = await heading.getAttribute("id");
+          if (headingId === link.anchor) {
+            targetHeading = heading;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!targetHeading) {
+      const validationTargetUrl = link.basePath.replace(baseUrl, validationBaseUrl);
       return new ValidationResult(
         link.source,
-        link.targetUrl,
+        link.targetUrl, // sourceUrl (production)
+        validationTargetUrl, // targetUrl (validation)
         link.basePath,
         link.anchor,
         link.expectedSlug,
@@ -435,88 +487,189 @@ async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, pr
         null,
         null,
         null,
-        `Anchor #${link.anchor} not found on page`,
+        `Anchor #${link.anchor} not found on base URL page`,
         Date.now() - startTime,
       );
     }
 
-    // Get heading text and clean it
-    const actualText = await heading.innerText();
-    const actualTextClean = cleanHeadingText(actualText);
-    const actualKebab = toKebabCase(actualTextClean);
+    // Get the actual heading text from the base URL
+    const actualHeadingText = await targetHeading.innerText();
+    const actualHeadingTextClean = cleanHeadingText(actualHeadingText);
 
-    // Extract headings from the TARGET MDX file to verify
-    const mdxFilePath2 = urlToFilePath(link.basePath, baseUrl, repoRoot);
-    const mdxHeadings = mdxFilePath2 ? extractMdxHeadings(mdxFilePath2) : [];
-    const mdxHeadingsKebab = mdxHeadings.map((h) => toKebabCase(h));
+    if (verbose) {
+      console.log(`${DEFAULT_SPACE}Found heading on base URL: "${actualHeadingTextClean}"`);
+    }
 
-    const matchesMdx = mdxHeadingsKebab.includes(actualKebab);
+    // Get all headings on the page to determine the index of this heading (for duplicates)
+    const allHeadings = await page.$$("h1, h2, h3, h4, h5, h6");
+    let targetHeadingIndex = -1;
+    const headingsWithSameText = [];
 
-    if (actualKebab === link.anchor) {
-      if (matchesMdx) {
-        return new ValidationResult(
-          link.source,
-          link.targetUrl,
-          link.basePath,
-          link.anchor,
-          link.expectedSlug,
-          "success",
-          link.basePath,
-          actualTextClean,
-          actualKebab,
-          null,
-          Date.now() - startTime,
-        );
-      } else {
-        return new ValidationResult(
-          link.source,
-          link.targetUrl,
-          link.basePath,
-          link.anchor,
-          link.expectedSlug,
-          "failure",
-          null,
-          actualTextClean,
-          actualKebab,
-          `Anchor "#${link.anchor}" matches page heading "${actualTextClean}" but this heading is not found in the MDX file`,
-          Date.now() - startTime,
-        );
-      }
-    } else {
-      if (matchesMdx) {
-        return new ValidationResult(
-          link.source,
-          link.targetUrl,
-          link.basePath,
-          link.anchor,
-          link.expectedSlug,
-          "failure",
-          null,
-          actualTextClean,
-          actualKebab,
-          `Expected anchor "#${link.anchor}" but page heading "${actualTextClean}" should use "#${actualKebab}"`,
-          Date.now() - startTime,
-        );
-      } else {
-        return new ValidationResult(
-          link.source,
-          link.targetUrl,
-          link.basePath,
-          link.anchor,
-          link.expectedSlug,
-          "failure",
-          null,
-          actualTextClean,
-          actualKebab,
-          `Expected anchor "#${link.anchor}" but found heading "${actualTextClean}" (#${actualKebab}) which is not in the MDX file`,
-          Date.now() - startTime,
-        );
+    for (let i = 0; i < allHeadings.length; i++) {
+      const headingText = await allHeadings[i].innerText();
+      const headingTextClean = cleanHeadingText(headingText);
+
+      if (headingTextClean.toLowerCase() === actualHeadingTextClean.toLowerCase()) {
+        headingsWithSameText.push(i);
+
+        // Check if this is our target heading
+        const isSameElement = await page.evaluate(({ h1, h2 }) => h1 === h2, { h1: targetHeading, h2: allHeadings[i] });
+
+        if (isSameElement) {
+          targetHeadingIndex = headingsWithSameText.length - 1; // Index within headings with same text
+        }
       }
     }
+
+    if (verbose) {
+      console.log(
+        `${DEFAULT_SPACE}Heading occurrence: ${targetHeadingIndex + 1} of ${headingsWithSameText.length} with text "${actualHeadingTextClean}"`,
+      );
+    }
+
+    // Step 2: Navigate to the validation URL (localhost) to get the generated anchor
+    const validationUrl = link.basePath.replace(baseUrl, validationBaseUrl);
+
+    if (verbose) {
+      console.log(`${DEFAULT_SPACE}Step 2: Navigating to validation URL: ${validationUrl}`);
+    }
+
+    await page.goto(validationUrl, { waitUntil: "networkidle", timeout: DEFAULT_TIMEOUT });
+
+    // Find the same heading on the validation page (by text and index)
+    const validationHeadings = await page.$$("h1, h2, h3, h4, h5, h6");
+    const matchingHeadings = [];
+
+    for (const heading of validationHeadings) {
+      const headingText = await heading.innerText();
+      const headingTextClean = cleanHeadingText(headingText);
+
+      if (headingTextClean.toLowerCase() === actualHeadingTextClean.toLowerCase()) {
+        matchingHeadings.push(heading);
+      }
+    }
+
+    if (matchingHeadings.length === 0) {
+      const validationTargetUrl = validationUrl;
+      return new ValidationResult(
+        link.source,
+        link.targetUrl, // sourceUrl (production)
+        validationTargetUrl, // targetUrl (validation)
+        link.basePath,
+        link.anchor,
+        link.expectedSlug,
+        "failure",
+        null,
+        actualHeadingTextClean,
+        null,
+        `Heading "${actualHeadingTextClean}" found on base URL but not on validation URL`,
+        Date.now() - startTime,
+      );
+    }
+
+    // Use the same index to handle duplicate headings
+    const targetValidationHeading = matchingHeadings[Math.min(targetHeadingIndex, matchingHeadings.length - 1)];
+
+    if (verbose) {
+      console.log(
+        `${DEFAULT_SPACE}Found matching heading on validation page (${targetHeadingIndex + 1} of ${matchingHeadings.length})`,
+      );
+      console.log(`${DEFAULT_SPACE}Clicking heading to get generated anchor...`);
+    }
+
+    // Click the heading to get the generated anchor
+    let clickTarget = targetValidationHeading;
+    const linkInHeading = await targetValidationHeading.$("a");
+    if (linkInHeading) {
+      clickTarget = linkInHeading;
+    }
+
+    await clickTarget.click();
+
+    // Wait for URL update
+    await page.waitForTimeout(500);
+
+    // Extract the generated anchor
+    const currentUrl = page.url();
+    let generatedAnchor = null;
+
+    if (currentUrl.includes("#")) {
+      generatedAnchor = currentUrl.split("#")[1];
+      if (verbose) {
+        console.log(`${DEFAULT_SPACE}Generated anchor from URL: #${generatedAnchor}`);
+      }
+    }
+
+    // If no anchor in URL, try to get it from the href attribute
+    if (!generatedAnchor && linkInHeading) {
+      const href = await linkInHeading.getAttribute("href");
+      if (href && href.includes("#")) {
+        generatedAnchor = href.split("#")[1];
+        if (verbose) {
+          console.log(`${DEFAULT_SPACE}Generated anchor from href: #${generatedAnchor}`);
+        }
+      }
+    }
+
+    if (!generatedAnchor) {
+      const validationTargetUrl = validationUrl;
+      return new ValidationResult(
+        link.source,
+        link.targetUrl, // sourceUrl (production)
+        validationTargetUrl, // targetUrl (validation)
+        link.basePath,
+        link.anchor,
+        link.expectedSlug,
+        "failure",
+        null,
+        actualHeadingTextClean,
+        null,
+        `Could not extract generated anchor after clicking heading "${actualHeadingTextClean}"`,
+        Date.now() - startTime,
+      );
+    }
+
+    // Compare the generated anchor with the expected anchor
+    // Construct the full validation URL with the generated anchor
+    const validationTargetUrl = generatedAnchor ? `${validationUrl}#${generatedAnchor}` : validationUrl;
+
+    if (generatedAnchor === link.anchor) {
+      return new ValidationResult(
+        link.source,
+        link.targetUrl, // sourceUrl (production)
+        validationTargetUrl, // targetUrl (validation with generated anchor)
+        link.basePath,
+        link.anchor,
+        link.expectedSlug,
+        "success",
+        link.basePath,
+        actualHeadingTextClean,
+        generatedAnchor,
+        null,
+        Date.now() - startTime,
+      );
+    } else {
+      return new ValidationResult(
+        link.source,
+        link.targetUrl, // sourceUrl (production)
+        validationTargetUrl, // targetUrl (validation with generated anchor)
+        link.basePath,
+        link.anchor,
+        link.expectedSlug,
+        "failure",
+        null,
+        actualHeadingTextClean,
+        generatedAnchor,
+        `Expected anchor "#${link.anchor}" but page generates "#${generatedAnchor}" for heading "${actualHeadingTextClean}"`,
+        Date.now() - startTime,
+      );
+    }
   } catch (error) {
+    const validationTargetUrl = link.targetUrl.replace(baseUrl, validationBaseUrl);
     return new ValidationResult(
       link.source,
-      link.targetUrl,
+      link.targetUrl, // sourceUrl (production)
+      validationTargetUrl, // targetUrl (validation)
       link.basePath,
       link.anchor,
       link.expectedSlug,
@@ -530,23 +683,25 @@ async function validateAnchor(page, link, baseUrl, repoRoot, verbose = false, pr
   }
 }
 
-async function validateNormalLink(page, link, baseUrl, repoRoot, verbose = false, progress = "") {
+async function validateNormalLink(page, link, baseUrl, validationBaseUrl, repoRoot, verbose = false, progress = "") {
   const startTime = Date.now();
 
   try {
     if (verbose) {
-      console.log(`${progress}    Validating link: ${link.targetUrl}`);
+      console.log(`${progress} -> Validating link: ${link.targetUrl}`);
     }
 
     // OPTIMIZATION: Check if target MDX file exists locally first
     const mdxFilePath = urlToFilePath(link.targetUrl, baseUrl, repoRoot);
     if (mdxFilePath && existsSync(mdxFilePath)) {
       if (verbose) {
-        console.log(`                   ✓ Link validated locally (file exists)`);
+        console.log(`${DEFAULT_SPACE}✓ Link validated locally (file exists)`);
       }
+      const validationTargetUrl = link.targetUrl.replace(baseUrl, validationBaseUrl);
       return new ValidationResult(
         link.source,
-        link.targetUrl,
+        link.targetUrl, // sourceUrl (production)
+        validationTargetUrl, // targetUrl (validation)
         link.basePath,
         link.anchor,
         link.expectedSlug,
@@ -558,16 +713,24 @@ async function validateNormalLink(page, link, baseUrl, repoRoot, verbose = false
         Date.now() - startTime,
       );
     } else if (verbose) {
-      console.log(`                   File not found locally, checking online...`);
+      console.log(`${DEFAULT_SPACE}File not found locally, checking online...`);
     }
 
-    // Navigate to the target URL
-    const response = await page.goto(link.targetUrl, { waitUntil: "networkidle", timeout: DEFAULT_TIMEOUT });
+    // Convert the target URL to use the validation base URL
+    const validationUrl = link.targetUrl.replace(baseUrl, validationBaseUrl);
+
+    if (verbose) {
+      console.log(`${DEFAULT_SPACE}Navigating to: ${validationUrl}`);
+    }
+
+    // Navigate to the validation URL
+    const response = await page.goto(validationUrl, { waitUntil: "networkidle", timeout: DEFAULT_TIMEOUT });
 
     if (!response) {
       return new ValidationResult(
         link.source,
-        link.targetUrl,
+        link.targetUrl, // sourceUrl (production)
+        validationUrl, // targetUrl (validation)
         link.basePath,
         link.anchor,
         link.expectedSlug,
@@ -585,7 +748,8 @@ async function validateNormalLink(page, link, baseUrl, repoRoot, verbose = false
     if (response.status() >= 400) {
       return new ValidationResult(
         link.source,
-        link.targetUrl,
+        link.targetUrl, // sourceUrl (production)
+        validationUrl, // targetUrl (validation)
         link.basePath,
         link.anchor,
         link.expectedSlug,
@@ -600,7 +764,8 @@ async function validateNormalLink(page, link, baseUrl, repoRoot, verbose = false
 
     return new ValidationResult(
       link.source,
-      link.targetUrl,
+      link.targetUrl, // sourceUrl (production)
+      validationUrl, // targetUrl (validation)
       link.basePath,
       link.anchor,
       link.expectedSlug,
@@ -612,9 +777,11 @@ async function validateNormalLink(page, link, baseUrl, repoRoot, verbose = false
       Date.now() - startTime,
     );
   } catch (error) {
+    const validationTargetUrl = link.targetUrl.replace(baseUrl, validationBaseUrl);
     return new ValidationResult(
       link.source,
-      link.targetUrl,
+      link.targetUrl, // sourceUrl (production)
+      validationTargetUrl, // targetUrl (validation)
       link.basePath,
       link.anchor,
       link.expectedSlug,
@@ -628,15 +795,15 @@ async function validateNormalLink(page, link, baseUrl, repoRoot, verbose = false
   }
 }
 
-async function validateLink(page, link, baseUrl, repoRoot, verbose = false, progress = "") {
+async function validateLink(page, link, baseUrl, validationBaseUrl, repoRoot, verbose = false, progress = "") {
   if (link.anchor) {
-    return await validateAnchor(page, link, baseUrl, repoRoot, verbose, progress);
+    return await validateAnchor(page, link, baseUrl, validationBaseUrl, repoRoot, verbose, progress);
   } else {
-    return await validateNormalLink(page, link, baseUrl, repoRoot, verbose, progress);
+    return await validateNormalLink(page, link, baseUrl, validationBaseUrl, repoRoot, verbose, progress);
   }
 }
 
-async function validateLinksAsync(links, baseUrl, repoRoot, concurrency, headless, verbose) {
+async function validateLinksAsync(links, baseUrl, validationBaseUrl, repoRoot, concurrency, headless, verbose) {
   const results = [];
 
   let browser;
@@ -670,7 +837,7 @@ async function validateLinksAsync(links, baseUrl, repoRoot, concurrency, headles
     const page = await context.newPage();
 
     try {
-      const result = await validateLink(page, link, baseUrl, repoRoot, verbose, progress);
+      const result = await validateLink(page, link, baseUrl, validationBaseUrl, repoRoot, verbose, progress);
       return result;
     } finally {
       await context.close();
@@ -826,7 +993,7 @@ function fixLinks(results, repoRoot, verbose = false) {
   const failuresByFile = {};
 
   for (const result of results) {
-    if (result.status !== "failure" || !result.actualHeadingKebab || !result.anchor) {
+    if (result.status !== "failure" || !result.actualHeadingAnchor || !result.anchor) {
       continue;
     }
 
@@ -873,7 +1040,7 @@ function fixLinks(results, repoRoot, verbose = false) {
         const linkType = failure.source.linkType;
 
         const pathPart = oldHref.includes("#") ? oldHref.split("#")[0] : oldHref;
-        const newHref = pathPart ? `${pathPart}#${failure.actualHeadingKebab}` : `#${failure.actualHeadingKebab}`;
+        const newHref = pathPart ? `${pathPart}#${failure.actualHeadingAnchor}` : `#${failure.actualHeadingAnchor}`;
 
         if (oldHref === newHref) {
           if (verbose) {
@@ -977,7 +1144,6 @@ function generateReport(results, config, outputPath) {
       failure,
       error,
     },
-    summary_by_file: summaryByFile,
     results_by_file: resultsByFile,
   };
 
@@ -1042,13 +1208,27 @@ export async function validateLinks(baseUrl, options) {
     console.log(`Found ${mdxFiles.length} MDX files\n`);
   }
 
+  // Normalize validation base URL
+  let normalizedValidationBaseUrl = options.validationBaseUrl || "http://localhost:3000";
+  if (!normalizedValidationBaseUrl.startsWith("http://") && !normalizedValidationBaseUrl.startsWith("https://")) {
+    normalizedValidationBaseUrl = "https://" + normalizedValidationBaseUrl;
+  }
+  // Remove trailing slash
+  normalizedValidationBaseUrl = normalizeUrl(normalizedValidationBaseUrl);
+
   if (options.verbose && !options.quiet) {
     console.log("Extracting links...");
   }
 
   const allLinks = [];
   for (const mdxFile of mdxFiles) {
-    const links = extractLinksFromFile(mdxFile, normalizedBaseUrl, repoRoot, options.verbose && !options.quiet);
+    const links = extractLinksFromFile(
+      mdxFile,
+      normalizedBaseUrl,
+      normalizedValidationBaseUrl,
+      repoRoot,
+      options.verbose && !options.quiet,
+    );
     allLinks.push(...links);
   }
 
@@ -1081,9 +1261,14 @@ export async function validateLinks(baseUrl, options) {
     console.log("\nValidating links...");
   }
 
+  if (!options.quiet) {
+    console.log(`\nUsing validation base URL: ${normalizedValidationBaseUrl}`);
+  }
+
   const results = await validateLinksAsync(
     allLinks,
     normalizedBaseUrl,
+    normalizedValidationBaseUrl,
     repoRoot,
     parseInt(options.concurrency) || DEFAULT_CONCURRENCY,
     options.headless !== false,

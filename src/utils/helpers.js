@@ -8,6 +8,11 @@ import { URL } from 'url';
  * "Create resources\nCreate resources" -> "Create resources"
  */
 export function cleanHeadingText(text) {
+  // Remove zero-width characters and other invisible Unicode characters
+  // This includes: zero-width space, zero-width non-joiner, zero-width joiner,
+  // left-to-right mark, right-to-left mark, etc.
+  text = text.replace(/[\u200B-\u200D\u200E-\u200F\uFEFF]/g, '');
+
   // Split by newlines and get unique parts while preserving order
   const lines = text
     .split('\n')

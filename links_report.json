@@ -1,0 +1,46 @@
+{
+  "timestamp": "2026-01-30T23:14:44.777Z",
+  "configuration": {
+    "base_url": "https://backstage.spotify.com/docs",
+    "scanned_directories": [
+      "plugins/insights/tutorials/feedback-survey.mdx"
+    ],
+    "excluded_directories": [
+      "snippets"
+    ],
+    "concurrency": 25,
+    "execution_time_seconds": 13.84
+  },
+  "summary": {
+    "total_links": 3,
+    "success": 2,
+    "failure": 1,
+    "error": 0
+  },
+  "results_by_file": {
+    "plugins/insights/tutorials/feedback-survey.mdx": [
+      {
+        "source": {
+          "filePath": "plugins/insights/tutorials/feedback-survey.mdx",
+          "lineNumber": 32,
+          "linkText": "most popular plugin or entity",
+          "rawHref": "/plugins/insights/core-concepts/usage-data#use-cases-2",
+          "linkType": "markdown",
+          "sourceUrl": "https://backstage.spotify.com/docs/plugins/insights/tutorials/feedback-survey",
+          "targetUrl": "http://localhost:3000/plugins/insights/tutorials/feedback-survey"
+        },
+        "sourceUrl": "https://backstage.spotify.com/docs/plugins/insights/core-concepts/usage-data#use-cases-2",
+        "targetUrl": "http://localhost:3000/plugins/insights/core-concepts/usage-data#use-cases-3",
+        "basePath": "https://backstage.spotify.com/docs/plugins/insights/core-concepts/usage-data",
+        "anchor": "use-cases-2",
+        "expectedSlug": "/docs/plugins/insights/core-concepts/usage-data",
+        "status": "failure",
+        "actualUrl": null,
+        "actualHeading": "Use Cases",
+        "actualHeadingAnchor": "use-cases-3",
+        "errorMessage": "Expected anchor \"#use-cases-2\" but page generates \"#use-cases-3\" for heading \"Use Cases\"",
+        "validationTimeMs": 13627
+      }
+    ]
+  }
+}
