@@ -31,3 +31,7 @@ build/
 coverage/
 
 *.py
+
+test-*.mdx
+mdx_errors_report.*
+links_report.*

@@ -24,25 +24,75 @@ const check = program.command("check").description("Validation commands for docu
 
 // Validate links subcommand
 check
-  .command("links <baseUrl> [validationBaseUrl]")
+  .command("links [baseUrl] [validationBaseUrl]")
   .description("Validate internal links and anchors in MDX documentation files")
   .option("-f, --file <path>", "Validate links in a single MDX file")
   .option("-d, --dir <path>", "Validate links in a specific directory")
-  .option("-o, --output <path>", "Output path for JSON report", "links_report.json")
+  .option("-o, --output <path>", "Output path for report (without extension)", "links_report")
   .option("--dry-run", "Extract and show links without validating")
   .option("--quiet", "Suppress terminal output (only generate report)")
   .option("-c, --concurrency <number>", "Number of concurrent browser tabs", "25")
   .option("--headless", "Run browser in headless mode (default)", true)
   .option("--no-headless", "Show browser window (for debugging)")
-  .option("--fix", "Automatically fix anchor links in MDX files")
-  .option("--fix-from-report [path]", "Fix anchor links from report file (default: links_report.json)")
   .action(async (baseUrl, validationBaseUrl, options) => {
+    const { loadConfig, mergeLinksConfig, validateRequiredConfig } = await import("../src/utils/config.js");
     const { validateLinks } = await import("../src/commands/validate/links.js");
-    // Verbose is now default (true unless --quiet is specified)
+
+    // Load config.json if it exists
+    const config = loadConfig();
+
+    // Merge CLI args with config file (CLI takes precedence)
+    const merged = mergeLinksConfig(baseUrl, validationBaseUrl, options, config);
+
+    // Validate that baseUrl is provided (either via CLI or config)
+    try {
+      validateRequiredConfig(merged.baseUrl, "writechoice check links");
+    } catch (error) {
+      console.error(error.message);
+      process.exit(1);
+    }
+
+    // Set defaults
+    merged.options.verbose = !merged.options.quiet;
+    merged.options.validationBaseUrl = merged.validationBaseUrl || "http://localhost:3000";
+
+    await validateLinks(merged.baseUrl, merged.options);
+  });
+
+// Validate MDX parsing subcommand
+check
+  .command("parse")
+  .description("Validate MDX files for parsing errors")
+  .option("-f, --file <path>", "Validate a single MDX file")
+  .option("-d, --dir <path>", "Validate MDX files in a specific directory")
+  .option("--quiet", "Suppress terminal output (only generate report)")
+  .action(async (options) => {
+    const { loadConfig, mergeParseConfig } = await import("../src/utils/config.js");
+    const { validateMdxFiles } = await import("../src/commands/validate/mdx.js");
+
+    // Load config.json if it exists
+    const config = loadConfig();
+
+    // Merge CLI args with config file (CLI takes precedence)
+    const mergedOptions = mergeParseConfig(options, config);
+
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await validateMdxFiles(mergedOptions);
+  });
+
+// Fix command
+const fix = program.command("fix").description("Fix issues found in validation reports");
+
+// Fix links subcommand
+fix
+  .command("links")
+  .description("Fix broken anchor links from validation report")
+  .option("-r, --report <path>", "Path to validation report", "links_report.json")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { fixLinks } = await import("../src/commands/fix/links.js");
     options.verbose = !options.quiet;
-    // Set validation base URL to localhost:3000 if not provided
-    options.validationBaseUrl = validationBaseUrl || "http://localhost:3000";
-    await validateLinks(baseUrl, options);
+    await fixLinks(options);
   });
 
 // Update command

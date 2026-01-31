@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "description": "Configuration file for WriteChoice Mint CLI",
+
+  "source": "https://docs.example.com",
+  "target": "http://localhost:3000",
+
+  "links": {
+    "file": null,
+    "dir": null,
+    "output": "links_report",
+    "dry-run": false,
+    "quiet": false,
+    "concurrency": 25,
+    "headless": true
+  },
+
+  "parse": {
+    "file": null,
+    "dir": null,
+    "quiet": false
+  }
+}

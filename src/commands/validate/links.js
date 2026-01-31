@@ -6,7 +6,7 @@
  * JavaScript-rendered Mintlify pages.
  */
 
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "fs";
+import { readFileSync, existsSync, readdirSync, statSync } from "fs";
 import { join, relative, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { chromium } from "playwright";
@@ -21,6 +21,7 @@ import {
   removeCodeBlocksAndFrontmatter,
   resolvePath as resolvePathUtil,
 } from "../../utils/helpers.js";
+import { writeBothFormats, generateLinksMarkdown } from "../../utils/reports.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -860,253 +861,9 @@ async function validateLinksAsync(links, baseUrl, validationBaseUrl, repoRoot, c
   return results;
 }
 
-// Fix Links in MDX Files
-
-function fixLinksFromReport(reportPath, repoRoot, verbose = false) {
-  if (!existsSync(reportPath)) {
-    console.error(`Error: Report file not found: ${reportPath}`);
-    return {};
-  }
-
-  let reportData;
-  try {
-    reportData = JSON.parse(readFileSync(reportPath, "utf-8"));
-  } catch (error) {
-    console.error(`Error reading report file: ${error.message}`);
-    return {};
-  }
-
-  const resultsByFile = reportData.results_by_file || {};
-
-  if (Object.keys(resultsByFile).length === 0) {
-    if (verbose) {
-      console.log("No failures found in report.");
-    }
-    return {};
-  }
-
-  const fixesApplied = {};
-
-  for (const [filePath, failures] of Object.entries(resultsByFile)) {
-    const fullPath = join(repoRoot, filePath);
-
-    if (!existsSync(fullPath)) {
-      if (verbose) {
-        console.log(`Warning: File not found: ${filePath}`);
-      }
-      continue;
-    }
-
-    const fixableFailures = failures.filter((f) => f.status === "failure" && f.actual_heading_kebab && f.anchor);
-
-    if (fixableFailures.length === 0) continue;
-
-    try {
-      const content = readFileSync(fullPath, "utf-8");
-      let lines = content.split("\n");
-      let modified = false;
-      let fixesCount = 0;
-
-      fixableFailures.sort((a, b) => b.source.line_number - a.source.line_number);
-
-      for (const failure of fixableFailures) {
-        const lineNum = failure.source.line_number - 1;
-
-        if (lineNum >= lines.length) {
-          if (verbose) {
-            console.log(`Warning: Line ${failure.source.line_number} not found in ${filePath}`);
-          }
-          continue;
-        }
-
-        let line = lines[lineNum];
-        const oldHref = failure.source.raw_href;
-        const newAnchor = failure.actual_heading_kebab;
-        const linkType = failure.source.link_type;
-
-        const pathPart = oldHref.includes("#") ? oldHref.split("#")[0] : oldHref;
-        const newHref = pathPart ? `${pathPart}#${newAnchor}` : `#${newAnchor}`;
-
-        if (oldHref === newHref) {
-          if (verbose) {
-            console.log(`Skipping ${filePath}:${failure.source.line_number} (no change needed)`);
-          }
-          continue;
-        }
-
-        let replaced = false;
-
-        if (linkType === "markdown") {
-          const oldPattern = `(${oldHref})`;
-          const newPattern = `(${newHref})`;
-          if (line.includes(oldPattern)) {
-            line = line.replace(oldPattern, newPattern);
-            replaced = true;
-          }
-        } else if (linkType === "html" || linkType === "jsx") {
-          for (const quote of ['"', "'"]) {
-            const oldPattern = `href=${quote}${oldHref}${quote}`;
-            const newPattern = `href=${quote}${newHref}${quote}`;
-            if (line.includes(oldPattern)) {
-              line = line.replace(oldPattern, newPattern);
-              replaced = true;
-              break;
-            }
-          }
-        }
-
-        if (replaced) {
-          lines[lineNum] = line;
-          modified = true;
-          fixesCount++;
-
-          if (verbose) {
-            console.log(`Fixed ${filePath}:${failure.source.line_number}`);
-            console.log(`  Old: ${oldHref}`);
-            console.log(`  New: ${newHref}`);
-          }
-        } else if (verbose) {
-          console.log(`Warning: Could not find href '${oldHref}' on line ${failure.source.line_number} in ${filePath}`);
-        }
-      }
-
-      if (modified) {
-        const newContent = lines.join("\n");
-        writeFileSync(fullPath, newContent, "utf-8");
-        fixesApplied[filePath] = fixesCount;
-
-        if (verbose) {
-          console.log(`Saved ${fixesCount} fix(es) to ${filePath}`);
-        }
-      }
-    } catch (error) {
-      if (verbose) {
-        console.log(`Error fixing ${filePath}: ${error.message}`);
-      }
-    }
-  }
-
-  return fixesApplied;
-}
-
-function fixLinks(results, repoRoot, verbose = false) {
-  const failuresByFile = {};
-
-  for (const result of results) {
-    if (result.status !== "failure" || !result.actualHeadingAnchor || !result.anchor) {
-      continue;
-    }
-
-    const filePath = result.source.filePath;
-    if (!failuresByFile[filePath]) {
-      failuresByFile[filePath] = [];
-    }
-
-    failuresByFile[filePath].push(result);
-  }
-
-  const fixesApplied = {};
-
-  for (const [filePath, failures] of Object.entries(failuresByFile)) {
-    const fullPath = join(repoRoot, filePath);
-
-    if (!existsSync(fullPath)) {
-      if (verbose) {
-        console.log(`Warning: File not found: ${filePath}`);
-      }
-      continue;
-    }
-
-    try {
-      const content = readFileSync(fullPath, "utf-8");
-      let lines = content.split("\n");
-      let modified = false;
-      let fixesCount = 0;
-
-      failures.sort((a, b) => b.source.lineNumber - a.source.lineNumber);
-
-      for (const failure of failures) {
-        const lineNum = failure.source.lineNumber - 1;
-
-        if (lineNum >= lines.length) {
-          if (verbose) {
-            console.log(`Warning: Line ${failure.source.lineNumber} not found in ${filePath}`);
-          }
-          continue;
-        }
-
-        let line = lines[lineNum];
-        const oldHref = failure.source.rawHref;
-        const linkType = failure.source.linkType;
-
-        const pathPart = oldHref.includes("#") ? oldHref.split("#")[0] : oldHref;
-        const newHref = pathPart ? `${pathPart}#${failure.actualHeadingAnchor}` : `#${failure.actualHeadingAnchor}`;
-
-        if (oldHref === newHref) {
-          if (verbose) {
-            console.log(`Skipping ${filePath}:${failure.source.lineNumber} (no change needed)`);
-          }
-          continue;
-        }
-
-        let replaced = false;
-
-        if (linkType === "markdown") {
-          const oldPattern = `(${oldHref})`;
-          const newPattern = `(${newHref})`;
-          if (line.includes(oldPattern)) {
-            line = line.replace(oldPattern, newPattern);
-            replaced = true;
-          }
-        } else if (linkType === "html" || linkType === "jsx") {
-          for (const quote of ['"', "'"]) {
-            const oldPattern = `href=${quote}${oldHref}${quote}`;
-            const newPattern = `href=${quote}${newHref}${quote}`;
-            if (line.includes(oldPattern)) {
-              line = line.replace(oldPattern, newPattern);
-              replaced = true;
-              break;
-            }
-          }
-        }
-
-        if (replaced) {
-          lines[lineNum] = line;
-          modified = true;
-          fixesCount++;
-
-          if (verbose) {
-            console.log(`Fixed ${filePath}:${failure.source.lineNumber}`);
-            console.log(`  Old: ${oldHref}`);
-            console.log(`  New: ${newHref}`);
-          }
-        } else if (verbose) {
-          console.log(`Warning: Could not find href '${oldHref}' on line ${failure.source.lineNumber} in ${filePath}`);
-        }
-      }
-
-      if (modified) {
-        const newContent = lines.join("\n");
-        writeFileSync(fullPath, newContent, "utf-8");
-        fixesApplied[filePath] = fixesCount;
-
-        if (verbose) {
-          console.log(`Saved ${fixesCount} fix(es) to ${filePath}`);
-        }
-      }
-    } catch (error) {
-      if (verbose) {
-        console.log(`Error fixing ${filePath}: ${error.message}`);
-      }
-    }
-  }
-
-  return fixesApplied;
-}
-
 // Report Generation
 
-function generateReport(results, config, outputPath) {
+function generateReport(results, config, outputBaseName, repoRoot) {
   const total = results.length;
   const success = results.filter((r) => r.status === "success").length;
   const failure = results.filter((r) => r.status === "failure").length;
@@ -1147,43 +904,19 @@ function generateReport(results, config, outputPath) {
     results_by_file: resultsByFile,
   };
 
-  writeFileSync(outputPath, JSON.stringify(report, null, 2), "utf-8");
+  // Always generate markdown content for the MD report
+  report.markdownContent = generateLinksMarkdown(report);
 
-  return report;
+  // Write both JSON and MD reports
+  const { jsonPath, mdPath } = writeBothFormats(report, outputBaseName, repoRoot);
+
+  return { report, jsonPath, mdPath };
 }
 
 // Main CLI Function
 
 export async function validateLinks(baseUrl, options) {
   const repoRoot = process.cwd();
-
-  // Handle --fix-from-report mode
-  if (options.fixFromReport !== undefined) {
-    // If flag is passed with a path, use that path; otherwise use default
-    const reportPath =
-      typeof options.fixFromReport === "string" && options.fixFromReport ? options.fixFromReport : "links_report.json";
-
-    if (!options.quiet) {
-      console.log(`Applying fixes from report: ${reportPath}`);
-    }
-
-    const fixesApplied = fixLinksFromReport(reportPath, repoRoot, options.verbose && !options.quiet);
-
-    if (!options.quiet) {
-      if (Object.keys(fixesApplied).length > 0) {
-        const totalFixes = Object.values(fixesApplied).reduce((a, b) => a + b, 0);
-        console.log(`\nFixed ${totalFixes} link(s) in ${Object.keys(fixesApplied).length} file(s):`);
-        for (const [filePath, count] of Object.entries(fixesApplied)) {
-          console.log(`  ${filePath}: ${count} fix(es)`);
-        }
-        console.log("\nRun validation again to verify the fixes.");
-      } else {
-        console.log("\nNo fixable issues found in report.");
-      }
-    }
-
-    return;
-  }
 
   // Normalize base URL - add https:// if not present
   let normalizedBaseUrl = baseUrl;
@@ -1277,27 +1010,6 @@ export async function validateLinks(baseUrl, options) {
 
   const executionTime = (Date.now() - startTime) / 1000;
 
-  if (options.fix) {
-    if (!options.quiet) {
-      console.log("\nApplying fixes...");
-    }
-
-    const fixesApplied = fixLinks(results, repoRoot, options.verbose && !options.quiet);
-
-    if (!options.quiet) {
-      if (Object.keys(fixesApplied).length > 0) {
-        const totalFixes = Object.values(fixesApplied).reduce((a, b) => a + b, 0);
-        console.log(`\nFixed ${totalFixes} link(s) in ${Object.keys(fixesApplied).length} file(s):`);
-        for (const [filePath, count] of Object.entries(fixesApplied)) {
-          console.log(`  ${filePath}: ${count} fix(es)`);
-        }
-        console.log("\nRun validation again to verify the fixes.");
-      } else {
-        console.log("\nNo fixable issues found.");
-      }
-    }
-  }
-
   const config = {
     base_url: normalizedBaseUrl,
     scanned_directories: options.dir || options.file ? [options.dir || options.file] : MDX_DIRS,
@@ -1306,7 +1018,7 @@ export async function validateLinks(baseUrl, options) {
     execution_time_seconds: Math.round(executionTime * 100) / 100,
   };
 
-  const report = generateReport(results, config, options.output || "links_report.json");
+  const { report, jsonPath, mdPath } = generateReport(results, config, options.output || "links_report", repoRoot);
 
   if (!options.quiet) {
     console.log(`\n${"=".repeat(60)}`);
@@ -1317,7 +1029,9 @@ export async function validateLinks(baseUrl, options) {
     console.log(`Failure:        ${chalk.red(report.summary.failure + " ✗")}`);
     console.log(`Error:          ${chalk.yellow(report.summary.error + " ⚠")}`);
     console.log(`Execution time: ${executionTime.toFixed(2)}s`);
-    console.log(`\nReport saved to: ${options.output || "links_report.json"}`);
+    console.log(`\nReports saved to:`);
+    console.log(`  JSON: ${jsonPath}`);
+    console.log(`  MD:   ${mdPath}`);
 
     if (report.summary.failure > 0 || report.summary.error > 0) {
       console.log(`\n${"=".repeat(60)}`);
