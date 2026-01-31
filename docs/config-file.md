@@ -4,7 +4,25 @@ WriteChoice Mint CLI supports an optional `config.json` file for setting default
 
 ## Quick Start
 
-Create a `config.json` file in your project root:
+### Generate Config File
+
+The easiest way to create a config.json is using the config command:
+
+```bash
+writechoice config
+```
+
+This creates a template file with all available options. Then edit the placeholder values:
+
+```bash
+# Edit config.json and update:
+# - source: Your production documentation URL
+# - target: Your validation environment URL
+```
+
+### Manual Creation
+
+Alternatively, create a `config.json` file manually in your project root:
 
 ```json
 {

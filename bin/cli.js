@@ -95,6 +95,17 @@ fix
     await fixLinks(options);
   });
 
+// Config command
+program
+  .command("config")
+  .description("Generate a config.json template file")
+  .option("--force", "Overwrite existing config.json file")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { generateConfig } = await import("../src/commands/config.js");
+    await generateConfig(options);
+  });
+
 // Update command
 program
   .command("update")

@@ -31,9 +31,23 @@ writechoice check links docs.example.com http://localhost:3000
 
 # Fix broken anchor links
 writechoice fix links
+
+# Generate config.json template
+writechoice config
 ```
 
 ## Commands
+
+### `config`
+
+Generates a config.json template file with all available options.
+
+```bash
+writechoice config                         # Create config.json
+writechoice config --force                 # Overwrite existing config.json
+```
+
+**Output:** Creates `config.json` in the current directory with placeholder values.
 
 ### `check parse`
 
@@ -173,6 +187,7 @@ writechoice check links docs.example.com
 Detailed documentation is available in the [docs/](docs/) folder:
 
 - **Commands**
+  - [config](docs/commands/config.md) - Generate config.json template
   - [check links](docs/commands/check-links.md) - Link validation
   - [check parse](docs/commands/check-parse.md) - MDX parsing validation
   - [fix links](docs/commands/fix-links.md) - Auto-fix broken links
