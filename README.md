@@ -32,6 +32,9 @@ writechoice check links docs.example.com http://localhost:3000
 # Fix broken anchor links
 writechoice fix links
 
+# Fix MDX parsing errors (void tags, stray angle brackets)
+writechoice fix parse
+
 # Generate config.json template
 writechoice config
 ```
@@ -94,6 +97,29 @@ writechoice fix links -r custom_report.json  # Use custom report
 
 **Note:** Requires JSON report from `check links` command.
 
+### `fix parse`
+
+Automatically fixes common MDX parsing errors: void HTML tags not self-closed and stray angle brackets in text.
+
+```bash
+writechoice fix parse                        # Fix from check parse report
+writechoice fix parse -f file.mdx            # Fix a single file directly
+writechoice fix parse -d docs                # Fix files in a directory
+writechoice fix parse -r custom_report.json  # Use custom report
+```
+
+**Common options:**
+- `-r, --report <path>` - Path to JSON report (default: `mdx_errors_report.json`)
+- `-f, --file <path>` - Fix a single MDX file directly
+- `-d, --dir <path>` - Fix MDX files in a directory
+- `--quiet` - Suppress output
+
+**What it fixes:**
+- Void tags: `<br>` → `<br />`, `<img src="x">` → `<img src="x" />`
+- Stray brackets: `x < 10` → `x &lt; 10`, `y > 5` → `y &gt; 5`
+
+Content inside code blocks and inline code is never modified.
+
 ### `update`
 
 Update CLI to latest version.
@@ -107,7 +133,8 @@ writechoice update
 - **MDX Parsing Validation** - Catch syntax errors before deployment
 - **Link Validation** - Test links against live websites with Playwright
 - **Two-Step Anchor Validation** - Compare production vs development anchors
-- **Auto-Fix** - Separate fix command to automatically correct broken anchor links
+- **Auto-Fix Links** - Automatically correct broken anchor links
+- **Auto-Fix Parsing** - Automatically fix void tags and stray angle brackets
 - **Dual Report Formats** - Generates both JSON (for automation) and Markdown (for humans)
 - **Configuration File** - Optional config.json for default settings
 - **CI/CD Ready** - Exit codes for pipeline integration
@@ -176,10 +203,21 @@ writechoice fix links
 # Fix from custom report
 writechoice fix links -r custom_report.json
 
+# Fix MDX parsing errors
+writechoice fix parse
+
+# Fix a single file directly
+writechoice fix parse -f docs/getting-started.mdx
+
 # Full workflow: validate -> fix -> re-validate
 writechoice check links docs.example.com
 writechoice fix links
 writechoice check links docs.example.com
+
+# Full parse workflow: validate -> fix -> re-validate
+writechoice check parse
+writechoice fix parse
+writechoice check parse
 ```
 
 ## Documentation
@@ -191,6 +229,7 @@ Detailed documentation is available in the [docs/](docs/) folder:
   - [check links](docs/commands/check-links.md) - Link validation
   - [check parse](docs/commands/check-parse.md) - MDX parsing validation
   - [fix links](docs/commands/fix-links.md) - Auto-fix broken links
+  - [fix parse](docs/commands/fix-parse.md) - Auto-fix MDX parsing errors
   - [update](docs/commands/update.md) - Update command
 - **Guides**
   - [Configuration File](docs/config-file.md) - Using config.json
@@ -222,7 +261,8 @@ writechoice-mint-cli/
 │   │   │   ├── links.js       # Link validation
 │   │   │   └── mdx.js         # MDX parsing validation
 │   │   └── fix/
-│   │       └── links.js       # Link fixing
+│   │       ├── links.js       # Link fixing
+│   │       └── parse.js       # Parse error fixing
 │   └── utils/
 │       ├── helpers.js         # Utility functions
 │       └── reports.js         # Report generation

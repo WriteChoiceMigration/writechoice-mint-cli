@@ -95,6 +95,20 @@ fix
     await fixLinks(options);
   });
 
+// Fix parse subcommand
+fix
+  .command("parse")
+  .description("Fix common MDX parsing errors (void tags, stray angle brackets)")
+  .option("-r, --report <path>", "Path to parse validation report", "mdx_errors_report.json")
+  .option("-f, --file <path>", "Fix a single MDX file directly")
+  .option("-d, --dir <path>", "Fix MDX files in a specific directory")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { fixParse } = await import("../src/commands/fix/parse.js");
+    options.verbose = !options.quiet;
+    await fixParse(options);
+  });
+
 // Config command
 program
   .command("config")
