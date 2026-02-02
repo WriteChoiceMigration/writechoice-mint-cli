@@ -16,7 +16,9 @@ const program = new Command();
 
 program
   .name("writechoice")
-  .description("CLI tool for Mintlify documentation validation and utilities")
+  .description(
+    "@writechoice/mint-cli@" + packageJson.version + "\n\nCLI tool for Mintlify documentation validation and utilities",
+  )
   .version(packageJson.version, "-v, --version", "Output the current version");
 
 // Validate command
