@@ -398,6 +398,76 @@ function findMdxFiles(repoRoot, directory = null, file = null) {
 
 // Playwright Validation Functions
 
+/**
+ * Find a heading on the page by matching its text with the link text.
+ * Considers exact matches, partial matches, and phrase variations.
+ *
+ * @param {Page} page - Playwright page object
+ * @param {string} linkText - The text from the link (e.g., "Document Picker Security Settings")
+ * @param {boolean} verbose - Whether to log verbose output
+ * @returns {Promise<{heading: ElementHandle|null, text: string|null, index: number}>}
+ */
+async function findHeadingByText(page, linkText, verbose = false) {
+  const allHeadings = await page.$$("h1, h2, h3, h4, h5, h6");
+
+  // Normalize the link text for comparison
+  const normalizedLinkText = linkText.toLowerCase().trim();
+
+  // Store potential matches with their scores
+  const matches = [];
+
+  for (let i = 0; i < allHeadings.length; i++) {
+    const heading = allHeadings[i];
+    const headingText = await heading.innerText();
+    const headingTextClean = cleanHeadingText(headingText);
+    const normalizedHeadingText = headingTextClean.toLowerCase().trim();
+
+    // Exact match (highest priority)
+    if (normalizedHeadingText === normalizedLinkText) {
+      matches.push({ heading, text: headingTextClean, index: i, score: 100 });
+      continue;
+    }
+
+    // Check if link text is contained in heading (complete phrase match)
+    if (normalizedHeadingText.includes(normalizedLinkText)) {
+      matches.push({ heading, text: headingTextClean, index: i, score: 80 });
+      continue;
+    }
+
+    // Check if heading is contained in link text (link text might be more specific)
+    if (normalizedLinkText.includes(normalizedHeadingText)) {
+      matches.push({ heading, text: headingTextClean, index: i, score: 70 });
+      continue;
+    }
+
+    // Check word-by-word match (all words from link text appear in heading)
+    const linkWords = normalizedLinkText.split(/\s+/);
+    const headingWords = normalizedHeadingText.split(/\s+/);
+    const matchingWords = linkWords.filter(word => headingWords.includes(word));
+
+    if (matchingWords.length === linkWords.length && linkWords.length >= 2) {
+      // All words match
+      matches.push({ heading, text: headingTextClean, index: i, score: 60 });
+    } else if (matchingWords.length >= Math.ceil(linkWords.length * 0.7) && linkWords.length >= 3) {
+      // At least 70% of words match (for longer phrases)
+      matches.push({ heading, text: headingTextClean, index: i, score: 50 });
+    }
+  }
+
+  // Sort by score (highest first)
+  matches.sort((a, b) => b.score - a.score);
+
+  if (matches.length > 0) {
+    const bestMatch = matches[0];
+    if (verbose) {
+      console.log(`${DEFAULT_SPACE}Found heading by text match (score: ${bestMatch.score}): "${bestMatch.text}"`);
+    }
+    return { heading: bestMatch.heading, text: bestMatch.text, index: bestMatch.index };
+  }
+
+  return { heading: null, text: null, index: -1 };
+}
+
 async function validateAnchor(page, link, baseUrl, validationBaseUrl, repoRoot, verbose = false, progress = "") {
   const startTime = Date.now();
 
@@ -475,22 +545,39 @@ async function validateAnchor(page, link, baseUrl, validationBaseUrl, repoRoot, 
       }
     }
 
+    // If anchor not found by ID, try to find heading by text
     if (!targetHeading) {
-      const validationTargetUrl = link.basePath.replace(baseUrl, validationBaseUrl);
-      return new ValidationResult(
-        link.source,
-        link.targetUrl, // sourceUrl (production)
-        validationTargetUrl, // targetUrl (validation)
-        link.basePath,
-        link.anchor,
-        link.expectedSlug,
-        "failure",
-        null,
-        null,
-        null,
-        `Anchor #${link.anchor} not found on base URL page`,
-        Date.now() - startTime,
-      );
+      if (verbose) {
+        console.log(`${DEFAULT_SPACE}Anchor #${link.anchor} not found by ID, searching by text...`);
+      }
+
+      // Try to find the heading by matching the link text
+      const textMatch = await findHeadingByText(page, link.source.linkText, verbose);
+
+      if (!textMatch.heading) {
+        const validationTargetUrl = link.basePath.replace(baseUrl, validationBaseUrl);
+        return new ValidationResult(
+          link.source,
+          link.targetUrl, // sourceUrl (production)
+          validationTargetUrl, // targetUrl (validation)
+          link.basePath,
+          link.anchor,
+          link.expectedSlug,
+          "failure",
+          null,
+          null,
+          null,
+          `Anchor #${link.anchor} not found on base URL page. Also could not find a heading matching "${link.source.linkText}"`,
+          Date.now() - startTime,
+        );
+      }
+
+      // Found a heading by text! Use it as the target
+      targetHeading = textMatch.heading;
+
+      if (verbose) {
+        console.log(`${DEFAULT_SPACE}✓ Using heading found by text match: "${textMatch.text}"`);
+      }
     }
 
     // Get the actual heading text from the base URL
@@ -552,20 +639,37 @@ async function validateAnchor(page, link, baseUrl, validationBaseUrl, repoRoot, 
 
     if (matchingHeadings.length === 0) {
       const validationTargetUrl = validationUrl;
-      return new ValidationResult(
-        link.source,
-        link.targetUrl, // sourceUrl (production)
-        validationTargetUrl, // targetUrl (validation)
-        link.basePath,
-        link.anchor,
-        link.expectedSlug,
-        "failure",
-        null,
-        actualHeadingTextClean,
-        null,
-        `Heading "${actualHeadingTextClean}" found on base URL but not on validation URL`,
-        Date.now() - startTime,
-      );
+
+      // Try to find heading by text on validation page as well
+      if (verbose) {
+        console.log(`${DEFAULT_SPACE}Heading not found by text on validation page, trying broader search...`);
+      }
+
+      const validationTextMatch = await findHeadingByText(page, link.source.linkText, verbose);
+
+      if (validationTextMatch.heading) {
+        if (verbose) {
+          console.log(`${DEFAULT_SPACE}Found alternative heading on validation page: "${validationTextMatch.text}"`);
+        }
+
+        // Use this heading instead
+        matchingHeadings.push(validationTextMatch.heading);
+      } else {
+        return new ValidationResult(
+          link.source,
+          link.targetUrl, // sourceUrl (production)
+          validationTargetUrl, // targetUrl (validation)
+          link.basePath,
+          link.anchor,
+          link.expectedSlug,
+          "failure",
+          null,
+          actualHeadingTextClean,
+          null,
+          `Heading "${actualHeadingTextClean}" found on base URL but not on validation URL`,
+          Date.now() - startTime,
+        );
+      }
     }
 
     // Use the same index to handle duplicate headings
@@ -614,6 +718,10 @@ async function validateAnchor(page, link, baseUrl, validationBaseUrl, repoRoot, 
 
     if (!generatedAnchor) {
       const validationTargetUrl = validationUrl;
+
+      // Suggest a kebab-case anchor based on the heading text
+      const suggestedAnchor = toKebabCase(actualHeadingTextClean);
+
       return new ValidationResult(
         link.source,
         link.targetUrl, // sourceUrl (production)
@@ -625,7 +733,7 @@ async function validateAnchor(page, link, baseUrl, validationBaseUrl, repoRoot, 
         null,
         actualHeadingTextClean,
         null,
-        `Could not extract generated anchor after clicking heading "${actualHeadingTextClean}"`,
+        `Could not extract generated anchor after clicking heading "${actualHeadingTextClean}". Suggested anchor based on heading: #${suggestedAnchor}`,
         Date.now() - startTime,
       );
     }
@@ -661,7 +769,7 @@ async function validateAnchor(page, link, baseUrl, validationBaseUrl, repoRoot, 
         null,
         actualHeadingTextClean,
         generatedAnchor,
-        `Expected anchor "#${link.anchor}" but page generates "#${generatedAnchor}" for heading "${actualHeadingTextClean}"`,
+        `Expected anchor "#${link.anchor}" but page generates "#${generatedAnchor}" for heading "${actualHeadingTextClean}". Suggestion: Update link to use #${generatedAnchor}`,
         Date.now() - startTime,
       );
     }
