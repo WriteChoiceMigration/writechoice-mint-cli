@@ -11,6 +11,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node bin/cli.js",
+    "release": "bash publish.sh",
     "postinstall": "echo \"\\n⚠️  Don't forget to install Playwright browsers:\\n   npx playwright install chromium\\n\""
   },
   "keywords": [

@@ -165,6 +165,28 @@ Settings specific to `writechoice fix codeblocks`:
 | `lines`      | `"add"` \| `"remove"` \| `null` | Add or remove `lines` from all code blocks         | `null`  |
 | `wrap`       | `"add"` \| `"remove"` \| `null` | Add or remove `wrap` from all code blocks          | `null`  |
 
+### Images Command Configuration
+
+Settings specific to `writechoice fix images`:
+
+```json
+{
+  "images": {
+    "file": null,
+    "dir": null,
+    "dry-run": false,
+    "quiet": false
+  }
+}
+```
+
+| Field     | Type    | Description                           | Default |
+| --------- | ------- | ------------------------------------- | ------- |
+| `file`    | string  | Fix a single MDX file                 | `null`  |
+| `dir`     | string  | Fix MDX files in a specific directory | `null`  |
+| `dry-run` | boolean | Preview changes without writing files | `false` |
+| `quiet`   | boolean | Suppress terminal output              | `false` |
+
 ## Complete Example
 
 Here's a full example showing all available options:
@@ -202,6 +224,13 @@ Here's a full example showing all available options:
     "expandable": true,
     "lines": null,
     "wrap": null
+  },
+
+  "images": {
+    "file": null,
+    "dir": null,
+    "dry-run": false,
+    "quiet": false
   }
 }
 ```
@@ -544,4 +573,5 @@ Check which config values are being used by reviewing the report configuration s
 - [Check Parse Command](./commands/check-parse.md)
 - [Fix Links Command](./commands/fix-links.md)
 - [Fix Codeblocks Command](./commands/fix-codeblocks.md)
+- [Fix Images Command](./commands/fix-images.md)
 - [Publishing Guide](./publishing.md)

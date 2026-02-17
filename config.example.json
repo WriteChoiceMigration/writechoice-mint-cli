@@ -30,5 +30,12 @@
     "expandable": true,
     "lines": null,
     "wrap": null
+  },
+
+  "images": {
+    "file": null,
+    "dir": null,
+    "dry-run": false,
+    "quiet": false
   }
 }

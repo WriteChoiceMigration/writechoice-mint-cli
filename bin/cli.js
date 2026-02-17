@@ -135,6 +135,24 @@ fix
     await fixCodeblocks(mergedOptions);
   });
 
+// Fix images subcommand
+fix
+  .command("images")
+  .description("Wrap standalone images in <Frame> components in MDX files")
+  .option("-f, --file <path>", "Fix a single MDX file directly")
+  .option("-d, --dir <path>", "Fix MDX files in a specific directory")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeImagesConfig } = await import("../src/utils/config.js");
+    const { fixImages } = await import("../src/commands/fix/images.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeImagesConfig(options, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await fixImages(mergedOptions);
+  });
+
 // Config command
 program
   .command("config")
