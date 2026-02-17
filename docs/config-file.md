@@ -209,6 +209,28 @@ Settings specific to `writechoice fix inlineimages`:
 | `dry-run` | boolean | Preview changes without writing files | `false` |
 | `quiet`   | boolean | Suppress terminal output              | `false` |
 
+### H1 Command Configuration
+
+Settings specific to `writechoice fix h1`:
+
+```json
+{
+  "h1": {
+    "file": null,
+    "dir": null,
+    "dry-run": false,
+    "quiet": false
+  }
+}
+```
+
+| Field     | Type    | Description                           | Default |
+| --------- | ------- | ------------------------------------- | ------- |
+| `file`    | string  | Fix a single MDX file                 | `null`  |
+| `dir`     | string  | Fix MDX files in a specific directory | `null`  |
+| `dry-run` | boolean | Preview changes without writing files | `false` |
+| `quiet`   | boolean | Suppress terminal output              | `false` |
+
 ## Complete Example
 
 Here's a full example showing all available options:
@@ -256,6 +278,13 @@ Here's a full example showing all available options:
   },
 
   "inlineimages": {
+    "file": null,
+    "dir": null,
+    "dry-run": false,
+    "quiet": false
+  },
+
+  "h1": {
     "file": null,
     "dir": null,
     "dry-run": false,
@@ -604,4 +633,5 @@ Check which config values are being used by reviewing the report configuration s
 - [Fix Codeblocks Command](./commands/fix-codeblocks.md)
 - [Fix Images Command](./commands/fix-images.md)
 - [Fix Inline Images Command](./commands/fix-inlineimages.md)
+- [Fix H1 Command](./commands/fix-h1.md)
 - [Publishing Guide](./publishing.md)

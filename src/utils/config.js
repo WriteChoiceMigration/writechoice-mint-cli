@@ -180,6 +180,25 @@ export function mergeImagesConfig(options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the h1 command
+ * CLI options take precedence over config file
+ *
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeH1Config(options, config) {
+  const h1Config = config?.h1 || {};
+
+  return {
+    file: options.file || h1Config.file || null,
+    dir: options.dir || h1Config.dir || null,
+    dryRun: options.dryRun !== undefined ? options.dryRun : (h1Config["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (h1Config.quiet ?? false),
+  };
+}
+
+/**
  * Validates that required fields are present
  * @param {string|undefined} baseUrl - Base URL
  * @param {string} commandName - Name of the command for error messages

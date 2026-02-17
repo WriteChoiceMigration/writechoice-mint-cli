@@ -44,5 +44,12 @@
     "dir": null,
     "dry-run": false,
     "quiet": false
+  },
+
+  "h1": {
+    "file": null,
+    "dir": null,
+    "dry-run": false,
+    "quiet": false
   }
 }

@@ -153,6 +153,24 @@ fix
     await fixInlineImages(mergedOptions);
   });
 
+// Fix h1 subcommand
+fix
+  .command("h1")
+  .description("Remove duplicate H1 headings that match the frontmatter title in MDX files")
+  .option("-f, --file <path>", "Fix a single MDX file directly")
+  .option("-d, --dir <path>", "Fix MDX files in a specific directory")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeH1Config } = await import("../src/utils/config.js");
+    const { fixH1 } = await import("../src/commands/fix/h1.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeH1Config(options, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await fixH1(mergedOptions);
+  });
+
 // Fix images subcommand
 fix
   .command("images")
