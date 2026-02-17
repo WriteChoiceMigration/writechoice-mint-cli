@@ -135,6 +135,24 @@ fix
     await fixCodeblocks(mergedOptions);
   });
 
+// Fix inlineimages subcommand
+fix
+  .command("inlineimages")
+  .description("Convert inline images to <InlineImage> components in MDX files")
+  .option("-f, --file <path>", "Fix a single MDX file directly")
+  .option("-d, --dir <path>", "Fix MDX files in a specific directory")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeInlineImagesConfig } = await import("../src/utils/config.js");
+    const { fixInlineImages } = await import("../src/commands/fix/inlineimages.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeInlineImagesConfig(options, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await fixInlineImages(mergedOptions);
+  });
+
 // Fix images subcommand
 fix
   .command("images")

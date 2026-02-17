@@ -37,5 +37,12 @@
     "dir": null,
     "dry-run": false,
     "quiet": false
+  },
+
+  "inlineimages": {
+    "file": null,
+    "dir": null,
+    "dry-run": false,
+    "quiet": false
   }
 }

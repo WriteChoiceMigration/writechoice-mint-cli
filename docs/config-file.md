@@ -187,6 +187,28 @@ Settings specific to `writechoice fix images`:
 | `dry-run` | boolean | Preview changes without writing files | `false` |
 | `quiet`   | boolean | Suppress terminal output              | `false` |
 
+### Inline Images Command Configuration
+
+Settings specific to `writechoice fix inlineimages`:
+
+```json
+{
+  "inlineimages": {
+    "file": null,
+    "dir": null,
+    "dry-run": false,
+    "quiet": false
+  }
+}
+```
+
+| Field     | Type    | Description                           | Default |
+| --------- | ------- | ------------------------------------- | ------- |
+| `file`    | string  | Fix a single MDX file                 | `null`  |
+| `dir`     | string  | Fix MDX files in a specific directory | `null`  |
+| `dry-run` | boolean | Preview changes without writing files | `false` |
+| `quiet`   | boolean | Suppress terminal output              | `false` |
+
 ## Complete Example
 
 Here's a full example showing all available options:
@@ -227,6 +249,13 @@ Here's a full example showing all available options:
   },
 
   "images": {
+    "file": null,
+    "dir": null,
+    "dry-run": false,
+    "quiet": false
+  },
+
+  "inlineimages": {
     "file": null,
     "dir": null,
     "dry-run": false,
@@ -574,4 +603,5 @@ Check which config values are being used by reviewing the report configuration s
 - [Fix Links Command](./commands/fix-links.md)
 - [Fix Codeblocks Command](./commands/fix-codeblocks.md)
 - [Fix Images Command](./commands/fix-images.md)
+- [Fix Inline Images Command](./commands/fix-inlineimages.md)
 - [Publishing Guide](./publishing.md)

@@ -142,6 +142,25 @@ export function mergeCodeblocksConfig(options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the inlineimages command
+ * CLI options take precedence over config file
+ *
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeInlineImagesConfig(options, config) {
+  const imgConfig = config?.inlineimages || {};
+
+  return {
+    file: options.file || imgConfig.file || null,
+    dir: options.dir || imgConfig.dir || null,
+    dryRun: options.dryRun !== undefined ? options.dryRun : (imgConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (imgConfig.quiet ?? false),
+  };
+}
+
+/**
  * Merges config file with CLI options for the images command
  * CLI options take precedence over config file
  *
