@@ -231,6 +231,40 @@ Settings specific to `writechoice fix h1`:
 | `dry-run` | boolean | Preview changes without writing files | `false` |
 | `quiet`   | boolean | Suppress terminal output              | `false` |
 
+### Metadata Command Configuration
+
+Settings specific to `writechoice metadata`. The base URL is read from the top-level `source` field:
+
+```json
+{
+  "metadata": {
+    "file": null,
+    "dir": null,
+    "concurrency": 15,
+    "tags": [
+      "og:title",
+      "og:description",
+      "og:image",
+      "og:url",
+      "twitter:title",
+      "twitter:description",
+      "twitter:image"
+    ],
+    "dry-run": false,
+    "quiet": false
+  }
+}
+```
+
+| Field         | Type     | Description                                 | Default        |
+| ------------- | -------- | ------------------------------------------- | -------------- |
+| `file`        | string   | Process a single MDX file                   | `null`         |
+| `dir`         | string   | Process MDX files in a specific directory   | `null`         |
+| `concurrency` | number   | Number of parallel HTTP requests            | `15`           |
+| `tags`        | string[] | Meta tags to fetch (overrides default list) | *(7 defaults)* |
+| `dry-run`     | boolean  | Preview changes without writing files       | `false`        |
+| `quiet`       | boolean  | Suppress terminal output                    | `false`        |
+
 ## Complete Example
 
 Here's a full example showing all available options:
@@ -287,6 +321,23 @@ Here's a full example showing all available options:
   "h1": {
     "file": null,
     "dir": null,
+    "dry-run": false,
+    "quiet": false
+  },
+
+  "metadata": {
+    "file": null,
+    "dir": null,
+    "concurrency": 15,
+    "tags": [
+      "og:title",
+      "og:description",
+      "og:image",
+      "og:url",
+      "twitter:title",
+      "twitter:description",
+      "twitter:image"
+    ],
     "dry-run": false,
     "quiet": false
   }
@@ -634,4 +685,5 @@ Check which config values are being used by reviewing the report configuration s
 - [Fix Images Command](./commands/fix-images.md)
 - [Fix Inline Images Command](./commands/fix-inlineimages.md)
 - [Fix H1 Command](./commands/fix-h1.md)
+- [Metadata Command](./commands/metadata.md)
 - [Publishing Guide](./publishing.md)

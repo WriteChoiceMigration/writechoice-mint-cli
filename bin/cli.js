@@ -189,6 +189,25 @@ fix
     await fixImages(mergedOptions);
   });
 
+// Metadata command
+program
+  .command("metadata [baseUrl]")
+  .description("Fetch meta tags from live pages and write them into MDX frontmatter")
+  .option("-f, --file <path>", "Process a single MDX file")
+  .option("-d, --dir <path>", "Process MDX files in a specific directory")
+  .option("-c, --concurrency <number>", "Number of parallel HTTP requests", "15")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (baseUrl, options) => {
+    const { loadConfig, mergeMetadataConfig } = await import("../src/utils/config.js");
+    const { runMetadata } = await import("../src/commands/metadata.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeMetadataConfig({ ...options, baseUrl }, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await runMetadata(mergedOptions);
+  });
+
 // Config command
 program
   .command("config")

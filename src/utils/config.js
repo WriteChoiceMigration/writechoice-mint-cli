@@ -199,6 +199,30 @@ export function mergeH1Config(options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the metadata command
+ * CLI options take precedence over config file
+ *
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeMetadataConfig(options, config) {
+  const metaConfig = config?.metadata || {};
+
+  return {
+    baseUrl: options.baseUrl || config?.source || null,
+    file: options.file || metaConfig.file || null,
+    dir: options.dir || metaConfig.dir || null,
+    concurrency: options.concurrency != null
+      ? parseInt(options.concurrency, 10)
+      : (metaConfig.concurrency ?? 15),
+    tags: metaConfig.tags || null, // null means use defaults
+    dryRun: options.dryRun !== undefined ? options.dryRun : (metaConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (metaConfig.quiet ?? false),
+  };
+}
+
+/**
  * Validates that required fields are present
  * @param {string|undefined} baseUrl - Base URL
  * @param {string} commandName - Name of the command for error messages
