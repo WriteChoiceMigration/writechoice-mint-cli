@@ -27,7 +27,7 @@ const H1_RE = /^\s*#\s+(.*?)\s*$/;
 /**
  * Returns the frontmatter title value, or null if not found.
  */
-function extractFrontmatterTitle(content) {
+export function extractFrontmatterTitle(content) {
   const fmMatch = FRONTMATTER_RE.exec(content);
   if (!fmMatch) return null;
   const fmText = fmMatch[0];
@@ -39,7 +39,7 @@ function extractFrontmatterTitle(content) {
  * Removes the duplicate H1 from `content` if present.
  * Returns { newContent, changed }.
  */
-function removeDuplicateH1(content, fmTitle) {
+export function removeDuplicateH1(content, fmTitle) {
   const fmMatch = FRONTMATTER_RE.exec(content);
   if (!fmMatch) return { newContent: content, changed: false };
 

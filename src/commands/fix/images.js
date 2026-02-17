@@ -72,7 +72,7 @@ function detokenize(text, tag, stash) {
  * Processes MDX content and wraps standalone images in <Frame> components.
  * Returns { newContent, count }.
  */
-function processContent(content) {
+export function processContent(content) {
   let text = content;
 
   // 1. Protect existing <Frame> blocks

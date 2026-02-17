@@ -89,7 +89,7 @@ function getFilesFromReport(reportPath, repoRoot) {
  * Splits file content into protected (code) and unprotected (text) segments.
  * Returns an array of { text, protected } objects.
  */
-function segmentContent(content) {
+export function segmentContent(content) {
   const segments = [];
   let pos = 0;
   const len = content.length;
@@ -154,7 +154,7 @@ function segmentContent(content) {
  * Fixes void HTML tags in a text segment (not inside inline code).
  * Returns { text, count }.
  */
-function fixVoidTags(text) {
+export function fixVoidTags(text) {
   let count = 0;
 
   // Process the text but protect inline code spans
@@ -205,7 +205,7 @@ function replaceVoidTags(text) {
  * Fixes stray < and > in a text segment (not inside inline code or tags).
  * Returns { text, count }.
  */
-function fixStrayAngleBrackets(text) {
+export function fixStrayAngleBrackets(text) {
   let count = 0;
 
   // Process the text but protect inline code spans and valid tags

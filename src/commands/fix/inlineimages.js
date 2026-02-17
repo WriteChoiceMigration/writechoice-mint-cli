@@ -74,7 +74,7 @@ function findFrontmatterEnd(content) {
  * Ensures the InlineImage import is present in the file.
  * Inserts after frontmatter (if any) with an empty line below.
  */
-function ensureImport(content) {
+export function ensureImport(content) {
   if (content.includes(IMPORT_LINE)) return content;
 
   const fmEnd = findFrontmatterEnd(content);
@@ -158,7 +158,7 @@ function processLine(line) {
  * Processes MDX content: replaces inline images and injects the import.
  * Returns { newContent, count }.
  */
-function processContent(content) {
+export function processContent(content) {
   let text = content;
 
   // 1. Protect multi-line regions

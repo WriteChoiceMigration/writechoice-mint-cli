@@ -75,7 +75,7 @@ function splitLines(content) {
  * Processes the token list for a single code block's info string.
  * Returns { newTokens, changes }.
  */
-function processInfoTokens(tokens, lineCount, lineNum, options) {
+export function processInfoTokens(tokens, lineCount, lineNum, options) {
   const changes = [];
   let newTokens = [...tokens];
 
@@ -120,7 +120,7 @@ function processInfoTokens(tokens, lineCount, lineNum, options) {
  * Scans MDX content for fenced code blocks and applies flag fixes.
  * Returns { newContent, changes }.
  */
-function processContent(content, options) {
+export function processContent(content, options) {
   const lines = splitLines(content);
   const result = [];
   const changes = [];

@@ -56,7 +56,7 @@ function parseHtmlAttributes(attrStr) {
  * Looks at property, name, and itemprop attributes.
  * Returns { "og:title": "...", ... }
  */
-function extractMetaTags(html, tags) {
+export function extractMetaTags(html, tags) {
   const results = {};
   const metaRe = /<meta\s+([^>]+?)(?:\s*\/?>)/gi;
   let m;
@@ -120,7 +120,7 @@ async function runConcurrent(tasks, concurrency) {
 // URL construction
 // ─────────────────────────────────────────────────────────────────────────────
 
-function fileToUrl(filePath, scanDir, baseUrl) {
+export function fileToUrl(filePath, scanDir, baseUrl) {
   const rel = relative(scanDir, filePath)
     .replace(/\.mdx$/, "")
     .replace(/\\/g, "/");
@@ -141,7 +141,7 @@ function escapeRe(str) {
  * Formats a string value for YAML output.
  * Always produces a quoted scalar to avoid YAML interpretation issues.
  */
-function yamlValue(str) {
+export function yamlValue(str) {
   if (!str.includes('"')) return `"${str}"`;
   if (!str.includes("'")) return `'${str}'`;
   // Both quotes present — escape double quotes
@@ -153,7 +153,7 @@ function yamlValue(str) {
  * Updates existing frontmatter keys, appends missing ones.
  * Returns { newContent, updated: string[], added: string[], skipped: boolean }
  */
-function applyMetaToContent(content, metaData) {
+export function applyMetaToContent(content, metaData) {
   const fmMatch = FRONTMATTER_RE.exec(content);
   if (!fmMatch) {
     return { newContent: content, updated: [], added: [], skipped: true };
