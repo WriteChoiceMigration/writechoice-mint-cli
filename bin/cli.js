@@ -111,6 +111,30 @@ fix
     await fixParse(options);
   });
 
+// Fix codeblocks subcommand
+fix
+  .command("codeblocks")
+  .description("Fix code block flags (expandable, lines, wrap) in MDX files")
+  .option("-f, --file <path>", "Fix a single MDX file directly")
+  .option("-d, --dir <path>", "Fix MDX files in a specific directory")
+  .option("-t, --threshold <number>", "Line count threshold for expandable (default: 15)")
+  .option("--no-expandable", "Skip expandable threshold processing")
+  .option("--lines", "Add 'lines' to all code blocks that lack it")
+  .option("--remove-lines", "Remove 'lines' from all code blocks that have it")
+  .option("--wrap", "Add 'wrap' to all code blocks that lack it")
+  .option("--remove-wrap", "Remove 'wrap' from all code blocks that have it")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeCodeblocksConfig } = await import("../src/utils/config.js");
+    const { fixCodeblocks } = await import("../src/commands/fix/codeblocks.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeCodeblocksConfig(options, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await fixCodeblocks(mergedOptions);
+  });
+
 // Config command
 program
   .command("config")

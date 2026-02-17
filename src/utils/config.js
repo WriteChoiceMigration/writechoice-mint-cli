@@ -98,6 +98,50 @@ export function mergeParseConfig(options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the codeblocks command
+ * CLI options take precedence over config file
+ *
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeCodeblocksConfig(options, config) {
+  const cbConfig = config?.codeblocks || {};
+
+  // Resolve lines/wrap from config: "add" | true → add, "remove" | false → remove
+  const configLines = cbConfig.lines;
+  const configWrap = cbConfig.wrap;
+
+  const addLinesFromConfig = configLines === "add" || configLines === true;
+  const removeLinesFromConfig = configLines === "remove" || configLines === false;
+  const addWrapFromConfig = configWrap === "add" || configWrap === true;
+  const removeWrapFromConfig = configWrap === "remove" || configWrap === false;
+
+  const threshold = options.threshold != null
+    ? parseInt(options.threshold, 10)
+    : (cbConfig.threshold ?? 15);
+
+  // expandable: Commander sets options.expandable=false when --no-expandable is passed
+  const expandable = options.expandable !== false
+    ? (cbConfig.expandable !== false)
+    : false;
+
+  return {
+    file: options.file || cbConfig.file || null,
+    dir: options.dir || cbConfig.dir || null,
+    dryRun: options.dryRun !== undefined ? options.dryRun : (cbConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (cbConfig.quiet ?? false),
+    threshold,
+    expandable,
+    // CLI flags take precedence over config
+    lines: options.lines || addLinesFromConfig,
+    removeLines: options.removeLines || removeLinesFromConfig,
+    wrap: options.wrap || addWrapFromConfig,
+    removeWrap: options.removeWrap || removeWrapFromConfig,
+  };
+}
+
+/**
  * Validates that required fields are present
  * @param {string|undefined} baseUrl - Base URL
  * @param {string} commandName - Name of the command for error messages

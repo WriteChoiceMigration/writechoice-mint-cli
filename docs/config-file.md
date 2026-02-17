@@ -135,6 +135,36 @@ Settings specific to `writechoice check parse`:
 | `dir`   | string  | Validate MDX files in specific directory | `null`  |
 | `quiet` | boolean | Suppress terminal output                 | `false` |
 
+### Codeblocks Command Configuration
+
+Settings specific to `writechoice fix codeblocks`:
+
+```json
+{
+  "codeblocks": {
+    "file": null,
+    "dir": null,
+    "dry-run": false,
+    "quiet": false,
+    "threshold": 15,
+    "expandable": true,
+    "lines": null,
+    "wrap": null
+  }
+}
+```
+
+| Field        | Type                            | Description                                        | Default |
+| ------------ | ------------------------------- | -------------------------------------------------- | ------- |
+| `file`       | string                          | Fix a single MDX file                              | `null`  |
+| `dir`        | string                          | Fix MDX files in a specific directory              | `null`  |
+| `dry-run`    | boolean                         | Preview changes without writing files              | `false` |
+| `quiet`      | boolean                         | Suppress terminal output                           | `false` |
+| `threshold`  | number                          | Line count threshold for `expandable`              | `15`    |
+| `expandable` | boolean                         | Enable expandable threshold processing             | `true`  |
+| `lines`      | `"add"` \| `"remove"` \| `null` | Add or remove `lines` from all code blocks         | `null`  |
+| `wrap`       | `"add"` \| `"remove"` \| `null` | Add or remove `wrap` from all code blocks          | `null`  |
+
 ## Complete Example
 
 Here's a full example showing all available options:
@@ -161,6 +191,17 @@ Here's a full example showing all available options:
     "file": null,
     "dir": null,
     "quiet": false
+  },
+
+  "codeblocks": {
+    "file": null,
+    "dir": null,
+    "dry-run": false,
+    "quiet": false,
+    "threshold": 15,
+    "expandable": true,
+    "lines": null,
+    "wrap": null
   }
 }
 ```
@@ -502,4 +543,5 @@ Check which config values are being used by reviewing the report configuration s
 - [Check Links Command](./commands/check-links.md)
 - [Check Parse Command](./commands/check-parse.md)
 - [Fix Links Command](./commands/fix-links.md)
+- [Fix Codeblocks Command](./commands/fix-codeblocks.md)
 - [Publishing Guide](./publishing.md)

@@ -32,6 +32,6 @@ coverage/
 
 *.py
 
-test-*.mdx
+test*.mdx
 mdx_errors_report.*
 links_report.*
