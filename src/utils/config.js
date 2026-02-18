@@ -171,11 +171,20 @@ export function mergeInlineImagesConfig(options, config) {
 export function mergeImagesConfig(options, config) {
   const imgConfig = config?.images || {};
 
+  // download: true if --download was passed without a URL, string if URL provided
+  const downloadFlag = options.download !== undefined ? options.download : (imgConfig.download ?? false);
+  let downloadUrl = null;
+  if (downloadFlag) {
+    downloadUrl = typeof downloadFlag === "string" ? downloadFlag : (config?.source || null);
+  }
+
   return {
     file: options.file || imgConfig.file || null,
     dir: options.dir || imgConfig.dir || null,
     dryRun: options.dryRun !== undefined ? options.dryRun : (imgConfig["dry-run"] ?? false),
     quiet: options.quiet !== undefined ? options.quiet : (imgConfig.quiet ?? false),
+    download: !!downloadFlag,
+    downloadUrl,
   };
 }
 

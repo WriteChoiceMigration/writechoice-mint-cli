@@ -20,7 +20,7 @@ node --test test/fix-h1.test.js
 |---|---|---|---|
 | `fix h1` | `test/fix-h1.test.js` | ✅ done | 20 |
 | `fix inlineimages` | `test/fix-inlineimages.test.js` | ✅ done | 19 |
-| `fix images` | `test/fix-images.test.js` | ✅ done | 12 |
+| `fix images` | `test/fix-images.test.js` | ✅ done | 18 |
 | `fix codeblocks` | `test/fix-codeblocks.test.js` | ✅ done | 19 |
 | `fix parse` | `test/fix-parse.test.js` | ✅ done | 14 |
 | `fix links` | `test/fix-links.test.js` | ⬜ todo — needs report fixture |
@@ -42,7 +42,7 @@ node --test test/fix-h1.test.js
 |---|---|
 | `fix/h1.js` | `extractFrontmatterTitle`, `removeDuplicateH1` |
 | `fix/inlineimages.js` | `processContent`, `ensureImport` |
-| `fix/images.js` | `processContent` |
+| `fix/images.js` | `processContent`, `extractImageSrcs` |
 | `fix/codeblocks.js` | `processContent`, `processInfoTokens` |
 | `fix/parse.js` | `segmentContent`, `fixVoidTags`, `fixStrayAngleBrackets` |
 | `metadata.js` | `extractMetaTags`, `applyMetaToContent`, `fileToUrl`, `yamlValue`, `DEFAULT_META_TAGS` |

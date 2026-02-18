@@ -10,12 +10,13 @@ writechoice fix images [options]
 
 ## Options
 
-| Option          | Alias | Description                           | Default |
-| --------------- | ----- | ------------------------------------- | ------- |
-| `--file <path>` | `-f`  | Fix a single MDX file directly        | -       |
-| `--dir <path>`  | `-d`  | Fix MDX files in a specific directory | -       |
-| `--dry-run`     | -     | Preview changes without writing files | `false` |
-| `--quiet`       | -     | Suppress terminal output              | `false` |
+| Option              | Alias | Description                                                          | Default |
+| ------------------- | ----- | -------------------------------------------------------------------- | ------- |
+| `--file <path>`     | `-f`  | Fix a single MDX file directly                                       | -       |
+| `--dir <path>`      | `-d`  | Fix MDX files in a specific directory                                | -       |
+| `--download [url]`  | -     | Download missing local images; uses `source` from config or a URL   | -       |
+| `--dry-run`         | -     | Preview changes without writing files                                | `false` |
+| `--quiet`           | -     | Suppress terminal output                                             | `false` |
 
 ## How It Works
 
@@ -81,6 +82,48 @@ writechoice fix images -d docs/api
 ```bash
 writechoice fix images -f docs/getting-started.mdx
 ```
+
+### Download missing images (using source from config.json)
+
+```bash
+writechoice fix images --download
+```
+
+### Download missing images from a specific URL
+
+```bash
+writechoice fix images --download https://docs.example.com
+```
+
+## Downloading Missing Images
+
+Use `--download` to fetch images that are referenced in MDX files but not found locally.
+
+```bash
+writechoice fix images --download
+writechoice fix images --download https://docs.example.com
+```
+
+- Without a URL, the `source` field from `config.json` is used as the base.
+- Only root-relative paths (e.g. `/images/logo.png`) are attempted — external URLs are skipped.
+- If a file already exists locally it is not re-downloaded.
+- Downloaded files are saved to the same path under the repo root (directories are created if needed).
+- If any downloads fail, an `image_download.json` report is written listing each failure with its reason.
+
+### image_download.json format
+
+```json
+{
+  "downloaded": [
+    { "src": "/images/logo.png", "url": "https://docs.example.com/images/logo.png" }
+  ],
+  "failed": [
+    { "src": "/images/missing.png", "url": "https://docs.example.com/images/missing.png", "reason": "HTTP 404" }
+  ]
+}
+```
+
+The report is only written when there are failures. Use `--dry-run` to check what would be downloaded without saving anything.
 
 ## Before and After
 
@@ -206,18 +249,20 @@ You can set defaults in `config.json`:
 {
   "images": {
     "dir": "docs",
+    "download": false,
     "dry-run": false,
     "quiet": false
   }
 }
 ```
 
-| Field     | Type    | Description                           | Default |
-| --------- | ------- | ------------------------------------- | ------- |
-| `file`    | string  | Fix a single MDX file                 | `null`  |
-| `dir`     | string  | Fix MDX files in a specific directory | `null`  |
-| `dry-run` | boolean | Preview changes without writing files | `false` |
-| `quiet`   | boolean | Suppress terminal output              | `false` |
+| Field      | Type            | Description                                                        | Default |
+| ---------- | --------------- | ------------------------------------------------------------------ | ------- |
+| `file`     | string          | Fix a single MDX file                                              | `null`  |
+| `dir`      | string          | Fix MDX files in a specific directory                              | `null`  |
+| `download` | boolean\|string | `true` to use `source` from config, or a URL string               | `false` |
+| `dry-run`  | boolean         | Preview changes without writing files                              | `false` |
+| `quiet`    | boolean         | Suppress terminal output                                           | `false` |
 
 CLI flags always take precedence over config.json values.
 

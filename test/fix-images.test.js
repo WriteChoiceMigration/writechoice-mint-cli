@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { processContent } from "../src/commands/fix/images.js";
+import { processContent, extractImageSrcs } from "../src/commands/fix/images.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Markdown images
@@ -99,5 +99,45 @@ describe("processContent — protected regions", () => {
     const { newContent: pass2, count } = processContent(pass1);
     assert.equal(count, 0);
     assert.equal(pass1, pass2);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// extractImageSrcs (used by --download)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("extractImageSrcs", () => {
+  it("extracts src from a markdown image", () => {
+    const srcs = extractImageSrcs("![hero](/img/hero.png)");
+    assert.ok(srcs.includes("/img/hero.png"));
+  });
+
+  it("extracts src from an HTML img tag", () => {
+    const srcs = extractImageSrcs('<img src="/img/logo.svg" alt="Logo" />');
+    assert.ok(srcs.includes("/img/logo.svg"));
+  });
+
+  it("extracts multiple srcs from the same content", () => {
+    const content = "![a](/a.png)\n\n![b](/b.png)\n";
+    const srcs = extractImageSrcs(content);
+    assert.ok(srcs.includes("/a.png"));
+    assert.ok(srcs.includes("/b.png"));
+  });
+
+  it("extracts both markdown and HTML srcs", () => {
+    const content = '![md](/md.png)\n<img src="/html.png" />\n';
+    const srcs = extractImageSrcs(content);
+    assert.ok(srcs.includes("/md.png"));
+    assert.ok(srcs.includes("/html.png"));
+  });
+
+  it("returns empty array when no images are present", () => {
+    const srcs = extractImageSrcs("# Heading\n\nJust text here.\n");
+    assert.equal(srcs.length, 0);
+  });
+
+  it("extracts external URLs too (caller decides what to skip)", () => {
+    const srcs = extractImageSrcs("![ext](https://cdn.example.com/img.png)");
+    assert.ok(srcs.includes("https://cdn.example.com/img.png"));
   });
 });

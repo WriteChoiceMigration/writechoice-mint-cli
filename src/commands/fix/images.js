@@ -11,8 +11,8 @@
  * - HTML tables
  */
 
-import { existsSync, readdirSync, statSync, readFileSync, writeFileSync } from "fs";
-import { join, relative, resolve } from "path";
+import { existsSync, mkdirSync, readdirSync, statSync, readFileSync, writeFileSync } from "fs";
+import { dirname, join, relative, resolve } from "path";
 import chalk from "chalk";
 
 const EXCLUDED_DIRS = ["node_modules", ".git"];
@@ -114,6 +114,90 @@ export function processContent(content) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Image src extraction (for --download)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Extract all image src values from MDX content (markdown + HTML img)
+export function extractImageSrcs(content) {
+  const srcs = [];
+
+  // Markdown images: ![alt](src) — capture the URL part
+  const mdRe = /!\[[^\]]*\]\(([^)\s"']+)/g;
+  let m;
+  while ((m = mdRe.exec(content)) !== null) {
+    srcs.push(m[1]);
+  }
+
+  // HTML img tags: <img src="..." /> or <img src='...' />
+  const htmlRe = /<img\b[^>]*\bsrc=["']([^"']+)["']/gi;
+  while ((m = htmlRe.exec(content)) !== null) {
+    srcs.push(m[1]);
+  }
+
+  return srcs;
+}
+
+/**
+ * Downloads missing local images from the source URL.
+ * Only attempts images with local absolute paths (starting with /).
+ * Returns { downloaded, failed } arrays and optionally writes image_download.json.
+ */
+async function downloadMissingImages(files, repoRoot, downloadUrl, options) {
+  const base = downloadUrl.replace(/\/$/, "");
+
+  // Collect unique local srcs across all files
+  const srcSet = new Set();
+  for (const filePath of files) {
+    const content = readFileSync(filePath, "utf-8");
+    for (const src of extractImageSrcs(content)) {
+      // Only handle root-relative paths like /images/foo.png
+      if (src.startsWith("/") && !src.startsWith("//")) {
+        srcSet.add(src);
+      }
+    }
+  }
+
+  if (srcSet.size === 0) {
+    return { downloaded: [], failed: [] };
+  }
+
+  const downloaded = [];
+  const failed = [];
+
+  for (const src of srcSet) {
+    const localPath = join(repoRoot, src);
+
+    if (existsSync(localPath)) continue; // already present
+
+    const url = base + src;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        failed.push({ src, url, reason: `HTTP ${response.status}` });
+        continue;
+      }
+
+      if (!options.dryRun) {
+        mkdirSync(dirname(localPath), { recursive: true });
+        const buffer = await response.arrayBuffer();
+        writeFileSync(localPath, Buffer.from(buffer));
+      }
+
+      downloaded.push({ src, url });
+
+      if (options.verbose) {
+        console.log(`  ${chalk.green("↓")} ${src}`);
+      }
+    } catch (err) {
+      failed.push({ src, url, reason: err.message });
+    }
+  }
+
+  return { downloaded, failed };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // File discovery
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -200,7 +284,7 @@ export async function fixImages(options) {
     }
   }
 
-  // Summary
+  // Summary — wrapping
   if (!options.quiet) {
     const fileCount = Object.keys(results).length;
 
@@ -215,6 +299,59 @@ export async function fixImages(options) {
       }
     } else {
       console.log(chalk.yellow("⚠️  No unwrapped images found."));
+    }
+  }
+
+  // ── Download pass ──────────────────────────────────────────────────────────
+  if (!options.download) return;
+
+  if (!options.downloadUrl) {
+    console.error(chalk.red(
+      '\n✗ --download requires a source URL.\n' +
+      '  Pass it after the flag: wc fix images --download https://docs.example.com\n' +
+      '  Or set "source" in config.json'
+    ));
+    process.exit(1);
+  }
+
+  if (!options.quiet) {
+    console.log(chalk.bold("\n⬇️  Downloading missing images\n"));
+    if (options.dryRun) {
+      console.log(chalk.yellow("Dry run — images will not be saved\n"));
+    }
+  }
+
+  const { downloaded, failed } = await downloadMissingImages(files, repoRoot, options.downloadUrl, options);
+
+  if (!options.quiet) {
+    if (downloaded.length > 0) {
+      const verb = options.dryRun ? "Would download" : "Downloaded";
+      console.log(chalk.green(`\n✓ ${verb} ${downloaded.length} image(s)`));
+      if (!options.verbose) {
+        for (const { src } of downloaded) {
+          console.log(`  ${src}`);
+        }
+      }
+    }
+
+    if (failed.length > 0) {
+      console.log(chalk.red(`\n✗ Failed to download ${failed.length} image(s)`));
+      for (const { src, reason } of failed) {
+        console.log(`  ${chalk.cyan(src)}: ${reason}`);
+      }
+    }
+
+    if (downloaded.length === 0 && failed.length === 0) {
+      console.log(chalk.yellow("⚠️  No missing local images found."));
+    }
+  }
+
+  // Write report when there are failures
+  if (failed.length > 0 && !options.dryRun) {
+    const reportPath = join(repoRoot, "image_download.json");
+    writeFileSync(reportPath, JSON.stringify({ downloaded, failed }, null, 2), "utf-8");
+    if (!options.quiet) {
+      console.log(`\nReport written to ${chalk.cyan("image_download.json")}`);
     }
   }
 }

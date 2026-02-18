@@ -177,6 +177,7 @@ fix
   .description("Wrap standalone images in <Frame> components in MDX files")
   .option("-f, --file <path>", "Fix a single MDX file directly")
   .option("-d, --dir <path>", "Fix MDX files in a specific directory")
+  .option("--download [url]", "Download missing local images; uses source from config or provide a URL")
   .option("--dry-run", "Preview changes without writing files")
   .option("--quiet", "Suppress terminal output")
   .action(async (options) => {

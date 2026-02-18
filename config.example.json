@@ -35,6 +35,7 @@
   "images": {
     "file": null,
     "dir": null,
+    "download": false,
     "dry-run": false,
     "quiet": false
   },
