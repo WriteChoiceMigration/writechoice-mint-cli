@@ -1,10 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "description": "Configuration file for WriteChoice Mint CLI",
-
   "source": "https://docs.example.com",
   "target": "http://localhost:3000",
-
   "links": {
     "file": null,
     "dir": null,
@@ -14,13 +12,11 @@
     "concurrency": 25,
     "headless": true
   },
-
   "parse": {
     "file": null,
     "dir": null,
     "quiet": false
   },
-
   "codeblocks": {
     "file": null,
     "dir": null,
@@ -31,7 +27,6 @@
     "lines": null,
     "wrap": null
   },
-
   "images": {
     "file": null,
     "dir": null,
@@ -39,17 +34,22 @@
     "dry-run": false,
     "quiet": false
   },
-
   "inlineimages": {
     "file": null,
     "dir": null,
     "dry-run": false,
     "quiet": false
   },
-
   "h1": {
     "file": null,
     "dir": null,
+    "dry-run": false,
+    "quiet": false
+  },
+  "imports": {
+    "file": null,
+    "dir": null,
+    "snippets": "snippets",
     "dry-run": false,
     "quiet": false
   },

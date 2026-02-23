@@ -232,6 +232,26 @@ export function mergeMetadataConfig(options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the imports command
+ * CLI options take precedence over config file
+ *
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeImportsConfig(options, config) {
+  const importsConfig = config?.imports || {};
+
+  return {
+    file: options.file || importsConfig.file || null,
+    dir: options.dir || importsConfig.dir || null,
+    snippets: options.snippets || importsConfig.snippets || "snippets",
+    dryRun: options.dryRun !== undefined ? options.dryRun : (importsConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (importsConfig.quiet ?? false),
+  };
+}
+
+/**
  * Validates that required fields are present
  * @param {string|undefined} baseUrl - Base URL
  * @param {string} commandName - Name of the command for error messages

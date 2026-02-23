@@ -171,6 +171,25 @@ fix
     await fixH1(mergedOptions);
   });
 
+// Fix imports subcommand
+fix
+  .command("imports")
+  .description("Check component imports in MDX files and add missing ones from snippets/")
+  .option("-f, --file <path>", "Check a single MDX file")
+  .option("-d, --dir <path>", "Check MDX files in a specific directory")
+  .option("--snippets <path>", "Path to snippets folder (default: snippets)")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeImportsConfig } = await import("../src/utils/config.js");
+    const { fixImports } = await import("../src/commands/fix/imports.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeImportsConfig(options, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await fixImports(mergedOptions);
+  });
+
 // Fix images subcommand
 fix
   .command("images")

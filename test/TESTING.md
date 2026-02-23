@@ -23,6 +23,7 @@ node --test test/fix-h1.test.js
 | `fix images` | `test/fix-images.test.js` | ✅ done | 18 |
 | `fix codeblocks` | `test/fix-codeblocks.test.js` | ✅ done | 19 |
 | `fix parse` | `test/fix-parse.test.js` | ✅ done | 14 |
+| `fix imports` | `test/fix-imports.test.js` | ✅ done | 30 |
 | `fix links` | `test/fix-links.test.js` | ⬜ todo — needs report fixture |
 
 ## Other Commands
@@ -46,3 +47,4 @@ node --test test/fix-h1.test.js
 | `fix/codeblocks.js` | `processContent`, `processInfoTokens` |
 | `fix/parse.js` | `segmentContent`, `fixVoidTags`, `fixStrayAngleBrackets` |
 | `metadata.js` | `extractMetaTags`, `applyMetaToContent`, `fileToUrl`, `yamlValue`, `DEFAULT_META_TAGS` |
+| `fix/imports.js` | `extractComponentNames`, `extractImports`, `buildImportLine`, `insertImportLines`, `MINTLIFY_COMPONENTS` |
