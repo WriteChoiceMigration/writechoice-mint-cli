@@ -54,6 +54,34 @@
     "quiet": false
   },
 
+  "scrape": {
+    "urls_file": "urls.json",
+    "output": "output",
+    "concurrency": 3,
+    "playwright": false,
+    "dry-run": false,
+    "quiet": false,
+    "content_selector": "body",
+    "title_selector": "h1",
+    "elements_to_remove": [],
+    "html_preserve_elements": ["table", "iframe"],
+    "html_preserve_custom": [],
+    "images": {
+      "strategy": "keep_remote",
+      "folder": "images"
+    },
+    "components": {
+      "callouts": [],
+      "accordion": null,
+      "card": null,
+      "tabs": null,
+      "codegroup": null
+    },
+    "codeblock": {
+      "language_class_patterns": ["language-", "lang-", "highlight-"]
+    }
+  },
+
   "metadata": {
     "file": null,
     "dir": null,

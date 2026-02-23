@@ -252,6 +252,32 @@ export function mergeImportsConfig(options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the scrape command
+ * CLI options take precedence over config file
+ *
+ * @param {Object} options - CLI options (urls, urlsFile, output, playwright, concurrency, dryRun, quiet)
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeScrapingConfig(options, config) {
+  const scrapeConfig = config?.scrape || {};
+
+  return {
+    urls: options.urls || [],
+    urlsFile: options["urls-file"] || options.urlsFile || scrapeConfig.urls_file || "urls.json",
+    output: options.output || scrapeConfig.output || "output",
+    playwright: options.playwright !== undefined ? options.playwright : (scrapeConfig.playwright ?? false),
+    concurrency: options.concurrency != null
+      ? parseInt(options.concurrency, 10)
+      : (scrapeConfig.concurrency ?? 3),
+    dryRun: options.dryRun !== undefined ? options.dryRun : (scrapeConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (scrapeConfig.quiet ?? false),
+    // Pass the full scrape config section through for use in the converter
+    scrapeConfig,
+  };
+}
+
+/**
  * Validates that required fields are present
  * @param {string|undefined} baseUrl - Base URL
  * @param {string} commandName - Name of the command for error messages

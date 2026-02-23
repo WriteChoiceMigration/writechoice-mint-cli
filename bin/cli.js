@@ -209,6 +209,26 @@ fix
     await fixImages(mergedOptions);
   });
 
+// Scrape command
+program
+  .command("scrape [urls...]")
+  .description("Scrape documentation URLs and convert each page to MDX files")
+  .option("--urls-file <file>", "JSON file with an array of URLs to scrape")
+  .option("-o, --output <dir>", "Output directory for MDX files (default: output)")
+  .option("--playwright", "Use Playwright for JavaScript-rendered pages")
+  .option("-c, --concurrency <number>", "Number of parallel requests (default: 3)")
+  .option("--dry-run", "Preview output without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (urls, options) => {
+    const { loadConfig, mergeScrapingConfig } = await import("../src/utils/config.js");
+    const { scrape } = await import("../src/commands/scrape/index.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeScrapingConfig({ ...options, urls }, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await scrape(mergedOptions);
+  });
+
 // Metadata command
 program
   .command("metadata [baseUrl]")
