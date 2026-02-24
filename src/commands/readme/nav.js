@@ -215,14 +215,35 @@ export function slugify(name) {
 }
 
 /**
+ * Resolves the base directory for a given page path.
+ *
+ * @param {string} pageStr - e.g. "docs/marshall-sdk" or "reference/overview"
+ * @param {string|boolean} baseOption
+ *   - true  → use the file's own first path component ("docs", "reference", …)
+ *   - false → no base prefix
+ *   - string → use as a fixed prefix for all files
+ * @returns {string} base directory or ""
+ */
+function resolveBase(pageStr, baseOption) {
+  if (baseOption === true) {
+    const parts = pageStr.split("/");
+    return parts.length > 1 ? parts[0] : "";
+  }
+  if (!baseOption) return "";
+  return String(baseOption);
+}
+
+/**
  * Computes the new relative file path for a page based on its nav hierarchy.
  * @param {string} pageStr - docs.json page reference, e.g. "docs/marshall-sdk"
  * @param {string[]} parentNames - ordered parent names from traversal
- * @param {string} base - base directory (e.g. "docs")
+ * @param {string|boolean} base - base option (true = keep original, false = none, string = fixed)
  * @param {number[]} skipLevels - 1-based level numbers to omit
  * @returns {string} New relative path with .mdx extension
  */
 export function computeNewPath(pageStr, parentNames, base, skipLevels = []) {
+  const baseDir = resolveBase(pageStr, base);
+
   // Build folder list, filtering out skipped levels
   const folders = parentNames
     .filter((_, i) => !skipLevels.includes(i + 1))
@@ -236,7 +257,9 @@ export function computeNewPath(pageStr, parentNames, base, skipLevels = []) {
   // If the filename slug matches the last folder, it becomes index.mdx
   const finalName = lastName && filenameSlug === lastName ? "index" : filename;
 
-  return join(base, ...folders, finalName + ".mdx");
+  return baseDir
+    ? join(baseDir, ...folders, finalName + ".mdx")
+    : join(...folders, finalName + ".mdx");
 }
 
 // ---------------------------------------------------------------------------

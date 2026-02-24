@@ -236,7 +236,7 @@ readme
   .command("nav")
   .description("Restructure MDX files to match docs.json navigation hierarchy")
   .option("--docs <file>", "Path to docs.json (default: docs.json)")
-  .option("--base <dir>", "Base directory prepended to all new paths (default: docs)")
+  .option("--base [dir]", "Keep each file's original base folder (no value), use a fixed prefix (e.g. docs), or omit for config default")
   .option("--skip-level <n>", "Skip a navigation level by number (repeatable, 1-based)", (v, acc) => [...acc, parseInt(v, 10)], [])
   .option("--dry-run", "Preview moves without writing files")
   .option("--quiet", "Suppress terminal output")

@@ -268,9 +268,13 @@ export function mergeNavConfig(options, config) {
   const configSkipLevels = Array.isArray(navConfig.skip_levels) ? navConfig.skip_levels : [];
   const skipLevels = cliSkipLevels.length ? cliSkipLevels : configSkipLevels;
 
+  // base: true = keep each file's original first folder, false = no prefix, string = fixed prefix
+  // CLI: --base (no value) → true, --base docs → "docs", absent → use config or default true
+  const base = options.base !== undefined ? options.base : (navConfig.base ?? true);
+
   return {
     docs: options.docs || navConfig.docs || "docs.json",
-    base: options.base || navConfig.base || "docs",
+    base,
     skipLevels,
     dryRun: options.dryRun !== undefined ? options.dryRun : (navConfig["dry-run"] ?? false),
     quiet: options.quiet !== undefined ? options.quiet : (navConfig.quiet ?? false),

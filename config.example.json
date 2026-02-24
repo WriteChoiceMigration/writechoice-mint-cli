@@ -57,7 +57,7 @@
   "readme": {
     "nav": {
       "docs": "docs.json",
-      "base": "docs",
+      "base": true,
       "skip_levels": [],
       "dry-run": false,
       "quiet": false
