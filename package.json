@@ -1,6 +1,6 @@
 {
   "name": "@writechoice/mint-cli",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "CLI tool for Mintlify documentation validation and utilities",
   "main": "src/index.js",
   "type": "module",
