@@ -54,6 +54,16 @@
     "quiet": false
   },
 
+  "readme": {
+    "nav": {
+      "docs": "docs.json",
+      "base": "docs",
+      "skip_levels": [],
+      "dry-run": false,
+      "quiet": false
+    }
+  },
+
   "scrape": {
     "urls_file": "urls.json",
     "output": "output",

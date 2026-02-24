@@ -229,6 +229,27 @@ program
     await scrape(mergedOptions);
   });
 
+// Readme command group
+const readme = program.command("readme").description("Documentation structure commands");
+
+readme
+  .command("nav")
+  .description("Restructure MDX files to match docs.json navigation hierarchy")
+  .option("--docs <file>", "Path to docs.json (default: docs.json)")
+  .option("--base <dir>", "Base directory prepended to all new paths (default: docs)")
+  .option("--skip-level <n>", "Skip a navigation level by number (repeatable, 1-based)", (v, acc) => [...acc, parseInt(v, 10)], [])
+  .option("--dry-run", "Preview moves without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeNavConfig } = await import("../src/utils/config.js");
+    const { navRestructure } = await import("../src/commands/readme/nav.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeNavConfig(options, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await navRestructure(mergedOptions);
+  });
+
 // Metadata command
 program
   .command("metadata [baseUrl]")

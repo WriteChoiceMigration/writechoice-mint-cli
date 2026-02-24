@@ -40,3 +40,5 @@ output/
 images/
 config.json
 urls.json
+docs.json
+redirects.json

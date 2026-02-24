@@ -252,6 +252,32 @@ export function mergeImportsConfig(options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the readme nav command
+ *
+ * @param {Object} options - CLI options (docs, base, skipLevel, dryRun, quiet)
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeNavConfig(options, config) {
+  const navConfig = config?.readme?.nav || {};
+
+  // skipLevel may be a single value or an array (Commander collects repeated flags into an array)
+  const cliSkipLevels = options.skipLevel != null
+    ? (Array.isArray(options.skipLevel) ? options.skipLevel : [parseInt(options.skipLevel, 10)])
+    : [];
+  const configSkipLevels = Array.isArray(navConfig.skip_levels) ? navConfig.skip_levels : [];
+  const skipLevels = cliSkipLevels.length ? cliSkipLevels : configSkipLevels;
+
+  return {
+    docs: options.docs || navConfig.docs || "docs.json",
+    base: options.base || navConfig.base || "docs",
+    skipLevels,
+    dryRun: options.dryRun !== undefined ? options.dryRun : (navConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (navConfig.quiet ?? false),
+  };
+}
+
+/**
  * Merges config file with CLI options for the scrape command
  * CLI options take precedence over config file
  *
