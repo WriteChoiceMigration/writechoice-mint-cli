@@ -252,14 +252,14 @@ export function mergeImportsConfig(options, config) {
 }
 
 /**
- * Merges config file with CLI options for the readme nav command
+ * Merges config file with CLI options for the nav folders command
  *
  * @param {Object} options - CLI options (docs, base, skipLevel, dryRun, quiet)
  * @param {Object|null} config - Loaded config object
  * @returns {Object} Merged options
  */
 export function mergeNavConfig(options, config) {
-  const navConfig = config?.readme?.nav || {};
+  const navConfig = config?.nav?.folders || {};
 
   // skipLevel may be a single value or an array (Commander collects repeated flags into an array)
   const cliSkipLevels = options.skipLevel != null
@@ -283,14 +283,14 @@ export function mergeNavConfig(options, config) {
 }
 
 /**
- * Merges config file with CLI options for the nav redirects command
+ * Merges config file with CLI options for the fix redirects command
  *
  * @param {Object} options - CLI options (docs, dir, dryRun, quiet)
  * @param {Object|null} config - Loaded config object
  * @returns {Object} Merged options
  */
 export function mergeNavRedirectsConfig(options, config) {
-  const navConfig = config?.nav?.redirects || {};
+  const navConfig = config?.fix?.redirects || {};
   return {
     docs: options.docs || navConfig.docs || "docs.json",
     dir: options.dir || navConfig.dir || undefined,

@@ -54,11 +54,26 @@
     "quiet": false
   },
 
-  "readme": {
-    "nav": {
+  "nav": {
+    "folders": {
       "docs": "docs.json",
       "base": true,
       "skip_levels": [],
+      "rename": false,
+      "dry-run": false,
+      "quiet": false
+    },
+    "root": {
+      "docs": "docs.json",
+      "dry-run": false,
+      "quiet": false
+    }
+  },
+
+  "fix": {
+    "redirects": {
+      "docs": "docs.json",
+      "dir": null,
       "dry-run": false,
       "quiet": false
     }
