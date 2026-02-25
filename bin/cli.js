@@ -351,10 +351,10 @@ async function checkForUpdates() {
     const currentVersion = packageJson.version;
 
     if (latestVersion && latestVersion !== currentVersion) {
-      console.log(`\n┌─────────────────────────────────────────────────┐`);
-      console.log(`│  Update available: ${currentVersion} → ${latestVersion.padEnd(24)} │`);
-      console.log(`│  Run: writechoice update                       │`);
-      console.log(`└─────────────────────────────────────────────────┘\n`);
+      console.log(`\n─────────────────────────────────────────────────`);
+      console.log(`  Update available: ${currentVersion} → ${latestVersion.padEnd(24)} `);
+      console.log(`  Run: writechoice update                       `);
+      console.log(`─────────────────────────────────────────────────\n`);
     }
   } catch (error) {
     // Silently fail - don't interrupt the user
