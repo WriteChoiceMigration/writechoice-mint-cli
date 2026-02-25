@@ -228,5 +228,5 @@ Use --force to overwrite the existing file:
 ## See Also
 
 - [Configuration File Guide](../config-file.md) - Complete config.json documentation
-- [Check Links Command](./check-links.md) - Link validation
-- [Check Parse Command](./check-parse.md) - MDX parsing validation
+- [Check Links Command](./check/links.md) - Link validation
+- [Check Parse Command](./check/parse.md) - MDX parsing validation

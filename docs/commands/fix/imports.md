@@ -128,6 +128,6 @@ docs/api/reference.mdx
 
 ## See Also
 
-- [Fix Parse Command](./fix-parse.md) — Fix MDX parsing errors
-- [Fix Images Command](./fix-images.md) — Wrap images in Frame components
-- [Configuration File](../config-file.md) — Configure default settings
+- [Fix Parse Command](./parse.md) — Fix MDX parsing errors
+- [Fix Images Command](./images.md) — Wrap images in Frame components
+- [Configuration File](../../config-file.md) — Configure default settings

@@ -271,6 +271,6 @@ jobs:
 
 ## See Also
 
-- [Check Links Command](./check-links.md) - Generate validation reports
-- [Configuration File](../config-file.md) - Configure default settings
-- [Publishing Guide](../publishing.md) - Publishing workflow
+- [Check Links Command](../check/links.md) - Generate validation reports
+- [Configuration File](../../config-file.md) - Configure default settings
+- [Publishing Guide](../../publishing.md) - Publishing workflow

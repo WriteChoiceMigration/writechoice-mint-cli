@@ -352,6 +352,6 @@ jobs:
 
 ## See Also
 
-- [Check Parse Command](./check-parse.md) - Generate parse validation reports
-- [Fix Links Command](./fix-links.md) - Auto-fix broken anchor links
-- [Configuration File](../config-file.md) - Configure default settings
+- [Check Parse Command](../check/parse.md) - Generate parse validation reports
+- [Fix Links Command](./links.md) - Auto-fix broken anchor links
+- [Configuration File](../../config-file.md) - Configure default settings

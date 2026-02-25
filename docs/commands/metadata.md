@@ -259,6 +259,6 @@ The following directories are skipped automatically:
 
 ## See Also
 
-- [Fix H1 Command](./fix-h1.md) — Remove duplicate H1 headings
-- [Fix Images Command](./fix-images.md) — Wrap standalone images in `<Frame>`
+- [Fix H1 Command](./fix/h1.md) — Remove duplicate H1 headings
+- [Fix Images Command](./fix/images.md) — Wrap standalone images in `<Frame>`
 - [Configuration File](../config-file.md) — Configure default settings

@@ -19,7 +19,7 @@ writechoice fix inlineimages [options]
 
 ## How It Works
 
-The command scans MDX files line by line, looking for image syntax that shares a line with other text content. Those images are converted to `<InlineImage>` components. Images that are alone on their own line (standalone) are left unchanged — use [`fix images`](./fix-images.md) for those.
+The command scans MDX files line by line, looking for image syntax that shares a line with other text content. Those images are converted to `<InlineImage>` components. Images that are alone on their own line (standalone) are left unchanged — use [`fix images`](./images.md) for those.
 
 ### What Gets Converted
 
@@ -98,7 +98,7 @@ The command never touches images inside:
 ![standalone image](url)
 ```
 
-Use [`fix images`](./fix-images.md) to wrap those in `<Frame>`.
+Use [`fix images`](./images.md) to wrap those in `<Frame>`.
 
 ## Examples
 
@@ -301,6 +301,6 @@ The following directories are skipped automatically:
 
 ## See Also
 
-- [Fix Images Command](./fix-images.md) — Wrap standalone images in `<Frame>`
-- [Fix Codeblocks Command](./fix-codeblocks.md) — Fix code block flags
-- [Configuration File](../config-file.md) — Configure default settings
+- [Fix Images Command](./images.md) — Wrap standalone images in `<Frame>`
+- [Fix Codeblocks Command](./codeblocks.md) — Fix code block flags
+- [Configuration File](../../config-file.md) — Configure default settings

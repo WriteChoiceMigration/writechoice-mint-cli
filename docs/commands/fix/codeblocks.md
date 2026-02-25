@@ -257,6 +257,6 @@ The following directories are skipped automatically:
 
 ## See Also
 
-- [Fix Parse Command](./fix-parse.md) — Fix MDX parsing errors
-- [Fix Links Command](./fix-links.md) — Fix broken anchor links
-- [Configuration File](../config-file.md) — Configure default settings
+- [Fix Parse Command](./parse.md) — Fix MDX parsing errors
+- [Fix Links Command](./links.md) — Fix broken anchor links
+- [Configuration File](../../config-file.md) — Configure default settings

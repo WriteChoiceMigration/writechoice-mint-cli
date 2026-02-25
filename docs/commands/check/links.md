@@ -195,7 +195,7 @@ The Markdown report provides a human-readable summary with:
 4. **Re-validate**:
    Run validation again to verify all fixes worked correctly
 
-For more details on fixing links, see the [Fix Links Command](./fix-links.md) documentation.
+For more details on fixing links, see the [Fix Links Command](../fix/links.md) documentation.
 
 ## Performance Considerations
 

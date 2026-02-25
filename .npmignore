@@ -1,2 +1,13 @@
 docs/
 publish.sh
+
+test*.mdx
+mdx_errors_report.*
+links_report.*
+python_scraper/
+output/
+images/
+config.json
+urls.json
+docs.json
+redirects.json

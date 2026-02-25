@@ -249,6 +249,23 @@ nav
   });
 
 nav
+  .command("redirects")
+  .description("Replace stale redirect sources with destinations in MDX files")
+  .option("--docs <file>", "Path to docs.json (default: docs.json)")
+  .option("-d, --dir <path>", "Directory to scan for MDX files (default: cwd)")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeNavRedirectsConfig } = await import("../src/utils/config.js");
+    const { navRedirects } = await import("../src/commands/nav/redirects.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeNavRedirectsConfig(options, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await navRedirects(mergedOptions);
+  });
+
+nav
   .command("folders")
   .description("Restructure MDX files to match docs.json navigation hierarchy")
   .option("--docs <file>", "Path to docs.json (default: docs.json)")
