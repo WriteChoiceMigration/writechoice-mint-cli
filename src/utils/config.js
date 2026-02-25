@@ -283,6 +283,22 @@ export function mergeNavConfig(options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the nav root command
+ *
+ * @param {Object} options - CLI options (docs, dryRun, quiet)
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeNavRootConfig(options, config) {
+  const navConfig = config?.nav?.root || {};
+  return {
+    docs: options.docs || navConfig.docs || "docs.json",
+    dryRun: options.dryRun !== undefined ? options.dryRun : (navConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (navConfig.quiet ?? false),
+  };
+}
+
+/**
  * Merges config file with CLI options for the scrape command
  * CLI options take precedence over config file
  *
