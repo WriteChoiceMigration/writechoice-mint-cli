@@ -277,6 +277,7 @@ export function mergeNavConfig(options, config) {
     base,
     skipLevels,
     dryRun: options.dryRun !== undefined ? options.dryRun : (navConfig["dry-run"] ?? false),
+    rename: options.rename !== undefined ? options.rename : (navConfig.rename ?? false),
     quiet: options.quiet !== undefined ? options.quiet : (navConfig.quiet ?? false),
   };
 }
