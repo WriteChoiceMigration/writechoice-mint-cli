@@ -7,7 +7,7 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, renameSync } from "fs";
-import { resolve, join, dirname, basename } from "path";
+import { resolve, join, dirname, basename, relative } from "path";
 import chalk from "chalk";
 
 /**
@@ -16,6 +16,7 @@ import chalk from "chalk";
  * @param {string} options.docs - Path to docs.json (default: "docs.json")
  * @param {string} options.base - Base directory for output paths (default: "docs")
  * @param {number[]} options.skipLevels - 1-based level numbers to skip
+ * @param {boolean} options.rename - Rename files using kebab-case of frontmatter title
  * @param {boolean} options.dryRun
  * @param {boolean} options.quiet
  */
@@ -25,6 +26,7 @@ export async function navRestructure(options) {
   const docsFile = resolve(repoRoot, options.docs || "docs.json");
   const base = options.base || "docs";
   const skipLevels = options.skipLevels || [];
+  const rename = options.rename || false;
   const dryRun = options.dryRun || false;
 
   // Load docs.json
@@ -50,6 +52,7 @@ export async function navRestructure(options) {
   if (verbose) {
     console.log(chalk.cyan("\nAnalyzing navigation structure..."));
     if (dryRun) console.log(chalk.yellow("  [dry-run] No files will be moved\n"));
+    if (rename) console.log(chalk.dim("  Renaming files from frontmatter title\n"));
     if (skipLevels.length) console.log(chalk.dim(`  Skipping levels: ${skipLevels.join(", ")}\n`));
   }
 
@@ -59,8 +62,23 @@ export async function navRestructure(options) {
 
   traverseNav(navigation, (pageStr, parentNames) => {
     const oldAbsPath = resolve(repoRoot, pageStr + ".mdx");
-    const newRelPath = computeNewPath(pageStr, parentNames, base, skipLevels);
-    const newAbsPath = resolve(repoRoot, newRelPath);
+    let newRelPath = computeNewPath(pageStr, parentNames, base, skipLevels);
+    let newAbsPath = resolve(repoRoot, newRelPath);
+
+    // Apply rename: replace filename with kebab-case of frontmatter title
+    if (rename && existsSync(oldAbsPath)) {
+      const content = readFileSync(oldAbsPath, "utf-8");
+      const title = extractFrontmatterTitle(content);
+      if (title) {
+        const titleSlug = slugify(title);
+        const dir = dirname(newAbsPath);
+        const dirBasename = basename(dir);
+        const finalName = titleSlug === dirBasename ? "index" : titleSlug;
+        newAbsPath = join(dir, finalName + ".mdx");
+        newRelPath = relative(repoRoot, newAbsPath);
+      }
+    }
+
     const newPageStr = newRelPath.replace(/\.mdx$/, "");
 
     // Already in the right place
@@ -212,6 +230,19 @@ export function slugify(name) {
     .replace(/[^a-z0-9-]/g, "")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+/**
+ * Extracts the title value from MDX frontmatter.
+ * Handles quoted (`title: "Foo"`) and unquoted (`title: Foo`) forms.
+ * @param {string} content - File content
+ * @returns {string|null}
+ */
+function extractFrontmatterTitle(content) {
+  const fmMatch = content.match(/^---\s*\n([\s\S]*?)\n---/);
+  if (!fmMatch) return null;
+  const titleMatch = fmMatch[1].match(/^title:\s*["']?(.+?)["']?\s*$/m);
+  return titleMatch ? titleMatch[1].trim() : null;
 }
 
 /**
