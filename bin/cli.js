@@ -3,7 +3,7 @@
 import { Command } from "commander";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
-import { readFileSync } from "fs";
+import { readFileSync, realpathSync } from "fs";
 import { execSync } from "child_process";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,14 +12,18 @@ const __dirname = dirname(__filename);
 // Read package.json for version
 const packageJson = JSON.parse(readFileSync(join(__dirname, "..", "package.json"), "utf-8"));
 
+// Detect npm link: a linked install resolves to a path outside node_modules
+const isLinked = !realpathSync(__filename).includes("node_modules");
+const installLabel = isLinked ? " [npm link]" : "";
+
 const program = new Command();
 
 program
   .name("writechoice")
   .description(
-    "@writechoice/mint-cli@" + packageJson.version + "\n\nCLI tool for Mintlify documentation validation and utilities",
+    "@writechoice/mint-cli@" + packageJson.version + installLabel + "\n\nCLI tool for Mintlify documentation validation and utilities",
   )
-  .version(packageJson.version, "-v, --version", "Output the current version");
+  .version(packageJson.version + installLabel, "-v, --version", "Output the current version");
 
 // Validate command
 const check = program.command("check").description("Validation commands for documentation");
