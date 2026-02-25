@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "dist",
+    "rootDir": "..",
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "sourceMap": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*", "../src/shared/types.ts", "../src/renderer/utils/scopingReport.ts", "../src/renderer/utils/scopingScripts.ts", "../src/renderer/utils/scopingDetection.ts"],
+  "exclude": ["node_modules", "dist"]
+}

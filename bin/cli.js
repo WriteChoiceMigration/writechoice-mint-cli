@@ -269,6 +269,41 @@ program
     await runMetadata(mergedOptions);
   });
 
+// Scope command
+program
+  .command("scope <urls...>")
+  .description("Analyze documentation site(s) and generate a scoping report for migration")
+  .option("-c, --concurrency <number>", "Max concurrent pages to analyze", "3")
+  .option("-m, --max-pages <number>", "Max pages to analyze per site", "2000")
+  .option("-o, --output <path>", "Output file path (prints to stdout if omitted)")
+  .option("-f, --format <format>", "Output format: json or text", "text")
+  .option("--content-selector <selector>", "CSS selector for main content area")
+  .option("--scope-prefix <prefix>", "URL prefix to limit crawl scope")
+  .option("--auth <credentials>", "HTTP auth credentials (user:pass)")
+  .option("--no-headless", "Run browser in visible (headed) mode")
+  .option("-V, --verbose", "Enable verbose logging", false)
+  .option("--quiet", "Quiet mode - minimal output", false)
+  .action(async (urls, options) => {
+    const { runScope } = await import("../src/commands/scope/index.js");
+
+    const scopeOptions = {
+      concurrency: parseInt(options.concurrency, 10),
+      maxPages: parseInt(options.maxPages, 10),
+      output: options.output,
+      format: options.format,
+      contentSelector: options.contentSelector,
+      scopePrefix: options.scopePrefix,
+      auth: options.auth,
+      headless: options.headless !== false,
+      verbose: options.verbose ?? false,
+      quiet: options.quiet ?? false,
+    };
+
+    scopeOptions.verbose = scopeOptions.verbose || !scopeOptions.quiet;
+
+    await runScope(urls, scopeOptions);
+  });
+
 // Config command
 program
   .command("config")
