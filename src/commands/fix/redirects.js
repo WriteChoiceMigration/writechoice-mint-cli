@@ -1,5 +1,5 @@
 /**
- * wc nav redirects — Apply docs.json redirects to MDX files
+ * wc fix redirects — Apply docs.json redirects to MDX files
  *
  * Reads the redirects array from docs.json and replaces stale source paths
  * with their destination paths in all MDX files (markdown links and href attributes).

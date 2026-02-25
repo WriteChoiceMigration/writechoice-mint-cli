@@ -1,4 +1,4 @@
-# wc nav redirects
+# wc fix redirects
 
 Reads the `redirects` array from `docs.json` and replaces stale source paths with their destination paths inside MDX files. Fixes internal links that still point to old URLs after a nav restructure.
 

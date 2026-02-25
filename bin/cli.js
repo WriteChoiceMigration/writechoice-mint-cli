@@ -85,6 +85,24 @@ check
 // Fix command
 const fix = program.command("fix").description("Fix issues found in validation reports");
 
+// Fix redirects subcommand
+fix
+  .command("redirects")
+  .description("Replace stale redirect sources with destinations in MDX files")
+  .option("--docs <file>", "Path to docs.json (default: docs.json)")
+  .option("-d, --dir <path>", "Directory to scan for MDX files (default: cwd)")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeNavRedirectsConfig } = await import("../src/utils/config.js");
+    const { navRedirects } = await import("../src/commands/fix/redirects.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeNavRedirectsConfig(options, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await navRedirects(mergedOptions);
+  });
+
 // Fix links subcommand
 fix
   .command("links")
@@ -246,23 +264,6 @@ nav
     const mergedOptions = mergeNavRootConfig(options, config);
     mergedOptions.verbose = !mergedOptions.quiet;
     await navRoot(mergedOptions);
-  });
-
-nav
-  .command("redirects")
-  .description("Replace stale redirect sources with destinations in MDX files")
-  .option("--docs <file>", "Path to docs.json (default: docs.json)")
-  .option("-d, --dir <path>", "Directory to scan for MDX files (default: cwd)")
-  .option("--dry-run", "Preview changes without writing files")
-  .option("--quiet", "Suppress terminal output")
-  .action(async (options) => {
-    const { loadConfig, mergeNavRedirectsConfig } = await import("../src/utils/config.js");
-    const { navRedirects } = await import("../src/commands/nav/redirects.js");
-
-    const config = loadConfig();
-    const mergedOptions = mergeNavRedirectsConfig(options, config);
-    mergedOptions.verbose = !mergedOptions.quiet;
-    await navRedirects(mergedOptions);
   });
 
 nav

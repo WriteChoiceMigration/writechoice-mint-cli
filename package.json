@@ -6,7 +6,7 @@
   "type": "module",
   "bin": {
     "writechoice": "bin/cli.js",
-    "wc": "bin/cli.js"
+    "wcc": "bin/cli.js"
   },
   "scripts": {
     "test": "node --test 'test/**/*.test.js'",
