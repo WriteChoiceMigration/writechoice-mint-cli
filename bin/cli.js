@@ -297,9 +297,11 @@ nav
     await navRestructure(mergedOptions);
   });
 
-// Docusaurus command
-program
-  .command("docusaurus <folder>")
+// Docusaurus command group
+const docusaurus = program.command("docusaurus").description("Docusaurus conversion commands");
+
+docusaurus
+  .command("convert <folder>")
   .description("Convert Docusaurus docs to Mintlify MDX format")
   .option("-o, --output <dir>", "Output directory (default: ./mintlify)")
   .option("--dry-run", "Preview conversions without writing files")
@@ -307,6 +309,17 @@ program
   .action(async (folder, options) => {
     const { convertDocusaurus } = await import("../src/commands/docusaurus/index.js");
     await convertDocusaurus(folder, options);
+  });
+
+docusaurus
+  .command("nav <file>")
+  .description("Convert a Docusaurus sidebars.js to Mintlify navigation JSON")
+  .option("--prefix <path>", "Prepend a path prefix to all page IDs (e.g. docs)")
+  .option("-o, --output <file>", "Output file (default: nav.json)")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (file, options) => {
+    const { docusaurusNav } = await import("../src/commands/docusaurus/nav.js");
+    await docusaurusNav(file, options);
   });
 
 // Metadata command

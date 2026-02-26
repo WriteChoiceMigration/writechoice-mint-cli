@@ -25,8 +25,8 @@ const ADMONITION_MAP = {
   success: "Check",
 };
 
-// Frontmatter keys to keep (everything else is stripped)
-const KEEP_FRONTMATTER = new Set(["title", "description", "sidebarTitle"]);
+// Docusaurus frontmatter keys to rename → Mintlify equivalents
+const RENAME_FRONTMATTER = { sidebar_label: "sidebarTitle" };
 
 // ---------------------------------------------------------------------------
 // Entry point
@@ -177,38 +177,29 @@ function convertFile(content, filePath, sourceRoot, staticRoot) {
 }
 
 // ---------------------------------------------------------------------------
-// 1. Frontmatter — keep only title + description, resolve title from sidebar_label
+// 1. Frontmatter — keep all keys, rename Docusaurus-specific keys to Mintlify equivalents
 // ---------------------------------------------------------------------------
 
 function convertFrontmatter(content) {
   const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!fmMatch) return content;
 
-  const rawFm = fmMatch[1];
-  const pairs = parseFrontmatterPairs(rawFm);
+  let rawFm = fmMatch[1];
 
-  // Use sidebar_label as title fallback if no title
-  if (!pairs.title && pairs.sidebar_label) {
-    pairs.title = pairs.sidebar_label;
+  // Rename keys in-place (preserves multi-line YAML values)
+  for (const [from, to] of Object.entries(RENAME_FRONTMATTER)) {
+    const re = new RegExp(`^${from}:`, "m");
+    if (re.test(rawFm)) {
+      if (new RegExp(`^${to}:`, "m").test(rawFm)) {
+        // Target key already exists — remove the Docusaurus duplicate
+        rawFm = rawFm.replace(new RegExp(`^${from}:.*\\n?`, "m"), "");
+      } else {
+        rawFm = rawFm.replace(re, `${to}:`);
+      }
+    }
   }
 
-  const kept = Object.entries(pairs)
-    .filter(([k]) => KEEP_FRONTMATTER.has(k))
-    .map(([k, v]) => `${k}: ${v}`)
-    .join("\n");
-
-  const newFm = kept ? `---\n${kept}\n---` : "";
-  return newFm + content.slice(fmMatch[0].length);
-}
-
-/** Very simple YAML key: value parser (handles quoted and unquoted values). */
-function parseFrontmatterPairs(raw) {
-  const pairs = {};
-  for (const line of raw.split("\n")) {
-    const m = line.match(/^(\w[\w_]*):\s*(.*)$/);
-    if (m) pairs[m[1]] = m[2].trim();
-  }
-  return pairs;
+  return `---\n${rawFm}\n---` + content.slice(fmMatch[0].length);
 }
 
 // ---------------------------------------------------------------------------
