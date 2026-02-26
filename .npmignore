@@ -11,3 +11,5 @@ config.json
 urls.json
 docs.json
 redirects.json
+mintlify/
+/docusaurus/

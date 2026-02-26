@@ -297,6 +297,18 @@ nav
     await navRestructure(mergedOptions);
   });
 
+// Docusaurus command
+program
+  .command("docusaurus <folder>")
+  .description("Convert Docusaurus docs to Mintlify MDX format")
+  .option("-o, --output <dir>", "Output directory (default: ./mintlify)")
+  .option("--dry-run", "Preview conversions without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (folder, options) => {
+    const { convertDocusaurus } = await import("../src/commands/docusaurus/index.js");
+    await convertDocusaurus(folder, options);
+  });
+
 // Metadata command
 program
   .command("metadata [baseUrl]")
