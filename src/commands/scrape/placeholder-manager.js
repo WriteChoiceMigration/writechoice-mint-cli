@@ -58,7 +58,7 @@ export class PlaceholderManager {
   createComponentPlaceholder(type, content, props = {}) {
     const propStr = Object.entries(props)
       .map(([k, v]) => `${k}="${v}"`)
-      .join("|");
+      .join(" ");
     return `${type}|OPEN|${propStr}|\n${content}\n${type}|CLOSE`;
   }
 
@@ -83,7 +83,7 @@ export class PlaceholderManager {
       CODEGROUP: "CodeGroup",
     };
 
-    const pattern = /(\w+)\|OPEN\|(.*?)\|\n([\s\S]*?)\n\1\|CLOSE/g;
+    const pattern = /(\w+)\|OPEN\|(.*?)\|\s*([\s\S]*?)\s*\1\|CLOSE/g;
 
     return text.replace(pattern, (match, type, propsStr, content) => {
       const componentName = typeMap[type] || type;
@@ -91,16 +91,15 @@ export class PlaceholderManager {
       // Build props string for JSX
       let jsxProps = "";
       if (propsStr.trim()) {
-        // Props are already in key="value" format, just space-separate them
-        jsxProps = " " + propsStr.trim().replace(/\|/g, " ");
+        jsxProps = " " + propsStr.trim();
       }
 
       // For callouts, handle CALLOUTTITLE: prefix
       let innerContent = content.trim();
-      const titleMatch = innerContent.match(/^CALLOUTTITLE:(.+?)(\n\n|$)([\s\S]*)/);
+      const titleMatch = innerContent.match(/^CALLOUTTITLE:(.*?)\|TITLEBREAK\|([\s\S]*)/);
       if (titleMatch) {
         const title = titleMatch[1].trim();
-        const rest = titleMatch[3] ? titleMatch[3].trim() : "";
+        const rest = titleMatch[2] ? titleMatch[2].trim() : "";
         innerContent = `**${title}**${rest ? "\n\n" + rest : ""}`;
       }
 

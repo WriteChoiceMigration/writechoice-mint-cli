@@ -62,6 +62,10 @@ export async function convertPage(html, pageUrl, scrapeConfig = {}) {
   if (!title) {
     title = $("title").first().text().trim();
   }
+  // Strip site name suffix (e.g. "Page Title | Site Name" → "Page Title")
+  if (title.includes(" | ")) {
+    title = title.split(" | ")[0].trim();
+  }
 
   // const metaDesc = $("meta[name='description']").attr("content") || "";
   const ogTitle = $("meta[property='og:title']").attr("content") || "";
@@ -90,11 +94,11 @@ export async function convertPage(html, pageUrl, scrapeConfig = {}) {
     }
   }
 
-  // Step 4: Process components
-  processAllComponents($doc, componentsConfig, pm);
+  // Step 4: Process components (imgProcessor needed early for card img resolution)
+  const imgProcessor = new ImageProcessor(pageUrl, imageConfig, outputDir, dryRun);
+  processAllComponents($doc, componentsConfig, pm, imgProcessor);
 
   // Step 5 & 6: Preserve HTML + process images
-  const imgProcessor = new ImageProcessor(pageUrl, imageConfig, outputDir, dryRun);
   preserveAll($doc, htmlPreserveElements, htmlPreserveCustom, pm, imgProcessor);
   imgProcessor.processImages($doc, pm);
 
@@ -122,6 +126,7 @@ export async function convertPage(html, pageUrl, scrapeConfig = {}) {
 
   // Step 14: Add YAML frontmatter
   const metaTags = {};
+  if (pageUrl) metaTags.permalink = pageUrl;
   // if (metaDesc) metaTags.description = metaDesc;
   if (ogTitle) metaTags["og:title"] = ogTitle;
   if (ogDesc) metaTags["og:description"] = ogDesc;

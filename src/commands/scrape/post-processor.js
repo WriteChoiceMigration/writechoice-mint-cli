@@ -59,8 +59,10 @@ export function removeDuplicateH1(text, title) {
  * @returns {string}
  */
 export function fixComponentSpacing(text) {
+  // Normalize spaces/tabs between a closing and opening MDX tag to a blank line
+  let result = text.replace(/(<\/[A-Z][a-zA-Z]*>)[ \t]+(<[A-Z][a-zA-Z]*[\s>])/g, "$1\n\n$2");
   // Add blank line before opening MDX tags that don't have one
-  let result = text.replace(/([^\n])\n(<[A-Z][a-zA-Z]*[\s>])/g, "$1\n\n$2");
+  result = result.replace(/([^\n])\n(<[A-Z][a-zA-Z]*[\s>])/g, "$1\n\n$2");
   // Add blank line after closing MDX tags that don't have one
   result = result.replace(/(<\/[A-Z][a-zA-Z]*>)\n([^\n])/g, "$1\n\n$2");
   return result;

@@ -129,7 +129,7 @@ function processLine(line) {
   // ── Replace inline markdown images ──────────────────────────────────────────
   // Negative lookbehind (?<!\[) prevents matching linked images [![alt](url)](link)
   let count = 0;
-  text = text.replace(/(?<!\[)!\[([^\]\n]*)\]\(([^\)\n]+)\)/g, (match, alt, src) => {
+  text = text.replace(/(?<!\[)!\[([^\]\n]*)\]\(([^\)\n]+)\)/g, (_match, alt, src) => {
     count++;
     const altProp = alt.trim() ? ` alt="${alt.trim()}"` : "";
     return `<InlineImage src="${src}"${altProp} />`;
@@ -161,6 +161,32 @@ function processLine(line) {
 export function processContent(content) {
   let text = content;
 
+  // 0. Convert inline <Frame><img .../></Frame> blocks to <InlineImage> when
+  //    the line also contains other text (i.e. the image is truly inline).
+  //    Must run before step 1 so Frame tokenization doesn't swallow them.
+  let inlineFrameCount = 0;
+  text = text
+    .split("\n")
+    .map((line) => {
+      if (!/<Frame/i.test(line)) return line;
+
+      // Check if this line has content besides Frame blocks
+      const withoutFrames = line.replace(/<Frame(?:\s[^>]*)?>.*?<\/Frame>/gi, "").trim();
+      if (withoutFrames === "") return line; // standalone — leave for fix images
+
+      // Inline frame(s) on this line — convert each Frame+img to InlineImage
+      return line.replace(
+        /<Frame(?:\s[^>]*)?>(<img\b([^>]*?)(\s*\/?)>)<\/Frame>/gi,
+        (match, _imgTag, attrs) => {
+          if (!attrs.includes("src")) return match;
+          inlineFrameCount++;
+          const cleanAttrs = attrs.trimEnd().replace(/\/$/, "").trimEnd();
+          return `<InlineImage${cleanAttrs} />`;
+        }
+      );
+    })
+    .join("\n");
+
   // 1. Protect multi-line regions
   const frameResult = tokenize(FRAME_RE, text, "FRAME");
   text = frameResult.text;
@@ -175,7 +201,7 @@ export function processContent(content) {
   text = fenceResult.text;
 
   // 2. Process line by line
-  let totalCount = 0;
+  let totalCount = inlineFrameCount;
   const lines = text.split("\n");
   const processedLines = lines.map((line) => {
     const { line: newLine, count } = processLine(line);

@@ -56,7 +56,8 @@ export async function fetchHtmlPlaywright(url, playwrightConfig = {}) {
       await page.waitForTimeout(waitTime * 1000);
     }
 
-    return page.content();
+    const html = await page.content();
+    return html;
   } finally {
     await browser.close();
   }

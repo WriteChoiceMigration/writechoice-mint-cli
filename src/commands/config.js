@@ -45,6 +45,41 @@ export async function generateConfig(options) {
       "file": null,
       "dir": null,
       "quiet": false
+    },
+
+    "scrape": {
+      "urls_file": "urls.json",
+      "output": "output",
+      "concurrency": 3,
+      "playwright": false,
+      "playwright_config": {
+        "headless": true,
+        "wait_for_selector": null,
+        "wait_time": 3,
+        "page_load_timeout": 30
+      },
+      "dry-run": false,
+      "quiet": false,
+      "content_selector": "body",
+      "title_selector": "h1",
+      "elements_to_remove": [],
+      "html_preserve_elements": ["table", "iframe"],
+      "html_preserve_custom": [],
+      "images": {
+        "strategy": "keep_remote",
+        "folder": "images"
+      },
+      "codeblock": {
+        "language_class_patterns": ["language-", "lang-", "highlight-"]
+      },
+      "components": {
+        "callouts": [],
+        "accordion": null,
+        "card": null,
+        "tabs": null,
+        "codegroup": null,
+        "numberedList": null
+      }
     }
   };
 
@@ -57,11 +92,14 @@ export async function generateConfig(options) {
       console.log("1. Edit config.json and update the placeholder values:");
       console.log(chalk.cyan("   - source:") + " Your production documentation URL");
       console.log(chalk.cyan("   - target:") + " Your validation environment URL (e.g., localhost:3000)");
-      console.log("\n2. Run validation commands without arguments:");
-      console.log(chalk.gray("   writechoice check links"));
-      console.log(chalk.gray("   writechoice check parse"));
+      console.log(chalk.cyan("   - scrape.content_selector:") + " CSS selector for the main content area");
+      console.log("\n2. Run commands without arguments:");
+      console.log(chalk.gray("   wc scrape"));
+      console.log(chalk.gray("   wc check links"));
+      console.log(chalk.gray("   wc check parse"));
       console.log("\n3. For more details, see:");
       console.log(chalk.gray("   docs/config-file.md"));
+      console.log(chalk.gray("   docs/commands/scrape.md"));
     }
   } catch (error) {
     console.error(chalk.red(`\n✗ Error creating config.json: ${error.message}`));

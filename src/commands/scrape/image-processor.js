@@ -98,6 +98,22 @@ export class ImageProcessor {
   }
 
   /**
+   * Resolves a single image URL: downloads it if needed and returns the final MDX src.
+   * Useful for images referenced as props (e.g. Card img) rather than <img> elements.
+   * @param {string} src - Raw image URL (may be relative)
+   * @returns {string} Final src to use in MDX
+   */
+  resolveUrl(src) {
+    if (!src) return src;
+    const absoluteSrc = makeAbsolute(src, this.pageUrl);
+    const { savePath, mdxSrc } = getImagePath(absoluteSrc, this.pageUrl, this.strategy, this.folder);
+    if (savePath && !this.dryRun) {
+      this._downloadImage(absoluteSrc, savePath);
+    }
+    return mdxSrc || absoluteSrc;
+  }
+
+  /**
    * Downloads an image from URL and saves to savePath (relative to cwd).
    * Records failures in this.failures.
    * @param {string} url
