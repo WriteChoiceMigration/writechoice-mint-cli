@@ -27,6 +27,11 @@ export function preserveAll($, elements = [], customSelectors = [], pm, imagePro
         imageProcessor.processTableImages($, $el);
       }
 
+      // Clean up table-specific elements that don't translate to MDX
+      if (tag === "table") {
+        $el.find("colgroup").remove();
+      }
+
       const html = $.html($el);
       const placeholder = pm.store(html, tag.toUpperCase());
       $el.replaceWith(placeholder);

@@ -20,6 +20,7 @@ export function postProcessAll(text, title = "") {
   result = removeHeadingAnchors(result);
   result = removeDuplicateH1(result, title);
   result = fixComponentSpacing(result);
+  result = selfCloseBr(result);
   result = cleanExtraBlankLines(result);
   return result;
 }
@@ -66,6 +67,19 @@ export function fixComponentSpacing(text) {
   // Add blank line after closing MDX tags that don't have one
   result = result.replace(/(<\/[A-Z][a-zA-Z]*>)\n([^\n])/g, "$1\n\n$2");
   return result;
+}
+
+/**
+ * Ensures all <br> tags are self-closed as <br/>.
+ * Handles <br>, <BR>, <br >, <br/>, <br /> — all normalized to <br/>.
+ * @param {string} text
+ * @returns {string}
+ */
+export function selfCloseBr(text) {
+  return text.replace(/<br(\s[^>]*)?\s*\/?>/gi, (_, attrs) => {
+    const cleanAttrs = attrs ? attrs.replace(/\s*\/?$/, "").trimEnd() : "";
+    return `<br${cleanAttrs}/>`;
+  });
 }
 
 /**
