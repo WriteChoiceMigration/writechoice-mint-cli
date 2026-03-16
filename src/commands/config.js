@@ -25,62 +25,62 @@ export async function generateConfig(options) {
 
   // Create the config template
   const configTemplate = {
-    "$schema": "https://json-schema.org/draft-07/schema#",
-    "description": "Configuration file for WriteChoice Mint CLI",
+    $schema: "https://json-schema.org/draft-07/schema#",
+    description: "Configuration file for WriteChoice Mint CLI",
 
-    "source": "https://docs.example.com",
-    "target": "http://localhost:3000",
+    source: "https://docs.example.com",
+    target: "http://localhost:3000",
 
-    "links": {
-      "file": null,
-      "dir": null,
-      "output": "links_report",
+    links: {
+      file: null,
+      dir: null,
+      output: "links_report",
       "dry-run": false,
-      "quiet": false,
-      "concurrency": 25,
-      "headless": true
+      quiet: false,
+      concurrency: 25,
+      headless: true,
     },
 
-    "parse": {
-      "file": null,
-      "dir": null,
-      "quiet": false
+    parse: {
+      file: null,
+      dir: null,
+      quiet: false,
     },
 
-    "scrape": {
-      "urls_file": "urls.json",
-      "output": "output",
-      "concurrency": 3,
-      "playwright": false,
-      "playwright_config": {
-        "headless": true,
-        "wait_for_selector": null,
-        "wait_time": 3,
-        "page_load_timeout": 30
+    scrape: {
+      urls_file: "urls.json",
+      output: "output",
+      concurrency: 3,
+      playwright: false,
+      playwright_config: {
+        headless: true,
+        wait_for_selector: null,
+        wait_time: 3,
+        page_load_timeout: 30,
       },
       "dry-run": false,
-      "quiet": false,
-      "content_selector": "body",
-      "title_selector": "h1",
-      "elements_to_remove": [],
-      "html_preserve_elements": ["table", "iframe"],
-      "html_preserve_custom": [],
-      "images": {
-        "strategy": "keep_remote",
-        "folder": "images"
+      quiet: false,
+      content_selector: "body",
+      title_selector: "h1",
+      elements_to_remove: [],
+      html_preserve_elements: ["table", "iframe"],
+      html_preserve_custom: [],
+      images: {
+        strategy: "download_by_page",
+        folder: "images",
       },
-      "codeblock": {
-        "language_class_patterns": ["language-", "lang-", "highlight-"]
+      codeblock: {
+        language_class_patterns: ["language-", "lang-", "highlight-"],
       },
-      "components": {
-        "callouts": [],
-        "accordion": null,
-        "card": null,
-        "tabs": null,
-        "codegroup": null,
-        "numberedList": null
-      }
-    }
+      components: {
+        callouts: [],
+        accordion: null,
+        card: null,
+        tabs: null,
+        codegroup: null,
+        numberedList: null,
+      },
+    },
   };
 
   try {
