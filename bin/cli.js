@@ -341,6 +341,16 @@ program
     await runMetadata(mergedOptions);
   });
 
+// Session command
+program
+  .command("session <url>")
+  .description("Open a browser to log in and save the session for authenticated scraping")
+  .option("-o, --output <file>", "Path to save session file (default: session.json)")
+  .action(async (url, options) => {
+    const { captureSession } = await import("../src/commands/scrape/session.js");
+    await captureSession(url, options);
+  });
+
 // Config command
 program
   .command("config")

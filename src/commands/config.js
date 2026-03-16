@@ -57,6 +57,7 @@ export async function generateConfig(options) {
         wait_for_selector: null,
         wait_time: 3,
         page_load_timeout: 30,
+        storage_state: null,
       },
       "dry-run": false,
       quiet: false,

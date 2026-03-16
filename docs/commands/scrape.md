@@ -122,6 +122,28 @@ Add a `scrape` section to your `config.json` to configure advanced options:
 }
 ```
 
+### Playwright Config
+
+Controls Playwright behavior when `playwright: true`. Also used to load a saved session for authenticated scraping (see `wc session`).
+
+| Key                  | Description                                                         | Default |
+| -------------------- | ------------------------------------------------------------------- | ------- |
+| `headless`           | Run browser in headless mode                                        | `true`  |
+| `wait_for_selector`  | Wait for this CSS selector to appear before capturing HTML          | `null`  |
+| `wait_time`          | Seconds to wait for JS to settle (used when no `wait_for_selector`) | `3`     |
+| `page_load_timeout`  | Max seconds to wait for page load                                   | `30`    |
+| `storage_state`      | Path to a session file saved by `wc session` (for auth)            | `null`  |
+
+`storage_state` works with both `playwright: true` (Playwright context) and `playwright: false` (cookies injected into native `fetch`).
+
+```json
+"playwright_config": {
+  "headless": true,
+  "wait_for_selector": "main.content",
+  "storage_state": "session.json"
+}
+```
+
 ### Content Selectors
 
 | Key                      | Description                            | Default               |
@@ -255,6 +277,35 @@ Array form (multiple patterns):
   { "selector": "ul.ordered-steps" }
 ]
 ```
+
+## Frontmatter Output
+
+Each scraped page produces a frontmatter block with:
+
+- **`title`** — extracted from `title_selector` or the `<title>` tag. Suffixes like `" | Site Name"` are stripped automatically (e.g. `"Page Title | Docs"` → `"Page Title"`).
+- **`permalink`** — the original URL of the page, added automatically.
+- **`og:title`**, **`og:description`**, **`og:image`** — included when present in the page's meta tags.
+
+```yaml
+---
+title: "Getting Started"
+permalink: "https://docs.example.com/getting-started"
+og:description: "A quick overview of the platform"
+---
+```
+
+## HTML Cleanup
+
+The following cleanup steps run automatically on all scraped output:
+
+- **`<colgroup>` removal** — stripped from preserved tables (column width definitions don't translate to MDX).
+- **`<br>` self-closing** — all `<br>` variants (`<br>`, `<br >`, `<br class="...">`) are normalized to `<br/>` throughout the output including inside tables.
+
+## Authenticated Scraping
+
+For sites behind a login page, use `wc session` to capture your authenticated session once, then reference the saved file in `playwright_config.storage_state`.
+
+See [wc session](./session.md) for the full workflow.
 
 ## Image Download Failures
 
