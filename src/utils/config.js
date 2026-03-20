@@ -316,6 +316,24 @@ export function mergeNavRootConfig(options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the docusaurus convert command
+ *
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeDocusaurusConfig(options, config) {
+  const dsConfig = config?.docusaurus || {};
+
+  return {
+    output: options.output || dsConfig.output || null,
+    dryRun: options.dryRun !== undefined ? options.dryRun : (dsConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (dsConfig.quiet ?? false),
+    headingAnchors: dsConfig.headingAnchors ?? false,
+  };
+}
+
+/**
  * Merges config file with CLI options for the scrape command
  * CLI options take precedence over config file
  *
