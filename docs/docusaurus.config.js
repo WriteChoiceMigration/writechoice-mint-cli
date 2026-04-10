@@ -11,8 +11,8 @@ const config = {
   tagline: "Validate, fix, and manage Mintlify documentation with confidence.",
   favicon: "img/favicon.ico",
 
-  url: "https://writechoicemigration.github.io",
-  baseUrl: "/writechoice-mint-cli/",
+  url: "https://cli.writechoice.io",
+  baseUrl: "/",
 
   organizationName: "WriteChoiceMigration",
   projectName: "writechoice-mint-cli",
