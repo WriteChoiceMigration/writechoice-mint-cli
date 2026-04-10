@@ -16,6 +16,7 @@ const EXCLUDED_DIRS = ["node_modules", ".git"];
 
 // Mintlify built-in components — no import required
 export const MINTLIFY_COMPONENTS = new Set([
+  "Heading",
   "Note",
   "Warning",
   "Info",

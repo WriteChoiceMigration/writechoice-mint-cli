@@ -360,6 +360,30 @@ export function mergeScrapingConfig(options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the check katex command
+ * CLI options take precedence over config file
+ *
+ * @param {string|undefined} baseUrl - Base URL from CLI positional argument
+ * @param {Object} options - CLI options (file, docs, output, concurrency, quiet)
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeKatexConfig(baseUrl, options, config) {
+  const katexConfig = config?.katex || {};
+
+  return {
+    baseUrl: baseUrl || katexConfig.url || null,
+    file: options.file || katexConfig.reportFile || null,
+    docs: options.docs || katexConfig.docs || "docs.json",
+    output: options.output || katexConfig.output || "katex_errors.json",
+    concurrency: options.concurrency != null
+      ? parseInt(options.concurrency, 10)
+      : (katexConfig.concurrency ?? 50),
+    quiet: options.quiet !== undefined ? options.quiet : (katexConfig.quiet ?? false),
+  };
+}
+
+/**
  * Validates that required fields are present
  * @param {string|undefined} baseUrl - Base URL
  * @param {string} commandName - Name of the command for error messages

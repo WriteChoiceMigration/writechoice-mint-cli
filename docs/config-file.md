@@ -135,6 +135,28 @@ Settings specific to `writechoice check parse`:
 | `dir`   | string  | Validate MDX files in specific directory | `null`  |
 | `quiet` | boolean | Suppress terminal output                 | `false` |
 
+### KaTeX Command Configuration
+
+Settings specific to `writechoice check katex`:
+
+```json
+{
+  "katex": {
+    "url": null,
+    "reportFile": "katex_errors.json"
+  }
+}
+```
+
+| Field        | Type   | Description                                                   | Default              |
+| ------------ | ------ | ------------------------------------------------------------- | -------------------- |
+| `url`        | string | Base URL for scan mode (appended with each docs.json path)    | `null`               |
+| `reportFile` | string | Report file read by recheck mode (`--file`)                   | `katex_errors.json`  |
+| `docs`       | string | Path to docs.json                                             | `docs.json`          |
+| `output`     | string | Output file for the error report                              | `katex_errors.json`  |
+| `concurrency`| number | Number of parallel HTTP requests                              | `50`                 |
+| `quiet`      | boolean| Suppress terminal output                                      | `false`              |
+
 ### Codeblocks Command Configuration
 
 Settings specific to `writechoice fix codeblocks`:
@@ -291,6 +313,11 @@ Here's a full example showing all available options:
     "file": null,
     "dir": null,
     "quiet": false
+  },
+
+  "katex": {
+    "url": null,
+    "reportFile": "katex_errors.json"
   },
 
   "codeblocks": {
@@ -594,6 +621,7 @@ links_report.json
 links_report.md
 mdx_errors_report.json
 mdx_errors_report.md
+katex_errors.json
 ```
 
 ### 3. Document Your Config

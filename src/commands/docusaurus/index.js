@@ -190,6 +190,7 @@ function convertFile(content, filePath, sourceRoot, staticRoot, options = {}) {
   content = convertImages(content, filePath, sourceRoot, staticRoot);
   content = convertSnippetImports(content, filePath, sourceRoot);
   if (options.headingAnchors) content = convertHeadingAnchors(content);
+  content = convertHtmlComments(content);
   return content;
 }
 
@@ -484,7 +485,7 @@ function convertImages(content, filePath, sourceRoot, staticRoot) {
       // Process markdown images: ![alt](src) — skip if already wrapped in <Frame>
       const processedLine = line.replace(
         /(<Frame>)?!\[([^\]]*)\]\(([^)]+)\)(<\/Frame>)?/g,
-        (match, frameOpen, alt, src, frameClose) => {
+        (match, frameOpen, alt, src) => {
           if (frameOpen) return match; // already wrapped
           const convertedSrc = convertImageSrc(src, fileDir, sourceRoot, staticRoot);
           return `<Frame>![${alt}](${convertedSrc})</Frame>`;
@@ -530,6 +531,14 @@ function convertHeadingAnchors(content) {
   }
 
   return out.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// 10. HTML comments → JSX comments   <!-- text --> → {/* text */}
+// ---------------------------------------------------------------------------
+
+function convertHtmlComments(content) {
+  return content.replace(/<!--([\s\S]*?)-->/g, (_, inner) => `{/*${inner}*/}`);
 }
 
 /**

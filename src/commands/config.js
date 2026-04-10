@@ -31,6 +31,15 @@ export async function generateConfig(options) {
     source: "https://docs.example.com",
     target: "http://localhost:3000",
 
+    katex: {
+      url: null,
+      reportFile: "katex_errors.json",
+      docs: "docs.json",
+      output: "katex_errors.json",
+      concurrency: 50,
+      quiet: false,
+    },
+
     links: {
       file: null,
       dir: null,
@@ -44,6 +53,88 @@ export async function generateConfig(options) {
     parse: {
       file: null,
       dir: null,
+      quiet: false,
+    },
+
+    codeblocks: {
+      file: null,
+      dir: null,
+      "dry-run": false,
+      quiet: false,
+      threshold: 15,
+      expandable: true,
+      lines: null,
+      wrap: null,
+    },
+
+    images: {
+      file: null,
+      dir: null,
+      "dry-run": false,
+      quiet: false,
+      download: false,
+    },
+
+    inlineimages: {
+      file: null,
+      dir: null,
+      "dry-run": false,
+      quiet: false,
+    },
+
+    h1: {
+      file: null,
+      dir: null,
+      "dry-run": false,
+      quiet: false,
+    },
+
+    imports: {
+      file: null,
+      dir: null,
+      snippets: "snippets",
+      "dry-run": false,
+      quiet: false,
+    },
+
+    metadata: {
+      file: null,
+      dir: null,
+      concurrency: 15,
+      tags: null,
+      "dry-run": false,
+      quiet: false,
+    },
+
+    nav: {
+      folders: {
+        docs: "docs.json",
+        base: true,
+        skip_levels: [],
+        rename: false,
+        "dry-run": false,
+        quiet: false,
+      },
+      root: {
+        docs: "docs.json",
+        "dry-run": false,
+        quiet: false,
+      },
+    },
+
+    fix: {
+      redirects: {
+        docs: "docs.json",
+        dir: null,
+        "dry-run": false,
+        quiet: false,
+      },
+    },
+
+    docusaurus: {
+      output: null,
+      headingAnchors: false,
+      "dry-run": false,
       quiet: false,
     },
 

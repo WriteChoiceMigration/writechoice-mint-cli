@@ -86,6 +86,25 @@ check
     await validateMdxFiles(mergedOptions);
   });
 
+// Check KaTeX subcommand
+check
+  .command("katex [baseUrl]")
+  .description("Check for KaTeX render errors across all pages in docs.json navigation")
+  .option("-f, --file <path>", "Re-check pages listed in a previous error report (JSON)")
+  .option("--docs <file>", "Path to docs.json (default: docs.json)")
+  .option("-o, --output <path>", "Output file for error report", "katex_errors.json")
+  .option("-c, --concurrency <number>", "Number of parallel requests", "50")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (baseUrl, options) => {
+    const { loadConfig, mergeKatexConfig } = await import("../src/utils/config.js");
+    const { checkKatex } = await import("../src/commands/check/katex.js");
+
+    const config = loadConfig();
+    const merged = mergeKatexConfig(baseUrl, options, config);
+    merged.verbose = !merged.quiet;
+    await checkKatex(merged);
+  });
+
 // Fix command
 const fix = program.command("fix").description("Fix issues found in validation reports");
 
