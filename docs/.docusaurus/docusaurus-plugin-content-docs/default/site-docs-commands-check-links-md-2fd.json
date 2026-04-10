@@ -1,0 +1,28 @@
+{
+  "id": "commands/check/links",
+  "title": "Check Links",
+  "description": "Validates internal links and anchors in MDX documentation files using browser automation.",
+  "source": "@site/docs/commands/check/links.md",
+  "sourceDirName": "commands/check",
+  "slug": "/commands/check/links",
+  "permalink": "/mint-cli/commands/check/links",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/check/links.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "Check Links"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Quick Start",
+    "permalink": "/mint-cli/getting-started/quick-start"
+  },
+  "next": {
+    "title": "Check Parse",
+    "permalink": "/mint-cli/commands/check/parse"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "configuration/config-file",
+  "title": "Configuration File Reference",
+  "description": "WriteChoice Mint CLI supports an optional config.json file for setting default values and avoiding repetitive CLI arguments.",
+  "source": "@site/docs/configuration/config-file.md",
+  "sourceDirName": "configuration",
+  "slug": "/configuration/config-file",
+  "permalink": "/mint-cli/configuration/config-file",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/configuration/config-file.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "Configuration File Reference"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Update",
+    "permalink": "/mint-cli/commands/update"
+  },
+  "next": {
+    "title": "Advanced Configuration",
+    "permalink": "/mint-cli/configuration/advanced"
+  }
+}

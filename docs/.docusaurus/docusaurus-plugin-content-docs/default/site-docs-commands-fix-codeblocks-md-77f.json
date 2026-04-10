@@ -1,0 +1,28 @@
+{
+  "id": "commands/fix/codeblocks",
+  "title": "Fix Codeblocks",
+  "description": "Automatically adds or removes code block flags (expandable, lines, wrap) in MDX documentation files.",
+  "source": "@site/docs/commands/fix/codeblocks.md",
+  "sourceDirName": "commands/fix",
+  "slug": "/commands/fix/codeblocks",
+  "permalink": "/mint-cli/commands/fix/codeblocks",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/fix/codeblocks.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Fix Codeblocks"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Fix Parse",
+    "permalink": "/mint-cli/commands/fix/parse"
+  },
+  "next": {
+    "title": "Fix Images",
+    "permalink": "/mint-cli/commands/fix/images"
+  }
+}

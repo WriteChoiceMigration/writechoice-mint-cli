@@ -1,0 +1,28 @@
+{
+  "id": "commands/nav/folders",
+  "title": "Nav Folders",
+  "description": "Restructures MDX files on disk to match the navigation hierarchy defined in docs.json. Also updates docs.json page references to the new paths and generates redirects.json for all moved files.",
+  "source": "@site/docs/commands/nav/folders.md",
+  "sourceDirName": "commands/nav",
+  "slug": "/commands/nav/folders",
+  "permalink": "/mint-cli/commands/nav/folders",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/nav/folders.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "Nav Folders"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Fix Redirects",
+    "permalink": "/mint-cli/commands/fix/redirects"
+  },
+  "next": {
+    "title": "Nav Root",
+    "permalink": "/mint-cli/commands/nav/root"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "commands/docusaurus/convert",
+  "title": "Docusaurus Convert",
+  "description": "Converts a Docusaurus docs folder to Mintlify-ready MDX files. Applies all known structural and syntax transformations automatically, and copies non-Markdown files (images, etc.) as-is.",
+  "source": "@site/docs/commands/docusaurus/convert.md",
+  "sourceDirName": "commands/docusaurus",
+  "slug": "/commands/docusaurus/convert",
+  "permalink": "/mint-cli/commands/docusaurus/convert",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/docusaurus/convert.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "Docusaurus Convert"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Nav Root",
+    "permalink": "/mint-cli/commands/nav/root"
+  },
+  "next": {
+    "title": "Docusaurus Slugify",
+    "permalink": "/mint-cli/commands/docusaurus/slugify"
+  }
+}

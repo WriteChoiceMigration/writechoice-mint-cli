@@ -1,0 +1,28 @@
+{
+  "id": "commands/fix/parse",
+  "title": "Fix Parse",
+  "description": "Automatically fixes common MDX parsing errors in documentation files.",
+  "source": "@site/docs/commands/fix/parse.md",
+  "sourceDirName": "commands/fix",
+  "slug": "/commands/fix/parse",
+  "permalink": "/mint-cli/commands/fix/parse",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/fix/parse.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Fix Parse"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Fix Links",
+    "permalink": "/mint-cli/commands/fix/links"
+  },
+  "next": {
+    "title": "Fix Codeblocks",
+    "permalink": "/mint-cli/commands/fix/codeblocks"
+  }
+}

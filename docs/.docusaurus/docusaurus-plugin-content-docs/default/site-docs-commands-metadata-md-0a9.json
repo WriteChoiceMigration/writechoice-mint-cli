@@ -1,0 +1,28 @@
+{
+  "id": "commands/metadata",
+  "title": "Metadata",
+  "description": "Fetches meta tags from your live documentation pages and writes them into the frontmatter of the corresponding MDX source files. Existing frontmatter keys are updated (overwritten); missing keys are appended.",
+  "source": "@site/docs/commands/metadata.md",
+  "sourceDirName": "commands",
+  "slug": "/commands/metadata",
+  "permalink": "/mint-cli/commands/metadata",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/metadata.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "Metadata"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Docusaurus Nav",
+    "permalink": "/mint-cli/commands/docusaurus/nav"
+  },
+  "next": {
+    "title": "Scrape",
+    "permalink": "/mint-cli/commands/scrape"
+  }
+}

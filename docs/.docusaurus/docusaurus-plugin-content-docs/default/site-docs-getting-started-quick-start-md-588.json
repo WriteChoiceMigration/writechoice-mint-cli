@@ -1,0 +1,28 @@
+{
+  "id": "getting-started/quick-start",
+  "title": "Quick Start",
+  "description": "This guide walks you through setting up the CLI and running your first validation in under five minutes.",
+  "source": "@site/docs/getting-started/quick-start.md",
+  "sourceDirName": "getting-started",
+  "slug": "/getting-started/quick-start",
+  "permalink": "/mint-cli/getting-started/quick-start",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/getting-started/quick-start.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Quick Start"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Installation",
+    "permalink": "/mint-cli/getting-started/installation"
+  },
+  "next": {
+    "title": "Check Links",
+    "permalink": "/mint-cli/commands/check/links"
+  }
+}

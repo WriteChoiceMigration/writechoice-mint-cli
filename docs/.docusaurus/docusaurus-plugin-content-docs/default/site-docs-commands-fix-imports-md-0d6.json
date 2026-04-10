@@ -1,0 +1,28 @@
+{
+  "id": "commands/fix/imports",
+  "title": "Fix Imports",
+  "description": "Scans MDX files for custom JSX component usage, validates import statements, and automatically adds missing imports when the component file is found in the snippets/ folder.",
+  "source": "@site/docs/commands/fix/imports.md",
+  "sourceDirName": "commands/fix",
+  "slug": "/commands/fix/imports",
+  "permalink": "/mint-cli/commands/fix/imports",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/fix/imports.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 7,
+  "frontMatter": {
+    "sidebar_position": 7,
+    "title": "Fix Imports"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Fix H1",
+    "permalink": "/mint-cli/commands/fix/h1"
+  },
+  "next": {
+    "title": "Fix Redirects",
+    "permalink": "/mint-cli/commands/fix/redirects"
+  }
+}

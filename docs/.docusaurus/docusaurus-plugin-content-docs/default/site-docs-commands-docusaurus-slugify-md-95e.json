@@ -1,0 +1,28 @@
+{
+  "id": "commands/docusaurus/slugify",
+  "title": "Docusaurus Slugify",
+  "description": "Renames and moves converted MDX files so their paths match the slug (or id) in their frontmatter. Also updates any matching page paths in docs.json.",
+  "source": "@site/docs/commands/docusaurus/slugify.md",
+  "sourceDirName": "commands/docusaurus",
+  "slug": "/commands/docusaurus/slugify",
+  "permalink": "/mint-cli/commands/docusaurus/slugify",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/docusaurus/slugify.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Docusaurus Slugify"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Docusaurus Convert",
+    "permalink": "/mint-cli/commands/docusaurus/convert"
+  },
+  "next": {
+    "title": "Docusaurus Nav",
+    "permalink": "/mint-cli/commands/docusaurus/nav"
+  }
+}

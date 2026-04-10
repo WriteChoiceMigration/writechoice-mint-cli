@@ -1,0 +1,28 @@
+{
+  "id": "commands/check/parse",
+  "title": "Check Parse",
+  "description": "Validates MDX files for parsing errors using the official @mdx-js/mdx compiler.",
+  "source": "@site/docs/commands/check/parse.md",
+  "sourceDirName": "commands/check",
+  "slug": "/commands/check/parse",
+  "permalink": "/mint-cli/commands/check/parse",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/check/parse.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Check Parse"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Check Links",
+    "permalink": "/mint-cli/commands/check/links"
+  },
+  "next": {
+    "title": "Check Images",
+    "permalink": "/mint-cli/commands/check/images"
+  }
+}

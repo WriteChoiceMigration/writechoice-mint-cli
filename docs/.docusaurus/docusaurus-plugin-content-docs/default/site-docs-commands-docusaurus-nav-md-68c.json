@@ -1,0 +1,28 @@
+{
+  "id": "commands/docusaurus/nav",
+  "title": "Docusaurus Nav",
+  "description": "Converts a Docusaurus sidebars.js file into Mintlify navigation JSON, ready to paste into docs.json.",
+  "source": "@site/docs/commands/docusaurus/nav.md",
+  "sourceDirName": "commands/docusaurus",
+  "slug": "/commands/docusaurus/nav",
+  "permalink": "/mint-cli/commands/docusaurus/nav",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/docusaurus/nav.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Docusaurus Nav"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Docusaurus Slugify",
+    "permalink": "/mint-cli/commands/docusaurus/slugify"
+  },
+  "next": {
+    "title": "Metadata",
+    "permalink": "/mint-cli/commands/metadata"
+  }
+}

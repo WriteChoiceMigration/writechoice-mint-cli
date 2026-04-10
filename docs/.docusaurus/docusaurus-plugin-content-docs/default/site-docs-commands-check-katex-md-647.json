@@ -1,0 +1,28 @@
+{
+  "id": "commands/check/katex",
+  "title": "Check KaTeX",
+  "description": "Finds pages with KaTeX render errors by scanning for .katex-error elements in the live HTML.",
+  "source": "@site/docs/commands/check/katex.md",
+  "sourceDirName": "commands/check",
+  "slug": "/commands/check/katex",
+  "permalink": "/mint-cli/commands/check/katex",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/check/katex.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "sidebar_position": 5,
+    "title": "Check KaTeX"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Check Pages",
+    "permalink": "/mint-cli/commands/check/pages"
+  },
+  "next": {
+    "title": "Fix Links",
+    "permalink": "/mint-cli/commands/fix/links"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "commands/session",
+  "title": "Session",
+  "description": "Captures an authenticated browser session so wc scrape can access pages behind a login.",
+  "source": "@site/docs/commands/session.md",
+  "sourceDirName": "commands",
+  "slug": "/commands/session",
+  "permalink": "/mint-cli/commands/session",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/session.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Session"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Scrape",
+    "permalink": "/mint-cli/commands/scrape"
+  },
+  "next": {
+    "title": "Config",
+    "permalink": "/mint-cli/commands/config"
+  }
+}

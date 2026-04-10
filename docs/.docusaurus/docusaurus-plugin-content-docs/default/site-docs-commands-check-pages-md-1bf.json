@@ -1,0 +1,28 @@
+{
+  "id": "commands/check/pages",
+  "title": "Check Pages",
+  "description": "Validates that every page listed in docs.json navigation loads successfully by checking HTTP response status.",
+  "source": "@site/docs/commands/check/pages.md",
+  "sourceDirName": "commands/check",
+  "slug": "/commands/check/pages",
+  "permalink": "/mint-cli/commands/check/pages",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/check/pages.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4,
+    "title": "Check Pages"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Check Images",
+    "permalink": "/mint-cli/commands/check/images"
+  },
+  "next": {
+    "title": "Check KaTeX",
+    "permalink": "/mint-cli/commands/check/katex"
+  }
+}

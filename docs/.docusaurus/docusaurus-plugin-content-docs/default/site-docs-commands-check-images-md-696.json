@@ -1,0 +1,28 @@
+{
+  "id": "commands/check/images",
+  "title": "Check Images",
+  "description": "Validates that all images on your deployed documentation pages load successfully.",
+  "source": "@site/docs/commands/check/images.md",
+  "sourceDirName": "commands/check",
+  "slug": "/commands/check/images",
+  "permalink": "/mint-cli/commands/check/images",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/check/images.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Check Images"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Check Parse",
+    "permalink": "/mint-cli/commands/check/parse"
+  },
+  "next": {
+    "title": "Check Pages",
+    "permalink": "/mint-cli/commands/check/pages"
+  }
+}

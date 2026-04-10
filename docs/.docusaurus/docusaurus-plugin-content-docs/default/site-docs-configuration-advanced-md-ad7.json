@@ -1,0 +1,28 @@
+{
+  "id": "configuration/advanced",
+  "title": "Advanced Configuration",
+  "description": "This page covers advanced configuration patterns for the WriteChoice Mint CLI — CI/CD integration, performance tuning, environment-specific setups, and report customization.",
+  "source": "@site/docs/configuration/advanced.md",
+  "sourceDirName": "configuration",
+  "slug": "/configuration/advanced",
+  "permalink": "/mint-cli/configuration/advanced",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/configuration/advanced.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Advanced Configuration"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Configuration File Reference",
+    "permalink": "/mint-cli/configuration/config-file"
+  },
+  "next": {
+    "title": "Publishing",
+    "permalink": "/mint-cli/configuration/publishing"
+  }
+}

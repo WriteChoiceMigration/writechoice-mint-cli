@@ -1,0 +1,28 @@
+{
+  "id": "commands/fix/images",
+  "title": "Fix Images",
+  "description": "Automatically wraps standalone images in `` components in MDX documentation files.",
+  "source": "@site/docs/commands/fix/images.md",
+  "sourceDirName": "commands/fix",
+  "slug": "/commands/fix/images",
+  "permalink": "/mint-cli/commands/fix/images",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/fix/images.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "sidebar_position": 4,
+    "title": "Fix Images"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Fix Codeblocks",
+    "permalink": "/mint-cli/commands/fix/codeblocks"
+  },
+  "next": {
+    "title": "Fix Inline Images",
+    "permalink": "/mint-cli/commands/fix/inlineimages"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "commands/fix/inlineimages",
+  "title": "Fix Inline Images",
+  "description": "Converts images that appear inline within text to `` components in MDX files, and automatically adds the required import statement.",
+  "source": "@site/docs/commands/fix/inlineimages.md",
+  "sourceDirName": "commands/fix",
+  "slug": "/commands/fix/inlineimages",
+  "permalink": "/mint-cli/commands/fix/inlineimages",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/fix/inlineimages.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "sidebar_position": 5,
+    "title": "Fix Inline Images"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Fix Images",
+    "permalink": "/mint-cli/commands/fix/images"
+  },
+  "next": {
+    "title": "Fix H1",
+    "permalink": "/mint-cli/commands/fix/h1"
+  }
+}

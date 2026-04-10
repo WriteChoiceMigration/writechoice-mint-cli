@@ -1,0 +1,28 @@
+{
+  "id": "commands/fix/redirects",
+  "title": "Fix Redirects",
+  "description": "Reads the redirects array from docs.json and replaces stale source paths with their destination paths inside MDX files. Fixes internal links that still point to old URLs after a navigation restructure.",
+  "source": "@site/docs/commands/fix/redirects.md",
+  "sourceDirName": "commands/fix",
+  "slug": "/commands/fix/redirects",
+  "permalink": "/mint-cli/commands/fix/redirects",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/fix/redirects.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 8,
+  "frontMatter": {
+    "sidebar_position": 8,
+    "title": "Fix Redirects"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Fix Imports",
+    "permalink": "/mint-cli/commands/fix/imports"
+  },
+  "next": {
+    "title": "Nav Folders",
+    "permalink": "/mint-cli/commands/nav/folders"
+  }
+}

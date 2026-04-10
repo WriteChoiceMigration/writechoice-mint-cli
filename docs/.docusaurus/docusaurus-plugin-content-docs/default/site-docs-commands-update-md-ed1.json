@@ -1,0 +1,28 @@
+{
+  "id": "commands/update",
+  "title": "Update",
+  "description": "Updates the CLI to the latest version from npm.",
+  "source": "@site/docs/commands/update.md",
+  "sourceDirName": "commands",
+  "slug": "/commands/update",
+  "permalink": "/mint-cli/commands/update",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/update.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "sidebar_position": 5,
+    "title": "Update"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Config",
+    "permalink": "/mint-cli/commands/config"
+  },
+  "next": {
+    "title": "Configuration File Reference",
+    "permalink": "/mint-cli/configuration/config-file"
+  }
+}

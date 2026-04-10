@@ -1,0 +1,28 @@
+{
+  "id": "commands/fix/h1",
+  "title": "Fix H1",
+  "description": "Removes duplicate H1 headings that repeat the frontmatter title field in MDX documentation files.",
+  "source": "@site/docs/commands/fix/h1.md",
+  "sourceDirName": "commands/fix",
+  "slug": "/commands/fix/h1",
+  "permalink": "/mint-cli/commands/fix/h1",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/fix/h1.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "sidebar_position": 6,
+    "title": "Fix H1"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Fix Inline Images",
+    "permalink": "/mint-cli/commands/fix/inlineimages"
+  },
+  "next": {
+    "title": "Fix Imports",
+    "permalink": "/mint-cli/commands/fix/imports"
+  }
+}

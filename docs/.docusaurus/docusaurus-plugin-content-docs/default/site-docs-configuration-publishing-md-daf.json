@@ -1,0 +1,24 @@
+{
+  "id": "configuration/publishing",
+  "title": "Publishing",
+  "description": "Detailed guide for publishing and managing versions of the WriteChoice Mint CLI package.",
+  "source": "@site/docs/configuration/publishing.md",
+  "sourceDirName": "configuration",
+  "slug": "/configuration/publishing",
+  "permalink": "/mint-cli/configuration/publishing",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/configuration/publishing.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "sidebar_position": 3,
+    "title": "Publishing"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Advanced Configuration",
+    "permalink": "/mint-cli/configuration/advanced"
+  }
+}

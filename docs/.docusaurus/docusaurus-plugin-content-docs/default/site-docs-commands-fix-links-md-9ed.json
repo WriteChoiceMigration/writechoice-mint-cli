@@ -1,0 +1,28 @@
+{
+  "id": "commands/fix/links",
+  "title": "Fix Links",
+  "description": "Automatically fixes broken anchor links in MDX files based on validation reports.",
+  "source": "@site/docs/commands/fix/links.md",
+  "sourceDirName": "commands/fix",
+  "slug": "/commands/fix/links",
+  "permalink": "/mint-cli/commands/fix/links",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/fix/links.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "sidebar_position": 1,
+    "title": "Fix Links"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Check KaTeX",
+    "permalink": "/mint-cli/commands/check/katex"
+  },
+  "next": {
+    "title": "Fix Parse",
+    "permalink": "/mint-cli/commands/fix/parse"
+  }
+}
