@@ -105,6 +105,42 @@ check
     await checkKatex(merged);
   });
 
+// Check pages subcommand
+check
+  .command("pages [baseUrl]")
+  .description("Validate that every page in docs.json navigation loads successfully")
+  .option("--docs <file>", "Path to docs.json (default: docs.json)")
+  .option("-o, --output <path>", "Output file for failure report", "pages_report.json")
+  .option("-c, --concurrency <number>", "Number of parallel requests", "50")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (baseUrl, options) => {
+    const { loadConfig, mergePagesConfig } = await import("../src/utils/config.js");
+    const { checkPages } = await import("../src/commands/check/pages.js");
+
+    const config = loadConfig();
+    const merged = mergePagesConfig(baseUrl, options, config);
+    merged.verbose = !merged.quiet;
+    await checkPages(merged);
+  });
+
+// Check images subcommand
+check
+  .command("images [baseUrl]")
+  .description("Validate that all images on docs pages load successfully")
+  .option("--docs <file>", "Path to docs.json (default: docs.json)")
+  .option("-o, --output <path>", "Output file for failure report", "images_report.json")
+  .option("-c, --concurrency <number>", "Number of parallel requests per phase", "10")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (baseUrl, options) => {
+    const { loadConfig, mergeImageCheckConfig } = await import("../src/utils/config.js");
+    const { checkImages } = await import("../src/commands/check/images.js");
+
+    const config = loadConfig();
+    const merged = mergeImageCheckConfig(baseUrl, options, config);
+    merged.verbose = !merged.quiet;
+    await checkImages(merged);
+  });
+
 // Fix command
 const fix = program.command("fix").description("Fix issues found in validation reports");
 

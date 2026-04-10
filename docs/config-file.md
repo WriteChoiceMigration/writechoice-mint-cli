@@ -82,10 +82,11 @@ Settings that apply to all commands:
 }
 ```
 
-| Field    | Type   | Description                              | Used By       |
-| -------- | ------ | ---------------------------------------- | ------------- |
-| `source` | string | Base URL for production documentation   | `check links` |
-| `target` | string | Base URL for validation environment     | `check links` |
+| Field     | Type   | Description                                                       | Used By                                   |
+| --------- | ------ | ----------------------------------------------------------------- | ----------------------------------------- |
+| `source`  | string | Base URL for production documentation                             | `check links`                             |
+| `target`  | string | Base URL for validation environment                               | `check links`                             |
+| `preview` | string | Base URL for a deployed preview — shared default for live checkers | `check pages`, `check images`, `check katex` |
 
 ### Links Command Configuration
 
@@ -135,6 +136,54 @@ Settings specific to `writechoice check parse`:
 | `dir`   | string  | Validate MDX files in specific directory | `null`  |
 | `quiet` | boolean | Suppress terminal output                 | `false` |
 
+### Pages Command Configuration
+
+Settings specific to `writechoice check pages`:
+
+```json
+{
+  "pages": {
+    "url": null,
+    "docs": "docs.json",
+    "output": "pages_report.json",
+    "concurrency": 50,
+    "quiet": false
+  }
+}
+```
+
+| Field         | Type    | Description                                              | Default             |
+| ------------- | ------- | -------------------------------------------------------- | ------------------- |
+| `url`         | string  | Base URL for this command (overrides global `preview`)   | `null`              |
+| `docs`        | string  | Path to docs.json                                        | `docs.json`         |
+| `output`      | string  | Output file for the failure report                       | `pages_report.json` |
+| `concurrency` | number  | Number of parallel HTTP requests                         | `50`                |
+| `quiet`       | boolean | Suppress terminal output                                 | `false`             |
+
+### Image Check Command Configuration
+
+Settings specific to `writechoice check images`:
+
+```json
+{
+  "imageCheck": {
+    "url": null,
+    "docs": "docs.json",
+    "output": "images_report.json",
+    "concurrency": 10,
+    "quiet": false
+  }
+}
+```
+
+| Field         | Type    | Description                                              | Default              |
+| ------------- | ------- | -------------------------------------------------------- | -------------------- |
+| `url`         | string  | Base URL for this command (overrides global `preview`)   | `null`               |
+| `docs`        | string  | Path to docs.json                                        | `docs.json`          |
+| `output`      | string  | Output file for the failure report                       | `images_report.json` |
+| `concurrency` | number  | Parallel requests per phase (page fetch and image check) | `10`                 |
+| `quiet`       | boolean | Suppress terminal output                                 | `false`              |
+
 ### KaTeX Command Configuration
 
 Settings specific to `writechoice check katex`:
@@ -150,7 +199,7 @@ Settings specific to `writechoice check katex`:
 
 | Field        | Type   | Description                                                   | Default              |
 | ------------ | ------ | ------------------------------------------------------------- | -------------------- |
-| `url`        | string | Base URL for scan mode (appended with each docs.json path)    | `null`               |
+| `url`        | string | Base URL for scan mode (overrides global `preview`)           | `null`               |
 | `reportFile` | string | Report file read by recheck mode (`--file`)                   | `katex_errors.json`  |
 | `docs`       | string | Path to docs.json                                             | `docs.json`          |
 | `output`     | string | Output file for the error report                              | `katex_errors.json`  |
@@ -298,6 +347,7 @@ Here's a full example showing all available options:
 
   "source": "https://docs.example.com",
   "target": "http://localhost:3000",
+  "preview": "https://preview.docs.example.com",
 
   "links": {
     "file": null,
@@ -312,6 +362,22 @@ Here's a full example showing all available options:
   "parse": {
     "file": null,
     "dir": null,
+    "quiet": false
+  },
+
+  "pages": {
+    "url": null,
+    "docs": "docs.json",
+    "output": "pages_report.json",
+    "concurrency": 50,
+    "quiet": false
+  },
+
+  "imageCheck": {
+    "url": null,
+    "docs": "docs.json",
+    "output": "images_report.json",
+    "concurrency": 10,
     "quiet": false
   },
 
@@ -622,6 +688,8 @@ links_report.md
 mdx_errors_report.json
 mdx_errors_report.md
 katex_errors.json
+pages_report.json
+images_report.json
 ```
 
 ### 3. Document Your Config

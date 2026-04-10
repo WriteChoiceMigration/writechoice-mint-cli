@@ -144,7 +144,15 @@ Pages without errors are not included. If no errors are found the file is writte
 
 ## Config File Support
 
-You can set defaults in `config.json` so you don't need to pass the URL each time:
+If you run multiple live-checking commands against the same deployment, set the global `preview` key once and all commands will use it as a fallback:
+
+```json
+{
+  "preview": "https://preview.docs.example.com"
+}
+```
+
+You can also set a URL specific to this command under `katex.url`, which takes precedence over `preview`:
 
 ```json
 {

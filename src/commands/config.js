@@ -30,6 +30,23 @@ export async function generateConfig(options) {
 
     source: "https://docs.example.com",
     target: "http://localhost:3000",
+    preview: null,
+
+    pages: {
+      url: null,
+      docs: "docs.json",
+      output: "pages_report.json",
+      concurrency: 50,
+      quiet: false,
+    },
+
+    imageCheck: {
+      url: null,
+      docs: "docs.json",
+      output: "images_report.json",
+      concurrency: 10,
+      quiet: false,
+    },
 
     katex: {
       url: null,

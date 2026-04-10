@@ -360,6 +360,50 @@ export function mergeScrapingConfig(options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the check pages command
+ *
+ * @param {string|undefined} baseUrl - Base URL from CLI positional argument
+ * @param {Object} options - CLI options (docs, output, concurrency, quiet)
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergePagesConfig(baseUrl, options, config) {
+  const pagesConfig = config?.pages || {};
+
+  return {
+    baseUrl: baseUrl || pagesConfig.url || config?.preview || null,
+    docs: options.docs || pagesConfig.docs || "docs.json",
+    output: options.output || pagesConfig.output || "pages_report.json",
+    concurrency: options.concurrency != null
+      ? parseInt(options.concurrency, 10)
+      : (pagesConfig.concurrency ?? 50),
+    quiet: options.quiet !== undefined ? options.quiet : (pagesConfig.quiet ?? false),
+  };
+}
+
+/**
+ * Merges config file with CLI options for the check images command
+ *
+ * @param {string|undefined} baseUrl - Base URL from CLI positional argument
+ * @param {Object} options - CLI options (docs, output, concurrency, quiet)
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeImageCheckConfig(baseUrl, options, config) {
+  const imgConfig = config?.imageCheck || {};
+
+  return {
+    baseUrl: baseUrl || imgConfig.url || config?.preview || null,
+    docs: options.docs || imgConfig.docs || "docs.json",
+    output: options.output || imgConfig.output || "images_report.json",
+    concurrency: options.concurrency != null
+      ? parseInt(options.concurrency, 10)
+      : (imgConfig.concurrency ?? 10),
+    quiet: options.quiet !== undefined ? options.quiet : (imgConfig.quiet ?? false),
+  };
+}
+
+/**
  * Merges config file with CLI options for the check katex command
  * CLI options take precedence over config file
  *
@@ -372,7 +416,7 @@ export function mergeKatexConfig(baseUrl, options, config) {
   const katexConfig = config?.katex || {};
 
   return {
-    baseUrl: baseUrl || katexConfig.url || null,
+    baseUrl: baseUrl || katexConfig.url || config?.preview || null,
     file: options.file || katexConfig.reportFile || null,
     docs: options.docs || katexConfig.docs || "docs.json",
     output: options.output || katexConfig.output || "katex_errors.json",
