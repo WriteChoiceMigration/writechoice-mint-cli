@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkwritechoice_mint_cli_docs=self.webpackChunkwritechoice_mint_cli_docs||[]).push([["668"],{6569(e,c,r){r.r(c),r.d(c,{default:()=>l});var s=r(4848);r(6540);var i=r(4164),t=r(4308),a=r(8287),n=r(2831),u=r(1085);function l(e){return(0,s.jsx)(t.e3,{className:(0,i.A)(a.G.wrapper.docsPages),children:(0,s.jsx)(u.A,{children:(0,n.v)(e.route.routes)})})}}}]);
