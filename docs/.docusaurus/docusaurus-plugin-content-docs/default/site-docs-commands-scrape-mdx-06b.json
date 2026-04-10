@@ -1,0 +1,28 @@
+{
+  "id": "commands/scrape",
+  "title": "Scrape",
+  "description": "Scrapes documentation URLs and converts each page into an MDX file ready for Mintlify.",
+  "source": "@site/docs/commands/scrape.mdx",
+  "sourceDirName": "commands",
+  "slug": "/commands/scrape",
+  "permalink": "/writechoice-mint-cli/commands/scrape",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/scrape.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "sidebar_position": 2,
+    "title": "Scrape"
+  },
+  "sidebar": "docs",
+  "previous": {
+    "title": "Metadata",
+    "permalink": "/writechoice-mint-cli/commands/metadata"
+  },
+  "next": {
+    "title": "Session",
+    "permalink": "/writechoice-mint-cli/commands/session"
+  }
+}

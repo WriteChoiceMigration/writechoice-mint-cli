@@ -5,7 +5,7 @@
   "source": "@site/docs/commands/check/parse.md",
   "sourceDirName": "commands/check",
   "slug": "/commands/check/parse",
-  "permalink": "/mint-cli/commands/check/parse",
+  "permalink": "/writechoice-mint-cli/commands/check/parse",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/check/parse.md",
@@ -19,10 +19,10 @@
   "sidebar": "docs",
   "previous": {
     "title": "Check Links",
-    "permalink": "/mint-cli/commands/check/links"
+    "permalink": "/writechoice-mint-cli/commands/check/links"
   },
   "next": {
     "title": "Check Images",
-    "permalink": "/mint-cli/commands/check/images"
+    "permalink": "/writechoice-mint-cli/commands/check/images"
   }
 }

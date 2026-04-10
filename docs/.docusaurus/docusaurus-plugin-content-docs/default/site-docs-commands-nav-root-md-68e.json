@@ -5,7 +5,7 @@
   "source": "@site/docs/commands/nav/root.md",
   "sourceDirName": "commands/nav",
   "slug": "/commands/nav/root",
-  "permalink": "/mint-cli/commands/nav/root",
+  "permalink": "/writechoice-mint-cli/commands/nav/root",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/nav/root.md",
@@ -19,10 +19,10 @@
   "sidebar": "docs",
   "previous": {
     "title": "Nav Folders",
-    "permalink": "/mint-cli/commands/nav/folders"
+    "permalink": "/writechoice-mint-cli/commands/nav/folders"
   },
   "next": {
     "title": "Docusaurus Convert",
-    "permalink": "/mint-cli/commands/docusaurus/convert"
+    "permalink": "/writechoice-mint-cli/commands/docusaurus/convert"
   }
 }

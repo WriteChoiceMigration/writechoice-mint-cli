@@ -5,7 +5,7 @@
   "source": "@site/docs/intro.md",
   "sourceDirName": ".",
   "slug": "/",
-  "permalink": "/mint-cli/",
+  "permalink": "/writechoice-mint-cli/",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/intro.md",
@@ -21,6 +21,6 @@
   "sidebar": "docs",
   "next": {
     "title": "Installation",
-    "permalink": "/mint-cli/getting-started/installation"
+    "permalink": "/writechoice-mint-cli/getting-started/installation"
   }
 }

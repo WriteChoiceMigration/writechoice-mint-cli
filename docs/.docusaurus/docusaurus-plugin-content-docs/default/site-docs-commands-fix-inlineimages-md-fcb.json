@@ -5,7 +5,7 @@
   "source": "@site/docs/commands/fix/inlineimages.md",
   "sourceDirName": "commands/fix",
   "slug": "/commands/fix/inlineimages",
-  "permalink": "/mint-cli/commands/fix/inlineimages",
+  "permalink": "/writechoice-mint-cli/commands/fix/inlineimages",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/fix/inlineimages.md",
@@ -19,10 +19,10 @@
   "sidebar": "docs",
   "previous": {
     "title": "Fix Images",
-    "permalink": "/mint-cli/commands/fix/images"
+    "permalink": "/writechoice-mint-cli/commands/fix/images"
   },
   "next": {
     "title": "Fix H1",
-    "permalink": "/mint-cli/commands/fix/h1"
+    "permalink": "/writechoice-mint-cli/commands/fix/h1"
   }
 }

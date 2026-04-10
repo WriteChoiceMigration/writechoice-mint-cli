@@ -5,7 +5,7 @@
   "source": "@site/docs/commands/config.md",
   "sourceDirName": "commands",
   "slug": "/commands/config",
-  "permalink": "/mint-cli/commands/config",
+  "permalink": "/writechoice-mint-cli/commands/config",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/config.md",
@@ -19,10 +19,10 @@
   "sidebar": "docs",
   "previous": {
     "title": "Session",
-    "permalink": "/mint-cli/commands/session"
+    "permalink": "/writechoice-mint-cli/commands/session"
   },
   "next": {
     "title": "Update",
-    "permalink": "/mint-cli/commands/update"
+    "permalink": "/writechoice-mint-cli/commands/update"
   }
 }

@@ -5,7 +5,7 @@
   "source": "@site/docs/getting-started/installation.md",
   "sourceDirName": "getting-started",
   "slug": "/getting-started/installation",
-  "permalink": "/mint-cli/getting-started/installation",
+  "permalink": "/writechoice-mint-cli/getting-started/installation",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/getting-started/installation.md",
@@ -19,10 +19,10 @@
   "sidebar": "docs",
   "previous": {
     "title": "Introduction",
-    "permalink": "/mint-cli/"
+    "permalink": "/writechoice-mint-cli/"
   },
   "next": {
     "title": "Quick Start",
-    "permalink": "/mint-cli/getting-started/quick-start"
+    "permalink": "/writechoice-mint-cli/getting-started/quick-start"
   }
 }

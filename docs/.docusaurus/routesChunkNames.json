@@ -1,173 +1,173 @@
 {
-  "/mint-cli/__docusaurus/debug-bc7": {
+  "/writechoice-mint-cli/__docusaurus/debug-d64": {
     "__comp": "__comp---theme-debug-config-23-a-2ff",
     "__context": {
       "plugin": "plugin---mint-cli-docusaurus-debugb-38-ff2"
     }
   },
-  "/mint-cli/__docusaurus/debug/config-e7a": {
+  "/writechoice-mint-cli/__docusaurus/debug/config-da9": {
     "__comp": "__comp---theme-debug-config-23-a-2ff",
     "__context": {
       "plugin": "plugin---mint-cli-docusaurus-debugb-38-ff2"
     }
   },
-  "/mint-cli/__docusaurus/debug/content-17b": {
+  "/writechoice-mint-cli/__docusaurus/debug/content-412": {
     "__comp": "__comp---theme-debug-contentba-8-ce7",
     "__context": {
       "plugin": "plugin---mint-cli-docusaurus-debugb-38-ff2"
     },
-    "__props": "__props---mint-cli-docusaurus-debug-contentc-66-c8d"
+    "__props": "__props---writechoice-mint-cli-docusaurus-debug-content-9-ff-9d9"
   },
-  "/mint-cli/__docusaurus/debug/globalData-479": {
+  "/writechoice-mint-cli/__docusaurus/debug/globalData-199": {
     "__comp": "__comp---theme-debug-global-dataede-0fa",
     "__context": {
       "plugin": "plugin---mint-cli-docusaurus-debugb-38-ff2"
     }
   },
-  "/mint-cli/__docusaurus/debug/metadata-1f7": {
+  "/writechoice-mint-cli/__docusaurus/debug/metadata-7ed": {
     "__comp": "__comp---theme-debug-site-metadata-68-e-3d4",
     "__context": {
       "plugin": "plugin---mint-cli-docusaurus-debugb-38-ff2"
     }
   },
-  "/mint-cli/__docusaurus/debug/registry-e49": {
+  "/writechoice-mint-cli/__docusaurus/debug/registry-2f7": {
     "__comp": "__comp---theme-debug-registry-679-501",
     "__context": {
       "plugin": "plugin---mint-cli-docusaurus-debugb-38-ff2"
     }
   },
-  "/mint-cli/__docusaurus/debug/routes-7a0": {
+  "/writechoice-mint-cli/__docusaurus/debug/routes-77f": {
     "__comp": "__comp---theme-debug-routes-946-699",
     "__context": {
       "plugin": "plugin---mint-cli-docusaurus-debugb-38-ff2"
     }
   },
-  "/mint-cli/-f1f": {
+  "/writechoice-mint-cli/-783": {
     "__comp": "__comp---theme-docs-root-5-e-9-0b6",
     "__context": {
       "plugin": "plugin---mint-cli-aba-835"
     }
   },
-  "/mint-cli/-fc8": {
+  "/writechoice-mint-cli/-410": {
     "__comp": "__comp---theme-doc-version-roota-7-b-5de",
-    "__props": "__props---mint-cli-e-82-2a6"
+    "__props": "__props---writechoice-mint-cli-0-d-7-a3e"
   },
-  "/mint-cli/-914": {
+  "/writechoice-mint-cli/-9b7": {
     "__comp": "__comp---theme-doc-roota-94-67a"
   },
-  "/mint-cli/commands/check/images-5e8": {
+  "/writechoice-mint-cli/commands/check/images-9c8": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-check-images-696-a95"
   },
-  "/mint-cli/commands/check/katex-9f0": {
+  "/writechoice-mint-cli/commands/check/katex-c3c": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-check-katex-647-e25"
   },
-  "/mint-cli/commands/check/links-27f": {
+  "/writechoice-mint-cli/commands/check/links-0e2": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-check-links-2-fd-3d4"
   },
-  "/mint-cli/commands/check/pages-e59": {
+  "/writechoice-mint-cli/commands/check/pages-9c4": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-check-pages-1-bf-9f0"
   },
-  "/mint-cli/commands/check/parse-f46": {
+  "/writechoice-mint-cli/commands/check/parse-e15": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-check-parsed-5-e-8f8"
   },
-  "/mint-cli/commands/config-83f": {
+  "/writechoice-mint-cli/commands/config-d77": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-config-822-cfe"
   },
-  "/mint-cli/commands/docusaurus/convert-a53": {
+  "/writechoice-mint-cli/commands/docusaurus/convert-77f": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-docusaurus-convertce-9-9dd"
   },
-  "/mint-cli/commands/docusaurus/nav-07a": {
+  "/writechoice-mint-cli/commands/docusaurus/nav-200": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-docusaurus-nav-68-c-488"
   },
-  "/mint-cli/commands/docusaurus/slugify-b87": {
+  "/writechoice-mint-cli/commands/docusaurus/slugify-ecd": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-docusaurus-slugify-95-e-15a"
   },
-  "/mint-cli/commands/fix/codeblocks-bec": {
+  "/writechoice-mint-cli/commands/fix/codeblocks-70b": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-fix-codeblocks-77-f-f89"
   },
-  "/mint-cli/commands/fix/h1-78f": {
+  "/writechoice-mint-cli/commands/fix/h1-cb9": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-fix-h-120-d-697"
   },
-  "/mint-cli/commands/fix/images-6c1": {
+  "/writechoice-mint-cli/commands/fix/images-2d3": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-fix-images-5-dc-198"
   },
-  "/mint-cli/commands/fix/imports-060": {
+  "/writechoice-mint-cli/commands/fix/imports-35c": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-fix-imports-0-d-6-0c8"
   },
-  "/mint-cli/commands/fix/inlineimages-28d": {
+  "/writechoice-mint-cli/commands/fix/inlineimages-ca4": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-fix-inlineimagesfcb-0bd"
   },
-  "/mint-cli/commands/fix/links-134": {
+  "/writechoice-mint-cli/commands/fix/links-ca6": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-fix-links-9-ed-fe7"
   },
-  "/mint-cli/commands/fix/parse-a2d": {
+  "/writechoice-mint-cli/commands/fix/parse-47b": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-fix-parse-66-f-136"
   },
-  "/mint-cli/commands/fix/redirects-3d1": {
+  "/writechoice-mint-cli/commands/fix/redirects-c33": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-fix-redirects-871-42a"
   },
-  "/mint-cli/commands/metadata-74c": {
+  "/writechoice-mint-cli/commands/metadata-eab": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-metadata-0-a-9-987"
   },
-  "/mint-cli/commands/nav/folders-581": {
+  "/writechoice-mint-cli/commands/nav/folders-51a": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-nav-folders-7-a-5-092"
   },
-  "/mint-cli/commands/nav/root-db1": {
+  "/writechoice-mint-cli/commands/nav/root-bfe": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-nav-root-68-e-2c1"
   },
-  "/mint-cli/commands/scrape-19f": {
+  "/writechoice-mint-cli/commands/scrape-932": {
     "__comp": "__comp---theme-doc-item-178-a40",
-    "content": "content---mint-cli-commands-scrapeb-65-431"
+    "content": "content---mint-cli-commands-scrape-06-b-ac8"
   },
-  "/mint-cli/commands/session-8d3": {
+  "/writechoice-mint-cli/commands/session-4e5": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-session-816-a66"
   },
-  "/mint-cli/commands/update-871": {
+  "/writechoice-mint-cli/commands/update-cd6": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-commands-updateed-1-a27"
   },
-  "/mint-cli/configuration/advanced-293": {
+  "/writechoice-mint-cli/configuration/advanced-b05": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-configuration-advancedad-7-341"
   },
-  "/mint-cli/configuration/config-file-1f5": {
+  "/writechoice-mint-cli/configuration/config-file-e12": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-configuration-config-filed-94-06f"
   },
-  "/mint-cli/configuration/publishing-6fe": {
+  "/writechoice-mint-cli/configuration/publishing-ab2": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-configuration-publishingdaf-de8"
   },
-  "/mint-cli/getting-started/installation-077": {
+  "/writechoice-mint-cli/getting-started/installation-cf9": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-getting-started-installation-54-f-d6b"
   },
-  "/mint-cli/getting-started/quick-start-ddd": {
+  "/writechoice-mint-cli/getting-started/quick-start-3ee": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-getting-started-quick-start-588-ced"
   },
-  "/mint-cli/-a89": {
+  "/writechoice-mint-cli/-940": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---mint-cli-0-e-3-19e"
   }

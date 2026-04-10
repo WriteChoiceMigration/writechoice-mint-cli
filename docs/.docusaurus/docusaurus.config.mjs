@@ -29,10 +29,10 @@ export default {
   "title": "WriteChoice Mint CLI",
   "tagline": "Validate, fix, and manage Mintlify documentation with confidence.",
   "favicon": "img/favicon.ico",
-  "url": "https://writechoice.github.io",
-  "baseUrl": "/mint-cli/",
-  "organizationName": "writechoice",
-  "projectName": "mint-cli",
+  "url": "https://writechoicemigration.github.io",
+  "baseUrl": "/writechoice-mint-cli/",
+  "organizationName": "WriteChoiceMigration",
+  "projectName": "writechoice-mint-cli",
   "onBrokenLinks": "warn",
   "markdown": {
     "hooks": {
@@ -158,58 +158,51 @@ export default {
     "prism": {
       "theme": {
         "plain": {
-          "backgroundColor": "#282c34",
-          "color": "#ffffff"
+          "color": "#000000",
+          "backgroundColor": "#ffffff"
         },
         "styles": [
           {
             "types": [
-              "attr-name"
+              "comment"
             ],
             "style": {
-              "color": "#c5a5c5"
+              "color": "rgb(0, 128, 0)"
             }
           },
           {
             "types": [
-              "attr-value"
+              "builtin"
             ],
             "style": {
-              "color": "#8dc891"
+              "color": "rgb(0, 112, 193)"
             }
           },
           {
             "types": [
-              "comment",
-              "block-comment",
-              "prolog",
-              "doctype",
-              "cdata",
-              "shebang"
-            ],
-            "style": {
-              "color": "#999999"
-            }
-          },
-          {
-            "types": [
-              "property",
               "number",
-              "function-name",
-              "constant",
-              "symbol",
-              "deleted"
+              "variable",
+              "inserted"
             ],
             "style": {
-              "color": "#5a9bcf"
+              "color": "rgb(9, 134, 88)"
             }
           },
           {
             "types": [
-              "boolean"
+              "operator"
             ],
             "style": {
-              "color": "#ff8b50"
+              "color": "rgb(0, 0, 0)"
+            }
+          },
+          {
+            "types": [
+              "constant",
+              "char"
+            ],
+            "style": {
+              "color": "rgb(129, 31, 63)"
             }
           },
           {
@@ -217,102 +210,50 @@ export default {
               "tag"
             ],
             "style": {
-              "color": "#fc929e"
+              "color": "rgb(128, 0, 0)"
             }
           },
           {
             "types": [
+              "attr-name"
+            ],
+            "style": {
+              "color": "rgb(255, 0, 0)"
+            }
+          },
+          {
+            "types": [
+              "deleted",
               "string"
             ],
             "style": {
-              "color": "#8dc891"
+              "color": "rgb(163, 21, 21)"
             }
           },
           {
             "types": [
+              "changed",
               "punctuation"
             ],
             "style": {
-              "color": "#8dc891"
+              "color": "rgb(4, 81, 165)"
             }
           },
           {
             "types": [
-              "selector",
-              "char",
-              "builtin",
-              "inserted"
-            ],
-            "style": {
-              "color": "#D8DEE9"
-            }
-          },
-          {
-            "types": [
-              "function"
-            ],
-            "style": {
-              "color": "#79b6f2"
-            }
-          },
-          {
-            "types": [
-              "operator",
-              "entity",
-              "url",
-              "variable"
-            ],
-            "style": {
-              "color": "#d7deea"
-            }
-          },
-          {
-            "types": [
+              "function",
               "keyword"
             ],
             "style": {
-              "color": "#c5a5c5"
+              "color": "rgb(0, 0, 255)"
             }
           },
           {
             "types": [
-              "atrule",
               "class-name"
             ],
             "style": {
-              "color": "#FAC863"
-            }
-          },
-          {
-            "types": [
-              "important"
-            ],
-            "style": {
-              "fontWeight": "400"
-            }
-          },
-          {
-            "types": [
-              "bold"
-            ],
-            "style": {
-              "fontWeight": "bold"
-            }
-          },
-          {
-            "types": [
-              "italic"
-            ],
-            "style": {
-              "fontStyle": "italic"
-            }
-          },
-          {
-            "types": [
-              "namespace"
-            ],
-            "style": {
-              "opacity": 0.7
+              "color": "rgb(38, 127, 153)"
             }
           }
         ]

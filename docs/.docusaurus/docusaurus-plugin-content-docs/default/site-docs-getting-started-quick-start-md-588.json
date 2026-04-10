@@ -5,7 +5,7 @@
   "source": "@site/docs/getting-started/quick-start.md",
   "sourceDirName": "getting-started",
   "slug": "/getting-started/quick-start",
-  "permalink": "/mint-cli/getting-started/quick-start",
+  "permalink": "/writechoice-mint-cli/getting-started/quick-start",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/getting-started/quick-start.md",
@@ -19,10 +19,10 @@
   "sidebar": "docs",
   "previous": {
     "title": "Installation",
-    "permalink": "/mint-cli/getting-started/installation"
+    "permalink": "/writechoice-mint-cli/getting-started/installation"
   },
   "next": {
     "title": "Check Links",
-    "permalink": "/mint-cli/commands/check/links"
+    "permalink": "/writechoice-mint-cli/commands/check/links"
   }
 }

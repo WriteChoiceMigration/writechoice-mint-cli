@@ -5,7 +5,7 @@
   "source": "@site/docs/configuration/advanced.md",
   "sourceDirName": "configuration",
   "slug": "/configuration/advanced",
-  "permalink": "/mint-cli/configuration/advanced",
+  "permalink": "/writechoice-mint-cli/configuration/advanced",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/configuration/advanced.md",
@@ -19,10 +19,10 @@
   "sidebar": "docs",
   "previous": {
     "title": "Configuration File Reference",
-    "permalink": "/mint-cli/configuration/config-file"
+    "permalink": "/writechoice-mint-cli/configuration/config-file"
   },
   "next": {
     "title": "Publishing",
-    "permalink": "/mint-cli/configuration/publishing"
+    "permalink": "/writechoice-mint-cli/configuration/publishing"
   }
 }

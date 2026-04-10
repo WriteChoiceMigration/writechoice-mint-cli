@@ -13,8 +13,8 @@
       "calendar": "gregory",
       "path": "en",
       "translate": false,
-      "url": "https://writechoice.github.io",
-      "baseUrl": "/mint-cli/"
+      "url": "https://writechoicemigration.github.io",
+      "baseUrl": "/writechoice-mint-cli/"
     }
   }
 }

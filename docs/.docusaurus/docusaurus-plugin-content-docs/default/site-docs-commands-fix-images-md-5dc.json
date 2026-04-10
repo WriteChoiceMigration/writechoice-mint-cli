@@ -5,7 +5,7 @@
   "source": "@site/docs/commands/fix/images.md",
   "sourceDirName": "commands/fix",
   "slug": "/commands/fix/images",
-  "permalink": "/mint-cli/commands/fix/images",
+  "permalink": "/writechoice-mint-cli/commands/fix/images",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/fix/images.md",
@@ -19,10 +19,10 @@
   "sidebar": "docs",
   "previous": {
     "title": "Fix Codeblocks",
-    "permalink": "/mint-cli/commands/fix/codeblocks"
+    "permalink": "/writechoice-mint-cli/commands/fix/codeblocks"
   },
   "next": {
     "title": "Fix Inline Images",
-    "permalink": "/mint-cli/commands/fix/inlineimages"
+    "permalink": "/writechoice-mint-cli/commands/fix/inlineimages"
   }
 }

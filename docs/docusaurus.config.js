@@ -11,11 +11,11 @@ const config = {
   tagline: "Validate, fix, and manage Mintlify documentation with confidence.",
   favicon: "img/favicon.ico",
 
-  url: "https://writechoice.github.io",
-  baseUrl: "/mint-cli/",
+  url: "https://writechoicemigration.github.io",
+  baseUrl: "/writechoice-mint-cli/",
 
-  organizationName: "writechoice",
-  projectName: "mint-cli",
+  organizationName: "WriteChoiceMigration",
+  projectName: "writechoice-mint-cli",
 
   onBrokenLinks: "warn",
   markdown: {
@@ -102,7 +102,7 @@ const config = {
         copyright: `Copyright © ${new Date().getFullYear()} WriteChoice. Built with Docusaurus.`,
       },
       prism: {
-        theme: prismThemes.oceanicNext,
+        theme: prismThemes.vsLight,
         darkTheme: prismThemes.vsDark,
         additionalLanguages: ["ruby", "csharp", "php", "java", "powershell", "json", "bash", "yaml"],
       },
