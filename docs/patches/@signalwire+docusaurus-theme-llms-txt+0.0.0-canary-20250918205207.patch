@@ -1,3 +1,38 @@
+diff --git a/node_modules/@signalwire/docusaurus-theme-llms-txt/lib/hooks/useCopyActions.js b/node_modules/@signalwire/docusaurus-theme-llms-txt/lib/hooks/useCopyActions.js
+index c1db38a..33fb23b 100644
+--- a/node_modules/@signalwire/docusaurus-theme-llms-txt/lib/hooks/useCopyActions.js
++++ b/node_modules/@signalwire/docusaurus-theme-llms-txt/lib/hooks/useCopyActions.js
+@@ -14,6 +14,21 @@ function useCopyActions(finalConfig, siteConfig, setIsOpen) {
+     const [copyStatus, setCopyStatus] = (0, react_1.useState)('idle');
+     const location = (0, router_1.useLocation)();
+     const pathname = location.pathname;
++    const writeToClipboard = async (text) => {
++        if (navigator.clipboard && window.isSecureContext) {
++            await navigator.clipboard.writeText(text);
++        } else {
++            const textarea = document.createElement('textarea');
++            textarea.value = text;
++            textarea.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
++            document.body.appendChild(textarea);
++            textarea.focus();
++            textarea.select();
++            const ok = document.execCommand('copy');
++            document.body.removeChild(textarea);
++            if (!ok) throw new Error('execCommand copy failed');
++        }
++    };
+     const handleAction = async (action) => {
+         setIsOpen(false);
+         if (action === 'copyRaw') {
+@@ -25,7 +40,7 @@ function useCopyActions(finalConfig, siteConfig, setIsOpen) {
+                     throw new Error('Failed to fetch markdown');
+                 }
+                 const content = await response.text();
+-                await navigator.clipboard.writeText(content);
++                await writeToClipboard(content);
+                 setCopyStatus('success');
+                 setTimeout(() => setCopyStatus('idle'), 2000);
+             }
 diff --git a/node_modules/@signalwire/docusaurus-theme-llms-txt/lib/index.js b/node_modules/@signalwire/docusaurus-theme-llms-txt/lib/index.js
 new file mode 100644
 index 0000000..ed06ee4
