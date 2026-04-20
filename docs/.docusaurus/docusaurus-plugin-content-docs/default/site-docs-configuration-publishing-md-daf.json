@@ -5,7 +5,7 @@
   "source": "@site/docs/configuration/publishing.md",
   "sourceDirName": "configuration",
   "slug": "/configuration/publishing",
-  "permalink": "/writechoice-mint-cli/configuration/publishing",
+  "permalink": "/configuration/publishing",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/configuration/publishing.md",
@@ -19,6 +19,6 @@
   "sidebar": "docs",
   "previous": {
     "title": "Advanced Configuration",
-    "permalink": "/writechoice-mint-cli/configuration/advanced"
+    "permalink": "/configuration/advanced"
   }
 }

@@ -29,8 +29,8 @@ export default {
   "title": "WriteChoice Mint CLI",
   "tagline": "Validate, fix, and manage Mintlify documentation with confidence.",
   "favicon": "img/favicon.ico",
-  "url": "https://writechoicemigration.github.io",
-  "baseUrl": "/writechoice-mint-cli/",
+  "url": "https://cli.writechoice.io",
+  "baseUrl": "/",
   "organizationName": "WriteChoiceMigration",
   "projectName": "writechoice-mint-cli",
   "onBrokenLinks": "warn",
@@ -72,6 +72,18 @@ export default {
         "theme": {
           "customCss": "./src/css/custom.css"
         }
+      }
+    ]
+  ],
+  "themes": [
+    "@signalwire/docusaurus-theme-llms-txt"
+  ],
+  "plugins": [
+    [
+      "@signalwire/docusaurus-plugin-llms-txt",
+      {
+        "siteTitle": "WriteChoice Mint CLI",
+        "siteDescription": "Validate, fix, and manage Mintlify documentation with confidence."
       }
     ]
   ],
@@ -456,8 +468,6 @@ export default {
     "static"
   ],
   "customFields": {},
-  "plugins": [],
-  "themes": [],
   "scripts": [],
   "headTags": [],
   "stylesheets": [],

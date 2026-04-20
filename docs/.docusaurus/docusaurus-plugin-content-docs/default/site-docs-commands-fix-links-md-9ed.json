@@ -5,7 +5,7 @@
   "source": "@site/docs/commands/fix/links.md",
   "sourceDirName": "commands/fix",
   "slug": "/commands/fix/links",
-  "permalink": "/writechoice-mint-cli/commands/fix/links",
+  "permalink": "/commands/fix/links",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/fix/links.md",
@@ -19,10 +19,10 @@
   "sidebar": "docs",
   "previous": {
     "title": "Check KaTeX",
-    "permalink": "/writechoice-mint-cli/commands/check/katex"
+    "permalink": "/commands/check/katex"
   },
   "next": {
     "title": "Fix Parse",
-    "permalink": "/writechoice-mint-cli/commands/fix/parse"
+    "permalink": "/commands/fix/parse"
   }
 }

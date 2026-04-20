@@ -5,7 +5,7 @@
   "source": "@site/docs/commands/metadata.md",
   "sourceDirName": "commands",
   "slug": "/commands/metadata",
-  "permalink": "/writechoice-mint-cli/commands/metadata",
+  "permalink": "/commands/metadata",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/metadata.md",
@@ -19,10 +19,10 @@
   "sidebar": "docs",
   "previous": {
     "title": "Docusaurus Nav",
-    "permalink": "/writechoice-mint-cli/commands/docusaurus/nav"
+    "permalink": "/commands/docusaurus/nav"
   },
   "next": {
     "title": "Scrape",
-    "permalink": "/writechoice-mint-cli/commands/scrape"
+    "permalink": "/commands/scrape"
   }
 }

@@ -1,158 +1,158 @@
 {
   "docusaurus-plugin-content-docs": {
     "default": {
-      "path": "/writechoice-mint-cli/",
+      "path": "/",
       "versions": [
         {
           "name": "current",
           "label": "Next",
           "isLast": true,
-          "path": "/writechoice-mint-cli/",
+          "path": "/",
           "mainDocId": "intro",
           "docs": [
             {
               "id": "commands/check/images",
-              "path": "/writechoice-mint-cli/commands/check/images",
+              "path": "/commands/check/images",
               "sidebar": "docs"
             },
             {
               "id": "commands/check/katex",
-              "path": "/writechoice-mint-cli/commands/check/katex",
+              "path": "/commands/check/katex",
               "sidebar": "docs"
             },
             {
               "id": "commands/check/links",
-              "path": "/writechoice-mint-cli/commands/check/links",
+              "path": "/commands/check/links",
               "sidebar": "docs"
             },
             {
               "id": "commands/check/pages",
-              "path": "/writechoice-mint-cli/commands/check/pages",
+              "path": "/commands/check/pages",
               "sidebar": "docs"
             },
             {
               "id": "commands/check/parse",
-              "path": "/writechoice-mint-cli/commands/check/parse",
+              "path": "/commands/check/parse",
               "sidebar": "docs"
             },
             {
               "id": "commands/config",
-              "path": "/writechoice-mint-cli/commands/config",
+              "path": "/commands/config",
               "sidebar": "docs"
             },
             {
               "id": "commands/docusaurus/convert",
-              "path": "/writechoice-mint-cli/commands/docusaurus/convert",
+              "path": "/commands/docusaurus/convert",
               "sidebar": "docs"
             },
             {
               "id": "commands/docusaurus/nav",
-              "path": "/writechoice-mint-cli/commands/docusaurus/nav",
+              "path": "/commands/docusaurus/nav",
               "sidebar": "docs"
             },
             {
               "id": "commands/docusaurus/slugify",
-              "path": "/writechoice-mint-cli/commands/docusaurus/slugify",
+              "path": "/commands/docusaurus/slugify",
               "sidebar": "docs"
             },
             {
               "id": "commands/fix/codeblocks",
-              "path": "/writechoice-mint-cli/commands/fix/codeblocks",
+              "path": "/commands/fix/codeblocks",
               "sidebar": "docs"
             },
             {
               "id": "commands/fix/h1",
-              "path": "/writechoice-mint-cli/commands/fix/h1",
+              "path": "/commands/fix/h1",
               "sidebar": "docs"
             },
             {
               "id": "commands/fix/images",
-              "path": "/writechoice-mint-cli/commands/fix/images",
+              "path": "/commands/fix/images",
               "sidebar": "docs"
             },
             {
               "id": "commands/fix/imports",
-              "path": "/writechoice-mint-cli/commands/fix/imports",
+              "path": "/commands/fix/imports",
               "sidebar": "docs"
             },
             {
               "id": "commands/fix/inlineimages",
-              "path": "/writechoice-mint-cli/commands/fix/inlineimages",
+              "path": "/commands/fix/inlineimages",
               "sidebar": "docs"
             },
             {
               "id": "commands/fix/links",
-              "path": "/writechoice-mint-cli/commands/fix/links",
+              "path": "/commands/fix/links",
               "sidebar": "docs"
             },
             {
               "id": "commands/fix/parse",
-              "path": "/writechoice-mint-cli/commands/fix/parse",
+              "path": "/commands/fix/parse",
               "sidebar": "docs"
             },
             {
               "id": "commands/fix/redirects",
-              "path": "/writechoice-mint-cli/commands/fix/redirects",
+              "path": "/commands/fix/redirects",
               "sidebar": "docs"
             },
             {
               "id": "commands/metadata",
-              "path": "/writechoice-mint-cli/commands/metadata",
+              "path": "/commands/metadata",
               "sidebar": "docs"
             },
             {
               "id": "commands/nav/folders",
-              "path": "/writechoice-mint-cli/commands/nav/folders",
+              "path": "/commands/nav/folders",
               "sidebar": "docs"
             },
             {
               "id": "commands/nav/root",
-              "path": "/writechoice-mint-cli/commands/nav/root",
+              "path": "/commands/nav/root",
               "sidebar": "docs"
             },
             {
               "id": "commands/scrape",
-              "path": "/writechoice-mint-cli/commands/scrape",
+              "path": "/commands/scrape",
               "sidebar": "docs"
             },
             {
               "id": "commands/session",
-              "path": "/writechoice-mint-cli/commands/session",
+              "path": "/commands/session",
               "sidebar": "docs"
             },
             {
               "id": "commands/update",
-              "path": "/writechoice-mint-cli/commands/update",
+              "path": "/commands/update",
               "sidebar": "docs"
             },
             {
               "id": "configuration/advanced",
-              "path": "/writechoice-mint-cli/configuration/advanced",
+              "path": "/configuration/advanced",
               "sidebar": "docs"
             },
             {
               "id": "configuration/config-file",
-              "path": "/writechoice-mint-cli/configuration/config-file",
+              "path": "/configuration/config-file",
               "sidebar": "docs"
             },
             {
               "id": "configuration/publishing",
-              "path": "/writechoice-mint-cli/configuration/publishing",
+              "path": "/configuration/publishing",
               "sidebar": "docs"
             },
             {
               "id": "getting-started/installation",
-              "path": "/writechoice-mint-cli/getting-started/installation",
+              "path": "/getting-started/installation",
               "sidebar": "docs"
             },
             {
               "id": "getting-started/quick-start",
-              "path": "/writechoice-mint-cli/getting-started/quick-start",
+              "path": "/getting-started/quick-start",
               "sidebar": "docs"
             },
             {
               "id": "intro",
-              "path": "/writechoice-mint-cli/",
+              "path": "/",
               "sidebar": "docs"
             }
           ],
@@ -160,7 +160,7 @@
           "sidebars": {
             "docs": {
               "link": {
-                "path": "/writechoice-mint-cli/",
+                "path": "/",
                 "label": "Introduction"
               }
             }
@@ -168,6 +168,16 @@
         }
       ],
       "breadcrumbs": true
+    }
+  },
+  "docusaurus-plugin-llms-txt": {
+    "default": {
+      "copyContentDataUrl": "/copy-content-data.json",
+      "siteConfig": {
+        "url": "https://cli.writechoice.io",
+        "baseUrl": "/",
+        "trailingSlash": false
+      }
     }
   }
 }

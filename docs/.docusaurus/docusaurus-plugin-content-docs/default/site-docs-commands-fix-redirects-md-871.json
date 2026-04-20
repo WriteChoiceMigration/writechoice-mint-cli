@@ -5,7 +5,7 @@
   "source": "@site/docs/commands/fix/redirects.md",
   "sourceDirName": "commands/fix",
   "slug": "/commands/fix/redirects",
-  "permalink": "/writechoice-mint-cli/commands/fix/redirects",
+  "permalink": "/commands/fix/redirects",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/fix/redirects.md",
@@ -19,10 +19,10 @@
   "sidebar": "docs",
   "previous": {
     "title": "Fix Imports",
-    "permalink": "/writechoice-mint-cli/commands/fix/imports"
+    "permalink": "/commands/fix/imports"
   },
   "next": {
     "title": "Nav Folders",
-    "permalink": "/writechoice-mint-cli/commands/nav/folders"
+    "permalink": "/commands/nav/folders"
   }
 }

@@ -3,223 +3,188 @@ import ComponentCreator from '@docusaurus/ComponentCreator';
 
 export default [
   {
-    path: '/writechoice-mint-cli/__docusaurus/debug',
-    component: ComponentCreator('/writechoice-mint-cli/__docusaurus/debug', 'd64'),
-    exact: true
-  },
-  {
-    path: '/writechoice-mint-cli/__docusaurus/debug/config',
-    component: ComponentCreator('/writechoice-mint-cli/__docusaurus/debug/config', 'da9'),
-    exact: true
-  },
-  {
-    path: '/writechoice-mint-cli/__docusaurus/debug/content',
-    component: ComponentCreator('/writechoice-mint-cli/__docusaurus/debug/content', '412'),
-    exact: true
-  },
-  {
-    path: '/writechoice-mint-cli/__docusaurus/debug/globalData',
-    component: ComponentCreator('/writechoice-mint-cli/__docusaurus/debug/globalData', '199'),
-    exact: true
-  },
-  {
-    path: '/writechoice-mint-cli/__docusaurus/debug/metadata',
-    component: ComponentCreator('/writechoice-mint-cli/__docusaurus/debug/metadata', '7ed'),
-    exact: true
-  },
-  {
-    path: '/writechoice-mint-cli/__docusaurus/debug/registry',
-    component: ComponentCreator('/writechoice-mint-cli/__docusaurus/debug/registry', '2f7'),
-    exact: true
-  },
-  {
-    path: '/writechoice-mint-cli/__docusaurus/debug/routes',
-    component: ComponentCreator('/writechoice-mint-cli/__docusaurus/debug/routes', '77f'),
-    exact: true
-  },
-  {
-    path: '/writechoice-mint-cli/',
-    component: ComponentCreator('/writechoice-mint-cli/', '783'),
+    path: '/',
+    component: ComponentCreator('/', '32e'),
     routes: [
       {
-        path: '/writechoice-mint-cli/',
-        component: ComponentCreator('/writechoice-mint-cli/', '410'),
+        path: '/',
+        component: ComponentCreator('/', '58b'),
         routes: [
           {
-            path: '/writechoice-mint-cli/',
-            component: ComponentCreator('/writechoice-mint-cli/', '9b7'),
+            path: '/',
+            component: ComponentCreator('/', '454'),
             routes: [
               {
-                path: '/writechoice-mint-cli/commands/check/images',
-                component: ComponentCreator('/writechoice-mint-cli/commands/check/images', '9c8'),
+                path: '/commands/check/images',
+                component: ComponentCreator('/commands/check/images', '735'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/check/katex',
-                component: ComponentCreator('/writechoice-mint-cli/commands/check/katex', 'c3c'),
+                path: '/commands/check/katex',
+                component: ComponentCreator('/commands/check/katex', 'bfd'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/check/links',
-                component: ComponentCreator('/writechoice-mint-cli/commands/check/links', '0e2'),
+                path: '/commands/check/links',
+                component: ComponentCreator('/commands/check/links', '830'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/check/pages',
-                component: ComponentCreator('/writechoice-mint-cli/commands/check/pages', '9c4'),
+                path: '/commands/check/pages',
+                component: ComponentCreator('/commands/check/pages', 'f67'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/check/parse',
-                component: ComponentCreator('/writechoice-mint-cli/commands/check/parse', 'e15'),
+                path: '/commands/check/parse',
+                component: ComponentCreator('/commands/check/parse', '9b5'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/config',
-                component: ComponentCreator('/writechoice-mint-cli/commands/config', 'd77'),
+                path: '/commands/config',
+                component: ComponentCreator('/commands/config', '86e'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/docusaurus/convert',
-                component: ComponentCreator('/writechoice-mint-cli/commands/docusaurus/convert', '77f'),
+                path: '/commands/docusaurus/convert',
+                component: ComponentCreator('/commands/docusaurus/convert', '4d1'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/docusaurus/nav',
-                component: ComponentCreator('/writechoice-mint-cli/commands/docusaurus/nav', '200'),
+                path: '/commands/docusaurus/nav',
+                component: ComponentCreator('/commands/docusaurus/nav', '76b'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/docusaurus/slugify',
-                component: ComponentCreator('/writechoice-mint-cli/commands/docusaurus/slugify', 'ecd'),
+                path: '/commands/docusaurus/slugify',
+                component: ComponentCreator('/commands/docusaurus/slugify', 'f73'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/fix/codeblocks',
-                component: ComponentCreator('/writechoice-mint-cli/commands/fix/codeblocks', '70b'),
+                path: '/commands/fix/codeblocks',
+                component: ComponentCreator('/commands/fix/codeblocks', '5c5'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/fix/h1',
-                component: ComponentCreator('/writechoice-mint-cli/commands/fix/h1', 'cb9'),
+                path: '/commands/fix/h1',
+                component: ComponentCreator('/commands/fix/h1', '1a4'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/fix/images',
-                component: ComponentCreator('/writechoice-mint-cli/commands/fix/images', '2d3'),
+                path: '/commands/fix/images',
+                component: ComponentCreator('/commands/fix/images', 'b52'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/fix/imports',
-                component: ComponentCreator('/writechoice-mint-cli/commands/fix/imports', '35c'),
+                path: '/commands/fix/imports',
+                component: ComponentCreator('/commands/fix/imports', '29a'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/fix/inlineimages',
-                component: ComponentCreator('/writechoice-mint-cli/commands/fix/inlineimages', 'ca4'),
+                path: '/commands/fix/inlineimages',
+                component: ComponentCreator('/commands/fix/inlineimages', 'c47'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/fix/links',
-                component: ComponentCreator('/writechoice-mint-cli/commands/fix/links', 'ca6'),
+                path: '/commands/fix/links',
+                component: ComponentCreator('/commands/fix/links', 'c0f'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/fix/parse',
-                component: ComponentCreator('/writechoice-mint-cli/commands/fix/parse', '47b'),
+                path: '/commands/fix/parse',
+                component: ComponentCreator('/commands/fix/parse', '4aa'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/fix/redirects',
-                component: ComponentCreator('/writechoice-mint-cli/commands/fix/redirects', 'c33'),
+                path: '/commands/fix/redirects',
+                component: ComponentCreator('/commands/fix/redirects', '89d'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/metadata',
-                component: ComponentCreator('/writechoice-mint-cli/commands/metadata', 'eab'),
+                path: '/commands/metadata',
+                component: ComponentCreator('/commands/metadata', '513'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/nav/folders',
-                component: ComponentCreator('/writechoice-mint-cli/commands/nav/folders', '51a'),
+                path: '/commands/nav/folders',
+                component: ComponentCreator('/commands/nav/folders', '602'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/nav/root',
-                component: ComponentCreator('/writechoice-mint-cli/commands/nav/root', 'bfe'),
+                path: '/commands/nav/root',
+                component: ComponentCreator('/commands/nav/root', 'e8e'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/scrape',
-                component: ComponentCreator('/writechoice-mint-cli/commands/scrape', '932'),
+                path: '/commands/scrape',
+                component: ComponentCreator('/commands/scrape', '388'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/session',
-                component: ComponentCreator('/writechoice-mint-cli/commands/session', '4e5'),
+                path: '/commands/session',
+                component: ComponentCreator('/commands/session', '295'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/commands/update',
-                component: ComponentCreator('/writechoice-mint-cli/commands/update', 'cd6'),
+                path: '/commands/update',
+                component: ComponentCreator('/commands/update', '1cf'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/configuration/advanced',
-                component: ComponentCreator('/writechoice-mint-cli/configuration/advanced', 'b05'),
+                path: '/configuration/advanced',
+                component: ComponentCreator('/configuration/advanced', '37f'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/configuration/config-file',
-                component: ComponentCreator('/writechoice-mint-cli/configuration/config-file', 'e12'),
+                path: '/configuration/config-file',
+                component: ComponentCreator('/configuration/config-file', 'c77'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/configuration/publishing',
-                component: ComponentCreator('/writechoice-mint-cli/configuration/publishing', 'ab2'),
+                path: '/configuration/publishing',
+                component: ComponentCreator('/configuration/publishing', '7aa'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/getting-started/installation',
-                component: ComponentCreator('/writechoice-mint-cli/getting-started/installation', 'cf9'),
+                path: '/getting-started/installation',
+                component: ComponentCreator('/getting-started/installation', 'e0c'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/getting-started/quick-start',
-                component: ComponentCreator('/writechoice-mint-cli/getting-started/quick-start', '3ee'),
+                path: '/getting-started/quick-start',
+                component: ComponentCreator('/getting-started/quick-start', '5eb'),
                 exact: true,
                 sidebar: "docs"
               },
               {
-                path: '/writechoice-mint-cli/',
-                component: ComponentCreator('/writechoice-mint-cli/', '940'),
+                path: '/',
+                component: ComponentCreator('/', '7da'),
                 exact: true,
                 sidebar: "docs"
               }

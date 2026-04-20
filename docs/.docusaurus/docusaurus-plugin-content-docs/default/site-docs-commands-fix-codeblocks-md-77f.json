@@ -5,7 +5,7 @@
   "source": "@site/docs/commands/fix/codeblocks.md",
   "sourceDirName": "commands/fix",
   "slug": "/commands/fix/codeblocks",
-  "permalink": "/writechoice-mint-cli/commands/fix/codeblocks",
+  "permalink": "/commands/fix/codeblocks",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/fix/codeblocks.md",
@@ -19,10 +19,10 @@
   "sidebar": "docs",
   "previous": {
     "title": "Fix Parse",
-    "permalink": "/writechoice-mint-cli/commands/fix/parse"
+    "permalink": "/commands/fix/parse"
   },
   "next": {
     "title": "Fix Images",
-    "permalink": "/writechoice-mint-cli/commands/fix/images"
+    "permalink": "/commands/fix/images"
   }
 }

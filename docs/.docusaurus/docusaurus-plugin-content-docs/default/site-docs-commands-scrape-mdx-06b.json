@@ -5,7 +5,7 @@
   "source": "@site/docs/commands/scrape.mdx",
   "sourceDirName": "commands",
   "slug": "/commands/scrape",
-  "permalink": "/writechoice-mint-cli/commands/scrape",
+  "permalink": "/commands/scrape",
   "draft": false,
   "unlisted": false,
   "editUrl": "https://github.com/WriteChoiceMigration/writechoice-mint-cli/edit/main/docs/docs/commands/scrape.mdx",
@@ -19,10 +19,10 @@
   "sidebar": "docs",
   "previous": {
     "title": "Metadata",
-    "permalink": "/writechoice-mint-cli/commands/metadata"
+    "permalink": "/commands/metadata"
   },
   "next": {
     "title": "Session",
-    "permalink": "/writechoice-mint-cli/commands/session"
+    "permalink": "/commands/session"
   }
 }
