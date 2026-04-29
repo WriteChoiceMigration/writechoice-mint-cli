@@ -47,15 +47,7 @@ const config = {
     ],
   ],
   themes: ["@signalwire/docusaurus-theme-llms-txt"],
-  plugins: [
-    [
-      "@signalwire/docusaurus-plugin-llms-txt",
-      {
-        siteTitle: "WriteChoice Mint CLI",
-        siteDescription: "Validate, fix, and manage Mintlify documentation with confidence.",
-      },
-    ],
-  ],
+  plugins: [["@writechoice/docusaurus-plugin-llms"]],
 
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */

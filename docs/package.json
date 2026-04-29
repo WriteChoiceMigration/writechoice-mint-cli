@@ -21,6 +21,7 @@
     "@mdx-js/react": "^3.0.0",
     "@signalwire/docusaurus-plugin-llms-txt": "^1.2.2",
     "@signalwire/docusaurus-theme-llms-txt": "^0.0.0-canary-20250918205207",
+    "@writechoice/docusaurus-plugin-llms": "file:writechoice-docusaurus-plugin-llms-0.1.0.tgz",
     "clsx": "^2.0.0",
     "patch-package": "^8.0.1",
     "prism-react-renderer": "^2.3.0",

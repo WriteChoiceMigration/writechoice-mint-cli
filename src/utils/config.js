@@ -376,7 +376,14 @@ export function mergePagesConfig(baseUrl, options, config) {
     output: options.output || pagesConfig.output || "pages_report.json",
     concurrency: options.concurrency != null
       ? parseInt(options.concurrency, 10)
-      : (pagesConfig.concurrency ?? 50),
+      : (pagesConfig.concurrency ?? null),
+    batchSize: options.batchSize != null
+      ? parseInt(options.batchSize, 10)
+      : (pagesConfig.batchSize ?? 100),
+    batchPause: options.batchPause != null
+      ? parseInt(options.batchPause, 10)
+      : (pagesConfig.batchPause ?? 5000),
+    local: options.local ?? pagesConfig.local ?? false,
     quiet: options.quiet !== undefined ? options.quiet : (pagesConfig.quiet ?? false),
   };
 }

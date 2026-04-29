@@ -36,7 +36,7 @@ export async function generateConfig(options) {
       url: null,
       docs: "docs.json",
       output: "pages_report.json",
-      concurrency: 50,
+      concurrency: 20,
       quiet: false,
     },
 
