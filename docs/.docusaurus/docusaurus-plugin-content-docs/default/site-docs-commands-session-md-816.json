@@ -18,8 +18,8 @@
   },
   "sidebar": "docs",
   "previous": {
-    "title": "Scrape",
-    "permalink": "/commands/scrape"
+    "title": "Metadata",
+    "permalink": "/commands/metadata"
   },
   "next": {
     "title": "Config",

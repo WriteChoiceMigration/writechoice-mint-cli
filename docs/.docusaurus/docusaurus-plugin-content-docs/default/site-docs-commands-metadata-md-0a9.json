@@ -22,7 +22,7 @@
     "permalink": "/commands/docusaurus/nav"
   },
   "next": {
-    "title": "Scrape",
-    "permalink": "/commands/scrape"
+    "title": "Session",
+    "permalink": "/commands/session"
   }
 }

@@ -76,14 +76,19 @@ export default {
     ]
   ],
   "themes": [
-    "@signalwire/docusaurus-theme-llms-txt"
+    "@writechoice/docusaurus-theme-llms-txt"
   ],
   "plugins": [
     [
-      "@signalwire/docusaurus-plugin-llms-txt",
+      "@writechoice/docusaurus-plugin-llms-txt",
       {
-        "siteTitle": "WriteChoice Mint CLI",
-        "siteDescription": "Validate, fix, and manage Mintlify documentation with confidence."
+        "generateLlmsTxt": true,
+        "generateMarkdownFiles": true,
+        "generateLlmsFullTxt": true,
+        "description": "API documentation for My Platform",
+        "deployTarget": "cloudflare",
+        "generateMcp": true,
+        "maxMcpContent": 8000
       }
     ]
   ],

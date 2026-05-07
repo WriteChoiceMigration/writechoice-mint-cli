@@ -111,8 +111,18 @@
               "sidebar": "docs"
             },
             {
-              "id": "commands/scrape",
-              "path": "/commands/scrape",
+              "id": "commands/scrape/config-reference",
+              "path": "/commands/scrape/config-reference",
+              "sidebar": "docs"
+            },
+            {
+              "id": "commands/scrape/index",
+              "path": "/commands/scrape/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "commands/scrape/script-hooks",
+              "path": "/commands/scrape/script-hooks",
               "sidebar": "docs"
             },
             {
@@ -168,16 +178,6 @@
         }
       ],
       "breadcrumbs": true
-    }
-  },
-  "docusaurus-plugin-llms-txt": {
-    "default": {
-      "copyContentDataUrl": "/copy-content-data.json",
-      "siteConfig": {
-        "url": "https://cli.writechoice.io",
-        "baseUrl": "/",
-        "trailingSlash": false
-      }
     }
   }
 }

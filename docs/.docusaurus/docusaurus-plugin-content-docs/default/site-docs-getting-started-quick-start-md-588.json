@@ -22,7 +22,7 @@
     "permalink": "/getting-started/installation"
   },
   "next": {
-    "title": "Check Links",
-    "permalink": "/commands/check/links"
+    "title": "Scrape",
+    "permalink": "/commands/scrape/"
   }
 }

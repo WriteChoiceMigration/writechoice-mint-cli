@@ -1,0 +1,219 @@
+---
+title: Config Reference
+---
+
+# Scrape Config Reference
+
+Full `scrape` section for `config.json`, with every key explained.
+
+```json
+{
+  "scrape": {
+
+    // ── Input ────────────────────────────────────────────────────────────────
+
+    // Path to a JSON file containing an array of URLs to scrape.
+    // Silently skipped if the file doesn't exist (use --urls-file to error instead).
+    "urls_file": "urls.json",
+
+    // ── Output ───────────────────────────────────────────────────────────────
+
+    // Directory where MDX files are written.
+    // URL paths map directly to subdirectories: /docs/overview → output/docs/overview.mdx
+    "output": "output",
+
+    // ── Execution ────────────────────────────────────────────────────────────
+
+    // Number of URLs fetched and converted in parallel.
+    "concurrency": 3,
+
+    // Use Playwright (headless Chromium) instead of native fetch.
+    // Required for JavaScript-rendered pages. Slower but handles SPAs.
+    "playwright": false,
+
+    // Preview mode — run the full pipeline but skip writing files.
+    "dry-run": false,
+
+    // Suppress all terminal output.
+    "quiet": false,
+
+    // ── Content Selection ─────────────────────────────────────────────────────
+
+    // CSS selector for the main content area. Everything outside this element is ignored.
+    // Use a specific selector (e.g. "main", "article", ".doc-content") to avoid
+    // scraping navigation, headers, and footers.
+    "content_selector": "body",
+
+    // CSS selector for the page title. Text is extracted and used as the frontmatter title.
+    // Falls back to the <title> tag if no element is found.
+    // Site name suffixes are stripped automatically ("Page | Site" → "Page").
+    "title_selector": "h1",
+
+    // Array of CSS selectors to remove before conversion.
+    // Use this to strip navigation, breadcrumbs, feedback widgets, ads, etc.
+    // Example: [".sidebar", ".toc", "nav", ".feedback-form"]
+    "elements_to_remove": [],
+
+    // HTML tags whose content is preserved as raw HTML in the MDX output,
+    // bypassing Markdown conversion. Tables and iframes are kept by default
+    // because they don't have clean Markdown equivalents.
+    "html_preserve_elements": ["table", "iframe"],
+
+    // Additional CSS selectors to preserve as raw HTML.
+    // Useful for complex widgets or SVG diagrams you want to keep verbatim.
+    // Example: ["figure.diagram", ".code-playground"]
+    "html_preserve_custom": [],
+
+    // ── Images ───────────────────────────────────────────────────────────────
+
+    "images": {
+      // How to handle image URLs found in the content.
+      // "keep_remote"      — leave the original URL unchanged (fastest, default)
+      // "download_by_url"  — download each image; save path mirrors the image URL path
+      // "download_by_page" — download each image; save under a folder named after the page slug
+      "strategy": "keep_remote",
+
+      // Base folder for downloaded images (relative to cwd).
+      // Only used when strategy is "download_by_url" or "download_by_page".
+      "folder": "images"
+    },
+
+    // ── Components ────────────────────────────────────────────────────────────
+
+    // Array of component definitions. Each entry maps an HTML pattern to a Mintlify MDX component.
+    // The "name" field becomes the JSX tag in the output.
+    // Native <details>/<summary> are always converted to <Accordion> automatically.
+    "components": [
+      {
+        // MDX component name — becomes the JSX tag (<Note>)
+        "name": "Note",
+
+        // CSS selector matching the container element for this component
+        "selector": ".admonition.note",
+
+        // Props to extract. Each key becomes a JSX prop (or child text with "child": true).
+        "props": {
+          // "child": true → renders as **bold text** inside the component body,
+          // not as a JSX attribute. Use this for Mintlify callouts where the title
+          // is a child element, not a prop.
+          "title": { "selector": ".admonition-title", "child": true }
+        },
+
+        // CSS selector for the inner content. Defaults to full innerHTML if omitted.
+        "content": ".admonition-body"
+      },
+      {
+        "name": "Warning",
+        "selector": ".admonition.warning",
+        "props": {
+          "title": { "selector": ".admonition-title", "child": true }
+        },
+        "content": ".admonition-body"
+      },
+      {
+        "name": "Accordion",
+        "selector": ".faq-item",
+
+        // "group" controls how matched items are wrapped.
+        // With "selector": finds containers matching that selector, collects items inside.
+        // Without "selector": auto-groups consecutive sibling matches.
+        // "wrapper" is the MDX tag wrapping the group (<AccordionGroup>).
+        "group": {
+          "selector": ".faq-group",
+          "wrapper": "AccordionGroup"
+        },
+
+        // String shorthand: find child element by selector, use its text as the prop value.
+        // The element is removed from the content area so it doesn't appear twice.
+        "props": {
+          "title": ".faq-question"
+        },
+        "content": ".faq-answer"
+      },
+      {
+        "name": "Card",
+        "selector": "a.card",
+        "group": {
+          // No "selector" → auto-group consecutive sibling matches
+          "wrapper": "CardGroup"
+        },
+        "props": {
+          "title": ".card-title",
+
+          // Object with "attr" only → reads the attribute from the matched element itself
+          "icon": { "attr": "data-icon" },
+          "href": { "attr": "href" },
+
+          // "image": true → treats the value as an image URL, downloaded per the images strategy
+          "img": { "selector": "img.card-thumb", "attr": "src", "image": true }
+        },
+        "content": ".card-body"
+      },
+      {
+        "name": "Tab",
+        "selector": ".tab-panel",
+        "group": {
+          "selector": ".tabs",
+          "wrapper": "Tabs"
+        },
+        "props": {
+          // Object with "attr" only → reads "data-title" from each .tab-panel element
+          "title": { "attr": "data-title" }
+        }
+        // No "content" → uses full innerHTML of the matched element
+      }
+    ],
+
+    // ── Code Blocks ──────────────────────────────────────────────────────────
+
+    "codeblock": {
+      // Class name prefixes used to detect language identifiers on <pre>/<code> elements.
+      // Matches against the element's class attribute and its parent's class attribute.
+      // Example: class="language-python" → detected as "python"
+      "language_class_patterns": ["language-", "lang-", "highlight-"]
+    },
+
+    // ── Script Hooks ──────────────────────────────────────────────────────────
+
+    "scripts": {
+      // Path (or array of paths) to pre-process script(s).
+      // Each script runs before Turndown, while the Cheerio DOM is still live.
+      // Receives: ($, pageUrl, config, { pm })
+      // See the Script Hooks guide for full documentation.
+      "pre": null,
+
+      // Path (or array of paths) to post-process script(s).
+      // Each script runs after all conversion steps, on the final markdown string.
+      // Receives: (markdown, pageUrl, config) — must return the (modified) string.
+      "post": null
+    },
+
+    // ── Playwright ────────────────────────────────────────────────────────────
+
+    // Only applies when "playwright": true (or --playwright flag is set).
+    // Also used to load a saved session for authenticated scraping (wc session).
+    "playwright_config": {
+      // Run Chromium without a visible window.
+      "headless": true,
+
+      // Wait for this CSS selector to appear before capturing the page HTML.
+      // Useful for SPAs that render content after initial load.
+      // If null, waits for "wait_time" seconds instead.
+      "wait_for_selector": null,
+
+      // Fixed seconds to wait after page load for JS to settle.
+      // Only used when "wait_for_selector" is null.
+      "wait_time": 3,
+
+      // Max seconds to wait for the page to load before timing out.
+      "page_load_timeout": 30,
+
+      // Path to a Playwright storageState file saved by "wc session".
+      // Loads cookies and localStorage into the browser context.
+      // Also works with "playwright": false — cookies are injected into native fetch.
+      "storage_state": null
+    }
+
+  }
+}
+```

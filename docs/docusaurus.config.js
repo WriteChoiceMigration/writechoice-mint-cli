@@ -46,8 +46,21 @@ const config = {
       }),
     ],
   ],
-  themes: ["@signalwire/docusaurus-theme-llms-txt"],
-  plugins: [["@writechoice/docusaurus-plugin-llms"]],
+  themes: ["@writechoice/docusaurus-theme-llms-txt"],
+  plugins: [
+    [
+      "@writechoice/docusaurus-plugin-llms-txt",
+      {
+        generateLlmsTxt: true,
+        generateMarkdownFiles: true,
+        generateLlmsFullTxt: true,
+        description: "API documentation for My Platform",
+        deployTarget: "cloudflare",
+        generateMcp: true,
+        maxMcpContent: 8000,
+      },
+    ],
+  ],
 
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */

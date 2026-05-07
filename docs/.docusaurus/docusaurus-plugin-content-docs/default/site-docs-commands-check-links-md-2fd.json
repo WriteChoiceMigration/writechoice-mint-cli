@@ -18,8 +18,8 @@
   },
   "sidebar": "docs",
   "previous": {
-    "title": "Quick Start",
-    "permalink": "/getting-started/quick-start"
+    "title": "Config Reference",
+    "permalink": "/commands/scrape/config-reference"
   },
   "next": {
     "title": "Check Parse",
