@@ -1,0 +1,3857 @@
+# WriteChoice Mint CLI
+
+> Validate, fix, and manage Mintlify documentation with confidence.
+
+---
+
+# Introduction
+
+# WriteChoice Mint CLI
+
+**`wcc`** is a CLI tool for validating, fixing, and managing [Mintlify](https://mintlify.com) documentation projects.
+
+## What it does
+
+| Category | Commands |
+|---|---|
+| **Check** | Validate links, MDX parsing, images, pages, and KaTeX |
+| **Fix** | Auto-repair broken links, parse errors, code blocks, images, H1s, imports, and redirects |
+| **Nav** | Restructure navigation folders and promote root pages |
+| **Scrape** | Convert live documentation sites into Mintlify-ready MDX files |
+| **Metadata** | Sync meta tags from live pages into MDX frontmatter |
+
+## Install
+
+```bash
+npm install -g @writechoice/mint-cli
+npx playwright install chromium
+```
+
+## Quick example
+
+```bash
+# Generate a config.json
+wcc config
+
+# Validate MDX syntax across the project
+wcc check parse
+
+# Validate all internal links against your live site
+wcc check links
+
+# Fix broken anchor links found in the validation report
+wcc fix links
+```
+
+See [Installation](./getting-started/installation) to get set up, or jump straight to a command reference in the sidebar.
+
+---
+
+# Installation
+
+# Installation
+
+## Requirements
+
+- **Node.js** 18 or later
+- **npm** (bundled with Node.js)
+
+## Install the CLI
+
+```bash
+npm install -g @writechoice/mint-cli
+```
+
+This installs two equivalent commands: `writechoice` and `wcc`.
+
+## Install Playwright browsers
+
+Several commands (`check links`, `check images`, `check katex`, `check pages`) use browser automation. Install the Chromium browser once after installing the CLI:
+
+```bash
+npx playwright install chromium
+```
+
+## Verify
+
+```bash
+wcc --version
+```
+
+## Troubleshooting
+
+**Permission error on install (Linux/macOS):**
+
+```bash
+sudo npm install -g @writechoice/mint-cli
+```
+
+Or use [nvm](https://github.com/nvm-sh/nvm) to avoid needing `sudo`:
+
+```bash
+nvm install --lts
+npm install -g @writechoice/mint-cli
+```
+
+**Playwright browsers missing:**
+
+```bash
+npx playwright install chromium
+```
+
+## Updating
+
+```bash
+wcc update
+```
+
+Or manually via npm:
+
+```bash
+npm install -g @writechoice/mint-cli@latest
+```
+
+---
+
+# Quick Start
+
+# Quick Start
+
+This guide walks you through setting up the CLI and running your first validation in under five minutes.
+
+## 1. Install
+
+```bash
+npm install -g @writechoice/mint-cli
+npx playwright install chromium
+```
+
+## 2. Create a config file
+
+Run this in the root of your Mintlify project (the folder that contains `docs.json`):
+
+```bash
+wcc config
+```
+
+This creates a `config.json` file. Edit the placeholder values:
+
+```json
+{
+  "source": "https://docs.your-site.com",
+  "target": "http://localhost:3000"
+}
+```
+
+- **`source`** — your live documentation URL (used for link validation and metadata)
+- **`target`** — your local preview server (used when validating against a local build)
+
+## 3. Validate MDX parsing
+
+Check all MDX files in the project for syntax errors:
+
+```bash
+wcc check parse
+```
+
+Errors are written to `mdx_errors_report.json`. Fix them automatically with:
+
+```bash
+wcc fix parse
+```
+
+## 4. Validate links
+
+Check internal links and anchors against your live site:
+
+```bash
+wcc check links
+```
+
+Results are saved to `links_report.json`. Fix broken anchors automatically:
+
+```bash
+wcc fix links
+```
+
+## 5. Explore other commands
+
+| Command | What it does |
+|---|---|
+| `wcc check images` | Verify all images load on live pages |
+| `wcc check pages` | Verify all pages in `docs.json` return 200 |
+| `wcc fix codeblocks` | Add/remove flags on code blocks |
+| `wcc fix images` | Wrap standalone images in `<Frame>` |
+| `wcc nav folders` | Restructure files to match your `docs.json` nav |
+| `wcc metadata` | Pull meta tags from live pages into frontmatter |
+| `wcc scrape` | Scrape a site and convert pages to MDX |
+
+See the **Commands** section in the sidebar for full documentation on each command.
+
+---
+
+# Script Hooks
+
+# Script Hooks
+
+Script hooks let you inject custom JavaScript into the scrape pipeline at two points — before and after the HTML-to-Markdown conversion. Use them when the config options alone can't express what you need: DOM cleanup, custom MDX component generation, or post-conversion string transformations.
+
+## Setup
+
+Add a `scripts` key inside `scrape` in your `config.json`:
+
+```json
+{
+  "scrape": {
+    "scripts": {
+      "pre":  "./scripts/pre.js",
+      "post": ["./scripts/normalize.js", "./scripts/fix-links.js"]
+    }
+  }
+}
+```
+
+Both `pre` and `post` accept a single path string or an array of paths. Multiple scripts run in the order listed. Paths are resolved relative to your working directory.
+
+## Where Each Hook Runs
+
+```
+HTML fetched
+    ↓
+Elements removed (elements_to_remove)
+    ↓
+► PRE-PROCESS scripts run here (DOM is live)
+    ↓
+Components converted (scrape.components)
+    ↓
+HTML preserved (tables, iframes)
+    ↓
+Images processed
+    ↓
+Turndown converts HTML → Markdown
+    ↓
+Component placeholders restored
+    ↓
+Built-in cleanup (spacing, anchors, blank lines)
+    ↓
+► POST-PROCESS scripts run here (final markdown string)
+    ↓
+Frontmatter added → MDX file written
+```
+
+## Error Handling
+
+- **Load errors** (file not found, syntax error) — stop the scrape immediately. Silent failures would mask misconfiguration.
+- **Runtime errors** on a specific page — fail that page and continue with others, matching the behavior of HTTP errors.
+
+---
+
+## Pre-process Scripts
+
+Runs while the Cheerio DOM is still live, before Turndown. You can read, add, remove, or restructure any element. Mutations to `$` are reflected in the final output.
+
+### Signature
+
+```js
+export default function($, pageUrl, config, { pm }) { ... }
+// async is also supported:
+export default async function($, pageUrl, config, { pm }) { ... }
+```
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `$` | Cheerio instance | The content DOM, already scoped to `content_selector` — mutate it directly |
+| `pageUrl` | string | URL of the page being scraped |
+| `config` | object | Full `scrape` config section from `config.json` |
+| `{ pm }` | object | Context object — contains the `PlaceholderManager` (see below) |
+
+### DOM Cleanup
+
+The simplest use case: remove elements and fix attributes before conversion.
+
+```js
+// scripts/pre.js
+export default function($, pageUrl) {
+  // remove chrome that shouldn't be in the output
+  $(".page-nav, .feedback-widget, .last-updated, .edit-on-github").remove();
+
+  // rewrite legacy internal links
+  $("a[href^='/old-docs']").each((_, el) => {
+    $(el).attr("href", $(el).attr("href").replace("/old-docs", "/docs"));
+  });
+
+  // unwrap unnecessary container divs
+  $(".content-wrapper > div.inner").each((_, el) => {
+    $(el).replaceWith($(el).html());
+  });
+}
+```
+
+### Conditional Logic by URL
+
+Scripts receive the page URL, so you can apply different transformations per section of the site.
+
+```js
+export default function($, pageUrl) {
+  if (pageUrl.includes("/api-reference/")) {
+    $(".param-table th:last-child").remove(); // strip "Required" column on API pages
+    $(".param-table td:last-child").remove();
+  }
+
+  if (pageUrl.includes("/changelog/")) {
+    $("time.release-date").each((_, el) => {
+      $(el).replaceWith(`**${$(el).text()}**`);
+    });
+  }
+}
+```
+
+---
+
+## Custom MDX Conversions with the PlaceholderManager
+
+The `pm` argument is the key to converting HTML patterns into arbitrary MDX components. Without it, any text you write into the DOM would get processed by Turndown and potentially escaped or restructured. With it, you can store MDX content as an opaque token that Turndown ignores entirely.
+
+### How it works
+
+```
+$el.replaceWith(pm.store("<Steps>...</Steps>", "CUSTOM"))
+         ↓
+Turndown sees: ||CUSTOM|0|a1b2||  ← opaque token, passed through unchanged
+         ↓
+pm.restore() runs after all conversion steps
+         ↓
+Output contains: <Steps>...</Steps>  ← exactly as written
+```
+
+`pm.store(content, label)` accepts any string — valid MDX, raw HTML, or a mix. The `label` is just a human-readable tag used in the token; it doesn't affect behavior.
+
+### Example: `<Steps>` / `<Step>`
+
+```js
+// scripts/pre.js
+export default function($, pageUrl, config, { pm }) {
+  $("div.procedure, ol.steps").each((_, el) => {
+    const $el = $(el);
+
+    const steps = $el.find("> li, > .step").map((i, step) => {
+      const $step = $(step);
+      const title = $step.find(".step-title, > strong").first().text().trim();
+      $step.find(".step-title, > strong").first().remove();
+      const body = $step.html()?.trim() || "";
+      return `<Step title="${title}">\n\n${body}\n\n</Step>`;
+    }).get().join("\n\n");
+
+    $el.replaceWith(pm.store(`<Steps>\n\n${steps}\n\n</Steps>`, "STEPS"));
+  });
+}
+```
+
+### Example: `<Tabs>` from a custom pattern
+
+```js
+export default function($, pageUrl, config, { pm }) {
+  $(".platform-switcher").each((_, el) => {
+    const $el = $(el);
+
+    const tabs = $el.find(".platform-tab").map((_, tab) => {
+      const $tab = $(tab);
+      const title = $tab.attr("data-platform") || "Tab";
+      const body = $tab.html()?.trim() || "";
+      return `<Tab title="${title}">\n\n${body}\n\n</Tab>`;
+    }).get().join("\n\n");
+
+    $el.replaceWith(pm.store(`<Tabs>\n\n${tabs}\n\n</Tabs>`, "TABS"));
+  });
+}
+```
+
+### Example: preserve a raw HTML block unchanged
+
+```js
+export default function($, pageUrl, config, { pm }) {
+  // keep complex SVG diagrams as raw HTML — Turndown would strip them
+  $("figure.diagram").each((_, el) => {
+    const $el = $(el);
+    $el.replaceWith(pm.store($.html($el), "SVG"));
+  });
+}
+```
+
+---
+
+## Post-process Scripts
+
+Runs on the final markdown string, after Turndown, component replacement, HTML restoration, and all built-in cleanup. The input is what will be written to the MDX file (minus frontmatter). You must return the string.
+
+### Signature
+
+```js
+export default function(markdown, pageUrl, config) { return markdown; }
+// async is also supported:
+export default async function(markdown, pageUrl, config) { return markdown; }
+```
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `markdown` | string | Fully converted Markdown/MDX content (no frontmatter) |
+| `pageUrl` | string | URL of the page being scraped |
+| `config` | object | Full `scrape` config section from `config.json` |
+
+If a script returns a non-string value, a warning is printed and the original markdown is kept.
+
+### Pattern Replacement
+
+Good for cleaning up artifacts left by the conversion — legacy shortcodes, misformatted syntax, or recurring structural issues.
+
+```js
+// scripts/post.js
+export default function(markdown, pageUrl) {
+  // replace Hugo shortcodes not caught by the HTML converter
+  markdown = markdown.replace(/\{\{<\s*note\s*>\}\}/g, "<Note>");
+  markdown = markdown.replace(/\{\{<\s*\/note\s*>\}\}/g, "</Note>");
+
+  // fix double-escaped backticks that Turndown sometimes produces
+  markdown = markdown.replace(/\\`\\`\\`/g, "```");
+
+  return markdown;
+}
+```
+
+### Per-page Logic by URL
+
+```js
+export default function(markdown, pageUrl) {
+  // strip auto-generated boilerplate intro on API pages
+  if (pageUrl.includes("/api-reference/")) {
+    markdown = markdown.replace(/^> This page was auto-generated.*?\n\n/m, "");
+  }
+
+  // add a deprecation notice to legacy pages
+  if (pageUrl.includes("/v1/")) {
+    markdown = `:::warning\nThis page documents a deprecated API version.\n:::\n\n` + markdown;
+  }
+
+  return markdown;
+}
+```
+
+### Chaining Multiple Scripts
+
+When `post` is an array, scripts run in order — each receives the output of the previous.
+
+```json
+{
+  "scripts": {
+    "post": [
+      "./scripts/fix-shortcodes.js",
+      "./scripts/normalize-links.js",
+      "./scripts/add-notices.js"
+    ]
+  }
+}
+```
+
+This lets you keep each script focused on one concern rather than combining everything in one file.
+
+---
+
+# Config Reference
+
+# Scrape Config Reference
+
+Full `scrape` section for `config.json`, with every key explained.
+
+```json
+{
+  "scrape": {
+
+    // ── Input ────────────────────────────────────────────────────────────────
+
+    // Path to a JSON file containing an array of URLs to scrape.
+    // Silently skipped if the file doesn't exist (use --urls-file to error instead).
+    "urls_file": "urls.json",
+
+    // ── Output ───────────────────────────────────────────────────────────────
+
+    // Directory where MDX files are written.
+    // URL paths map directly to subdirectories: /docs/overview → output/docs/overview.mdx
+    "output": "output",
+
+    // ── Execution ────────────────────────────────────────────────────────────
+
+    // Number of URLs fetched and converted in parallel.
+    "concurrency": 3,
+
+    // Use Playwright (headless Chromium) instead of native fetch.
+    // Required for JavaScript-rendered pages. Slower but handles SPAs.
+    "playwright": false,
+
+    // Preview mode — run the full pipeline but skip writing files.
+    "dry-run": false,
+
+    // Suppress all terminal output.
+    "quiet": false,
+
+    // ── Content Selection ─────────────────────────────────────────────────────
+
+    // CSS selector for the main content area. Everything outside this element is ignored.
+    // Use a specific selector (e.g. "main", "article", ".doc-content") to avoid
+    // scraping navigation, headers, and footers.
+    "content_selector": "body",
+
+    // CSS selector for the page title. Text is extracted and used as the frontmatter title.
+    // Falls back to the <title> tag if no element is found.
+    // Site name suffixes are stripped automatically ("Page | Site" → "Page").
+    "title_selector": "h1",
+
+    // Array of CSS selectors to remove before conversion.
+    // Use this to strip navigation, breadcrumbs, feedback widgets, ads, etc.
+    // Example: [".sidebar", ".toc", "nav", ".feedback-form"]
+    "elements_to_remove": [],
+
+    // HTML tags whose content is preserved as raw HTML in the MDX output,
+    // bypassing Markdown conversion. Tables and iframes are kept by default
+    // because they don't have clean Markdown equivalents.
+    "html_preserve_elements": ["table", "iframe"],
+
+    // Additional CSS selectors to preserve as raw HTML.
+    // Useful for complex widgets or SVG diagrams you want to keep verbatim.
+    // Example: ["figure.diagram", ".code-playground"]
+    "html_preserve_custom": [],
+
+    // ── Images ───────────────────────────────────────────────────────────────
+
+    "images": {
+      // How to handle image URLs found in the content.
+      // "keep_remote"      — leave the original URL unchanged (fastest, default)
+      // "download_by_url"  — download each image; save path mirrors the image URL path
+      // "download_by_page" — download each image; save under a folder named after the page slug
+      "strategy": "keep_remote",
+
+      // Base folder for downloaded images (relative to cwd).
+      // Only used when strategy is "download_by_url" or "download_by_page".
+      "folder": "images"
+    },
+
+    // ── Components ────────────────────────────────────────────────────────────
+
+    // Array of component definitions. Each entry maps an HTML pattern to a Mintlify MDX component.
+    // The "name" field becomes the JSX tag in the output.
+    // Native <details>/<summary> are always converted to <Accordion> automatically.
+    "components": [
+      {
+        // MDX component name — becomes the JSX tag (<Note>)
+        "name": "Note",
+
+        // CSS selector matching the container element for this component
+        "selector": ".admonition.note",
+
+        // Props to extract. Each key becomes a JSX prop (or child text with "child": true).
+        "props": {
+          // "child": true → renders as **bold text** inside the component body,
+          // not as a JSX attribute. Use this for Mintlify callouts where the title
+          // is a child element, not a prop.
+          "title": { "selector": ".admonition-title", "child": true }
+        },
+
+        // CSS selector for the inner content. Defaults to full innerHTML if omitted.
+        "content": ".admonition-body"
+      },
+      {
+        "name": "Warning",
+        "selector": ".admonition.warning",
+        "props": {
+          "title": { "selector": ".admonition-title", "child": true }
+        },
+        "content": ".admonition-body"
+      },
+      {
+        "name": "Accordion",
+        "selector": ".faq-item",
+
+        // "group" controls how matched items are wrapped.
+        // With "selector": finds containers matching that selector, collects items inside.
+        // Without "selector": auto-groups consecutive sibling matches.
+        // "wrapper" is the MDX tag wrapping the group (<AccordionGroup>).
+        "group": {
+          "selector": ".faq-group",
+          "wrapper": "AccordionGroup"
+        },
+
+        // String shorthand: find child element by selector, use its text as the prop value.
+        // The element is removed from the content area so it doesn't appear twice.
+        "props": {
+          "title": ".faq-question"
+        },
+        "content": ".faq-answer"
+      },
+      {
+        "name": "Card",
+        "selector": "a.card",
+        "group": {
+          // No "selector" → auto-group consecutive sibling matches
+          "wrapper": "CardGroup"
+        },
+        "props": {
+          "title": ".card-title",
+
+          // Object with "attr" only → reads the attribute from the matched element itself
+          "icon": { "attr": "data-icon" },
+          "href": { "attr": "href" },
+
+          // "image": true → treats the value as an image URL, downloaded per the images strategy
+          "img": { "selector": "img.card-thumb", "attr": "src", "image": true }
+        },
+        "content": ".card-body"
+      },
+      {
+        "name": "Tab",
+        "selector": ".tab-panel",
+        "group": {
+          "selector": ".tabs",
+          "wrapper": "Tabs"
+        },
+        "props": {
+          // Object with "attr" only → reads "data-title" from each .tab-panel element
+          "title": { "attr": "data-title" }
+        }
+        // No "content" → uses full innerHTML of the matched element
+      }
+    ],
+
+    // ── Code Blocks ──────────────────────────────────────────────────────────
+
+    "codeblock": {
+      // Class name prefixes used to detect language identifiers on <pre>/<code> elements.
+      // Matches against the element's class attribute and its parent's class attribute.
+      // Example: class="language-python" → detected as "python"
+      "language_class_patterns": ["language-", "lang-", "highlight-"]
+    },
+
+    // ── Script Hooks ──────────────────────────────────────────────────────────
+
+    "scripts": {
+      // Path (or array of paths) to pre-process script(s).
+      // Each script runs before Turndown, while the Cheerio DOM is still live.
+      // Receives: ($, pageUrl, config, { pm })
+      // See the Script Hooks guide for full documentation.
+      "pre": null,
+
+      // Path (or array of paths) to post-process script(s).
+      // Each script runs after all conversion steps, on the final markdown string.
+      // Receives: (markdown, pageUrl, config) — must return the (modified) string.
+      "post": null
+    },
+
+    // ── Playwright ────────────────────────────────────────────────────────────
+
+    // Only applies when "playwright": true (or --playwright flag is set).
+    // Also used to load a saved session for authenticated scraping (wc session).
+    "playwright_config": {
+      // Run Chromium without a visible window.
+      "headless": true,
+
+      // Wait for this CSS selector to appear before capturing the page HTML.
+      // Useful for SPAs that render content after initial load.
+      // If null, waits for "wait_time" seconds instead.
+      "wait_for_selector": null,
+
+      // Fixed seconds to wait after page load for JS to settle.
+      // Only used when "wait_for_selector" is null.
+      "wait_time": 3,
+
+      // Max seconds to wait for the page to load before timing out.
+      "page_load_timeout": 30,
+
+      // Path to a Playwright storageState file saved by "wc session".
+      // Loads cookies and localStorage into the browser context.
+      // Also works with "playwright": false — cookies are injected into native fetch.
+      "storage_state": null
+    }
+
+  }
+}
+```
+
+---
+
+# Check Links
+
+# Check Links Command
+
+Validates internal links and anchors in MDX documentation files using browser automation.
+
+## Usage
+
+```bash
+writechoice check links <baseUrl> [validationBaseUrl] [options]
+```
+
+## Arguments
+
+- `<baseUrl>` (required): Base URL for the documentation site (production)
+- `[validationBaseUrl]` (optional): Base URL for validation environment (default: `http://localhost:3000`)
+
+## Options
+
+| Option                   | Alias | Description                                     | Default             |
+| ------------------------ | ----- | ----------------------------------------------- | ------------------- |
+| `--file <path>`          | `-f`  | Validate links in a single MDX file             | -                   |
+| `--dir <path>`           | `-d`  | Validate links in a specific directory          | -                   |
+| `--output <path>`        | `-o`  | Base name for report files (without extension)  | `links_report`      |
+| `--dry-run`              | -     | Extract and show links without validating       | `false`             |
+| `--quiet`                | -     | Suppress terminal output (only generate report) | `false`             |
+| `--concurrency <number>` | `-c`  | Number of concurrent browser tabs               | `25`                |
+| `--headless`             | -     | Run browser in headless mode                    | `true`              |
+| `--no-headless`          | -     | Show browser window (for debugging)             | -                   |
+
+## How It Works
+
+### Two-Step Validation Process
+
+For anchor links, the tool performs smart validation:
+
+1. **Find Target Heading** (Production): Navigates to your production docs (baseUrl) with the anchor to identify which heading it points to and its position (handles duplicate headings)
+
+2. **Get Generated Anchor** (Validation): Navigates to your validation environment (validationBaseUrl, e.g., localhost:3000), finds the same heading by text and position, clicks it to trigger anchor generation, and extracts the generated anchor
+
+3. **Compare**: Compares the generated anchor with the expected anchor from the MDX file
+
+This is useful because:
+- Link text in MDX files may differ from actual heading text
+- Handles pages with duplicate headings correctly by matching position
+- Validates against your local development environment before deploying
+
+### Link Extraction
+
+Extracts internal links from these formats:
+
+1. **Markdown links**: `[Link Text](./path/to/page#anchor)`
+2. **HTML anchors**: `<a href="/path/to/page#anchor">Link Text</a>`
+3. **JSX Card components**: `<Card href="/path/to/page" title="Card Title" />`
+4. **JSX Button components**: `<Button href="/path/to/page#anchor">Button Text</Button>`
+
+Images are automatically ignored:
+- Markdown images: `![Alt Text](./image.png)`
+- HTML images: `<img src="./image.png" />`
+
+### Validation Process
+
+1. **Local Validation** (Fast): First checks if the target MDX file exists locally
+   - For normal links: Verifies the file exists in the repository
+   - For anchor links: Checks if the heading exists in the MDX file with matching kebab-case format
+
+2. **Online Validation** (Comprehensive): If local check fails, performs two-step validation
+   - For normal links: Navigates to the validation base URL and verifies the page loads
+   - For anchor links: Uses the two-step process described above
+
+## Examples
+
+### Basic Validation
+
+```bash
+# Validate all links with default localhost:3000 validation
+writechoice check links https://docs.example.com
+
+# Use custom validation URL
+writechoice check links docs.example.com http://localhost:3000
+
+# Use staging environment for validation
+writechoice check links docs.example.com https://staging.example.com
+```
+
+### Filtering
+
+```bash
+# Validate links in a specific file
+writechoice check links docs.example.com -f path/to/file.mdx
+
+# Validate links in a specific directory
+writechoice check links docs.example.com -d path/to/docs
+```
+
+### Dry Run
+
+```bash
+# Extract links without validating
+writechoice check links docs.example.com --dry-run
+```
+
+### Output Control
+
+```bash
+# Quiet mode (suppress terminal output)
+writechoice check links docs.example.com --quiet
+
+# Custom output base name
+writechoice check links docs.example.com -o validation-report
+```
+
+### Performance Tuning
+
+```bash
+# Set concurrency level
+writechoice check links docs.example.com -c 50
+
+# Show browser window (for debugging)
+writechoice check links docs.example.com --no-headless
+```
+
+## Report Formats
+
+The tool generates reports in **both JSON and Markdown formats**:
+
+- **JSON** (`links_report.json`): Structured data used by the fix command
+- **Markdown** (`links_report.md`): Human-readable report for easy review
+
+### JSON Report Structure
+
+```json
+{
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "configuration": {
+    "base_url": "https://docs.example.com",
+    "scanned_directories": ["."],
+    "excluded_directories": ["snippets"],
+    "concurrency": 25,
+    "execution_time_seconds": 45.23
+  },
+  "summary": {
+    "total_links": 250,
+    "success": 240,
+    "failure": 8,
+    "error": 2
+  },
+  "results_by_file": {
+    "docs/getting-started.mdx": [
+      {
+        "source": {
+          "filePath": "docs/getting-started.mdx",
+          "lineNumber": 42,
+          "linkText": "Installation Guide",
+          "rawHref": "./installation#setup",
+          "linkType": "markdown"
+        },
+        "status": "failure",
+        "errorMessage": "Expected anchor \"#setup\" but page heading uses \"#setup-process\""
+      }
+    ]
+  }
+}
+```
+
+## Recommended Workflow
+
+1. **Run validation**:
+   ```bash
+   writechoice check links docs.example.com
+   ```
+2. **Review the Markdown report** (`links_report.md`) for a readable summary.
+3. **Apply fixes** automatically:
+   ```bash
+   writechoice fix links
+   ```
+4. **Re-validate** to confirm all fixes.
+
+See [Fix Links](../fix/links.md) for more details on auto-fixing.
+
+## Performance Considerations
+
+The default concurrency is 25 browser tabs. Adjust based on your system:
+
+- **Lower** (5–10): Less resource-intensive
+- **Higher** (50–100): Faster, but requires more memory
+
+```bash
+writechoice check links docs.example.com -c 10
+```
+
+## Troubleshooting
+
+**Browser fails to launch in headless mode:**
+
+```bash
+writechoice check links docs.example.com --no-headless
+```
+
+**Playwright not installed:**
+
+```bash
+npx playwright install chromium
+```
+
+---
+
+# Check Parse
+
+# Check Parse Command
+
+Validates MDX files for parsing errors using the official `@mdx-js/mdx` compiler.
+
+## Usage
+
+```bash
+writechoice check parse [options]
+```
+
+## Options
+
+| Option          | Alias | Description                                     | Default  |
+| --------------- | ----- | ----------------------------------------------- | -------- |
+| `--file <path>` | `-f`  | Validate a single MDX file                      | -        |
+| `--dir <path>`  | `-d`  | Validate MDX files in a specific directory      | -        |
+| `--quiet`       | -     | Suppress terminal output (only generate report) | `false`  |
+
+## What It Detects
+
+- **Invalid JSX syntax**: Mismatched or improperly closed JSX tags
+- **JavaScript expression errors**: Invalid JavaScript in curly braces `{}`
+- **MDX-specific errors**: Syntax that breaks MDX compilation
+- **Parsing failures**: Any content that prevents successful MDX parsing
+
+## Examples
+
+```bash
+# Validate all MDX files in current directory
+writechoice check parse
+
+# Validate a single file
+writechoice check parse --file path/to/file.mdx
+
+# Validate files in a specific directory
+writechoice check parse --dir docs
+
+# Suppress terminal output, only generate reports
+writechoice check parse --quiet
+```
+
+## Report Formats
+
+Generates reports in **both JSON and Markdown formats**:
+
+- **JSON** (`mdx_errors_report.json`): Structured data for programmatic use
+- **Markdown** (`mdx_errors_report.md`): Human-readable report for easy review
+
+### JSON Format
+
+```json
+{
+  "summary": {
+    "total": 42,
+    "valid": 40,
+    "errors": 2
+  },
+  "errors": [
+    {
+      "filePath": "docs/getting-started.mdx",
+      "error": {
+        "message": "Could not parse expression with acorn",
+        "line": 15,
+        "column": 23
+      }
+    }
+  ],
+  "valid": ["docs/introduction.mdx", "docs/installation.mdx"],
+  "timestamp": "2026-01-31T19:30:00.000Z"
+}
+```
+
+## Common Errors
+
+### Mismatched JSX Tags
+
+```mdx
+// ❌ Problem
+<div>
+  <p>Content here
+</div>
+
+// ✅ Fix
+<div>
+  <p>Content here</p>
+</div>
+```
+
+### Unclosed Curly Braces
+
+```mdx
+// ❌ Problem
+Here is some code: {someVar
+
+// ✅ Fix
+Here is some code: {someVar}
+```
+
+## Exit Codes
+
+| Code | Meaning |
+|---|---|
+| `0` | All MDX files are valid |
+| `1` | One or more files have parsing errors |
+
+## CI/CD Integration
+
+```yaml
+name: Validate MDX Files
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm install -g @writechoice/mint-cli
+      - run: writechoice check parse
+```
+
+## Performance
+
+Runs locally without browser automation — typically **~100 files per second** on modern hardware.
+
+---
+
+# Check Images
+
+# Check Images Command
+
+Validates that all images on your deployed documentation pages load successfully.
+
+The command runs in two phases: it first fetches every page listed in `docs.json` to collect image URLs, then validates each unique image URL.
+
+## Usage
+
+```bash
+writechoice check images <baseUrl> [options]
+```
+
+## Arguments
+
+- `<baseUrl>` (required): Base URL of the deployed documentation site.
+
+## Options
+
+| Option                   | Alias | Description                                              | Default              |
+| ------------------------ | ----- | -------------------------------------------------------- | -------------------- |
+| `--docs <file>`          | -     | Path to docs.json                                        | `docs.json`          |
+| `--output <path>`        | `-o`  | Output file for the failure report                       | `images_report.json` |
+| `--concurrency <number>` | `-c`  | Parallel requests per phase                              | `10`                 |
+| `--quiet`                | -     | Suppress terminal output                                 | `false`              |
+
+## How It Works
+
+### Phase 1 — Page fetch and image collection
+
+1. Reads `docs.json` and recursively walks the navigation tree to collect all page paths.
+2. Fetches each page's HTML concurrently.
+3. Extracts `<img src="...">` elements from within `div.mdx-content` (ignoring UI chrome).
+4. Resolves all `src` values to absolute URLs (`data:` URIs are skipped).
+5. Deduplicates across all pages, building a map of `imageUrl → pages that reference it`.
+
+### Phase 2 — Image validation
+
+6. Sends a HEAD request to each unique image URL (falls back to GET on `405 Method Not Allowed`).
+7. `2xx` or `3xx` = **PASS**. Anything else = **FAIL**.
+8. Writes all failures to the output JSON file.
+
+## Examples
+
+```bash
+# Validate all images against a deployed site
+writechoice check images https://docs.example.com
+
+# Custom docs.json location
+writechoice check images https://docs.example.com --docs mint/docs.json
+
+# Lower concurrency to reduce load on the server
+writechoice check images https://docs.example.com -c 5
+
+# Custom report file
+writechoice check images https://docs.example.com -o reports/images.json
+```
+
+## Report Format
+
+```json
+[
+  {
+    "url": "https://cdn.example.com/logo.png",
+    "status": 404,
+    "error": null,
+    "referencedBy": [
+      "getting-started/overview",
+      "api/authentication"
+    ]
+  },
+  {
+    "url": "https://cdn.example.com/diagram.svg",
+    "status": null,
+    "error": "Request timed out",
+    "referencedBy": ["architecture/overview"]
+  }
+]
+```
+
+`status` is `null` when no HTTP response was received. `referencedBy` lists the `docs.json` page paths that contain the broken image.
+
+## Exit Codes
+
+| Code | Meaning |
+|---|---|
+| `0` | All images loaded successfully |
+| `1` | One or more images failed, or a required argument was missing |
+
+## Config File Support
+
+```json
+{
+  "imageCheck": {
+    "url": "https://docs.example.com",
+    "docs": "docs.json",
+    "output": "images_report.json",
+    "concurrency": 10,
+    "quiet": false
+  }
+}
+```
+
+---
+
+# Check Pages
+
+# Check Pages Command
+
+Validates that every page listed in `docs.json` navigation loads successfully by checking HTTP response status.
+
+## Usage
+
+```bash
+writechoice check pages <baseUrl> [options]
+```
+
+## Arguments
+
+- `<baseUrl>` (required): Base URL of the deployed documentation site.
+
+## Options
+
+| Option                   | Alias | Description                              | Default             |
+| ------------------------ | ----- | ---------------------------------------- | ------------------- |
+| `--docs <file>`          | -     | Path to docs.json                        | `docs.json`         |
+| `--output <path>`        | `-o`  | Output file for the failure report       | `pages_report.json` |
+| `--concurrency <number>` | `-c`  | Number of parallel HTTP requests         | `50`                |
+| `--quiet`                | -     | Suppress terminal output                 | `false`             |
+
+## How It Works
+
+1. Reads `docs.json` and recursively walks the navigation tree, collecting all page paths.
+2. Appends each path to `baseUrl` and sends an HTTP GET request.
+3. `2xx` or `3xx` = **PASS**. Any other status or network error = **FAIL**.
+4. Writes all failures to the output JSON file and exits with code `1` if any page failed.
+
+## Examples
+
+```bash
+# Validate all pages against a deployed site
+writechoice check pages https://docs.example.com
+
+# Custom docs.json location
+writechoice check pages https://docs.example.com --docs mint/docs.json
+
+# Lower concurrency for rate-limited hosts
+writechoice check pages https://docs.example.com -c 10
+
+# Custom report file
+writechoice check pages https://docs.example.com -o reports/pages.json
+```
+
+## Report Format
+
+```json
+[
+  {
+    "url": "https://docs.example.com/api/overview",
+    "status": 404,
+    "error": "Not Found"
+  },
+  {
+    "url": "https://docs.example.com/guides/setup",
+    "status": null,
+    "error": "Request timed out"
+  }
+]
+```
+
+`status` is `null` when the request never received a response.
+
+## Exit Codes
+
+| Code | Meaning |
+|---|---|
+| `0` | All pages loaded successfully |
+| `1` | One or more pages failed |
+
+## Config File Support
+
+```json
+{
+  "pages": {
+    "url": "https://docs.example.com",
+    "docs": "docs.json",
+    "output": "pages_report.json",
+    "concurrency": 50,
+    "quiet": false
+  }
+}
+```
+
+---
+
+# Check KaTeX
+
+# Check KaTeX Command
+
+Finds pages with KaTeX render errors by scanning for `.katex-error` elements in the live HTML.
+
+## Usage
+
+```bash
+writechoice check katex <baseUrl> [options]
+writechoice check katex --file <report.json> [options]
+```
+
+## Arguments
+
+- `<baseUrl>` (required for scan mode): Base URL of the deployed documentation site.
+
+## Options
+
+| Option                   | Alias | Description                                              | Default              |
+| ------------------------ | ----- | -------------------------------------------------------- | -------------------- |
+| `--file <path>`          | `-f`  | Re-check only pages listed in a previous error report    | -                    |
+| `--docs <file>`          | -     | Path to docs.json                                        | `docs.json`          |
+| `--output <path>`        | `-o`  | Output file for the error report                         | `katex_errors.json`  |
+| `--concurrency <number>` | `-c`  | Number of parallel HTTP requests                         | `50`                 |
+| `--quiet`                | -     | Suppress terminal output                                 | `false`              |
+
+## Modes
+
+### Scan Mode
+
+Reads `docs.json`, fetches each page at `baseUrl/<page-path>`, and checks for `.katex-error` spans.
+
+```bash
+writechoice check katex https://docs.example.com
+```
+
+### Recheck Mode
+
+Reads a previous `katex_errors.json` and re-fetches only the URLs it contains. Use this after fixing to confirm resolution.
+
+```bash
+writechoice check katex --file katex_errors.json
+```
+
+## How It Works
+
+1. Recursively walks `docs.json` navigation to collect all page paths.
+2. Fetches each page URL with HTTP GET (no browser required), concurrently.
+3. Scans the raw HTML for spans matching `.katex-error` and captures the error title and expression.
+4. Writes results to the output JSON file.
+
+## Examples
+
+```bash
+# Full scan
+writechoice check katex https://docs.example.com
+
+# Recheck after fixes
+writechoice check katex --file katex_errors.json
+
+# Custom docs.json location
+writechoice check katex https://docs.example.com --docs mint/docs.json
+
+# Lower concurrency
+writechoice check katex https://docs.example.com -c 10
+```
+
+## Report Format
+
+```json
+[
+  {
+    "url": "https://docs.example.com/math/equations",
+    "katex_errors": [
+      {
+        "title": "KaTeX parse error: Expected 'EOF', got '\\right' at position 12",
+        "content": "\\frac{1}{2} \\right"
+      }
+    ]
+  }
+]
+```
+
+## Recommended Workflow
+
+1. Run the full scan after deploying.
+2. Review `katex_errors.json` to find broken math expressions.
+3. Fix the KaTeX in the source MDX files.
+4. Re-deploy, then recheck:
+   ```bash
+   writechoice check katex --file katex_errors.json
+   ```
+5. Repeat until the report is empty.
+
+## Exit Codes
+
+| Code | Meaning |
+|---|---|
+| `0` | No KaTeX errors found |
+| `1` | One or more pages had KaTeX errors |
+
+## Config File Support
+
+```json
+{
+  "katex": {
+    "url": "https://docs.example.com",
+    "reportFile": "katex_errors.json"
+  }
+}
+```
+
+---
+
+# Fix Links
+
+# Fix Links Command
+
+Automatically fixes broken anchor links in MDX files based on validation reports.
+
+## Usage
+
+```bash
+writechoice fix links [options]
+```
+
+## Options
+
+| Option            | Alias | Description                          | Default              |
+| ----------------- | ----- | ------------------------------------ | -------------------- |
+| `--report <path>` | `-r`  | Path to JSON validation report       | `links_report.json`  |
+| `--quiet`         | -     | Suppress terminal output             | `false`              |
+| `--verbose`       | -     | Show detailed output for each fix    | `true` (if not quiet)|
+
+## How It Works
+
+Reads the JSON report from `check links` and corrects broken anchor links in your MDX files.
+
+### What Gets Fixed
+
+- Anchor links where the target heading exists but uses a different slug
+- The report must contain both the incorrect anchor and the correct one
+
+### What Doesn't Get Fixed
+
+- Links to non-existent pages or headings
+- Links with network errors or timeouts
+- External links
+
+### Fix Process
+
+1. Parses the JSON report to find all fixable failures
+2. Locates each broken link in the source MDX file by line number
+3. Replaces the incorrect anchor with the correct one
+4. Preserves the original link format (markdown, HTML, or JSX)
+5. Saves the updated file
+
+## Examples
+
+```bash
+# Fix links using default report file
+writechoice fix links
+
+# Fix links from custom report file
+writechoice fix links -r custom_report.json
+
+# Quiet mode (useful for CI/CD)
+writechoice fix links --quiet
+```
+
+## Example Fix
+
+```markdown
+<!-- Before (incorrect anchor) -->
+[Installation Guide](./installation#setup)
+
+<!-- After (corrected anchor) -->
+[Installation Guide](./installation#setup-process)
+```
+
+## Recommended Workflow
+
+1. Run validation:
+   ```bash
+   writechoice check links https://docs.example.com
+   ```
+2. Review `links_report.md` for a readable summary.
+3. Apply fixes:
+   ```bash
+   writechoice fix links
+   ```
+4. Review with `git diff`.
+5. Re-validate to confirm.
+
+## Safety
+
+- Only modifies the anchor portion of links, not paths
+- Preserves link format (markdown/HTML/JSX)
+- Idempotent: running twice produces the same result
+- Revert with `git checkout .` if needed
+
+## Troubleshooting
+
+**Report file not found:**
+
+```bash
+# Generate the report first
+writechoice check links https://docs.example.com
+```
+
+**Note:** The fix command requires the JSON report file (`links_report.json`), not the Markdown one.
+
+---
+
+# Fix Parse
+
+# Fix Parse Command
+
+Automatically fixes common MDX parsing errors in documentation files.
+
+## Usage
+
+```bash
+writechoice fix parse [options]
+```
+
+## Options
+
+| Option            | Alias | Description                           | Default                    |
+| ----------------- | ----- | ------------------------------------- | -------------------------- |
+| `--report <path>` | `-r`  | Path to JSON parse validation report  | `mdx_errors_report.json`   |
+| `--file <path>`   | `-f`  | Fix a single MDX file directly        | -                          |
+| `--dir <path>`    | `-d`  | Fix MDX files in a specific directory | -                          |
+| `--quiet`         | -     | Suppress terminal output              | `false`                    |
+| `--verbose`       | -     | Show detailed output for each fix     | `true` (if not quiet)      |
+
+## What Gets Fixed
+
+### 1. Void HTML Tags Not Self-Closed
+
+HTML void elements must be self-closing in JSX/MDX.
+
+| Before | After |
+|---|---|
+| `<br>` | `<br />` |
+| `<hr>` | `<hr />` |
+| `<img src="/logo.png" alt="Logo">` | `<img src="/logo.png" alt="Logo" />` |
+| `<input type="text">` | `<input type="text" />` |
+| `<meta charset="utf-8">` | `<meta charset="utf-8" />` |
+
+### 2. Stray Angle Brackets in Text
+
+Bare `<` and `>` in text content are escaped to HTML entities.
+
+| Before | After |
+|---|---|
+| `if x < 10` | `if x &lt; 10` |
+| `when a > b` | `when a &gt; b` |
+
+Content inside fenced code blocks and inline code is never modified.
+
+## What Doesn't Get Fixed
+
+- Mismatched or unclosed JSX tags
+- Invalid JavaScript expressions inside `{}`
+- Unclosed curly braces
+- Malformed frontmatter
+
+## Input Modes
+
+### Report Mode (default)
+
+Reads a JSON report from `check parse` and fixes only the files listed.
+
+```bash
+writechoice fix parse              # uses mdx_errors_report.json
+writechoice fix parse -r custom_report.json
+```
+
+### Direct Mode
+
+Scans and fixes files directly without a report.
+
+```bash
+writechoice fix parse -f path/to/file.mdx
+writechoice fix parse -d docs
+```
+
+## Recommended Workflow
+
+1. Run validation:
+   ```bash
+   writechoice check parse
+   ```
+2. Review `mdx_errors_report.md`.
+3. Apply fixes:
+   ```bash
+   writechoice fix parse
+   ```
+4. Review with `git diff`.
+5. Re-validate — remaining errors need manual attention.
+
+## Safety
+
+- Never modifies content inside code blocks or inline code
+- Idempotent: running twice produces the same result
+- Revert with `git checkout .` if needed
+
+---
+
+# Fix Codeblocks
+
+# Fix Codeblocks Command
+
+Automatically adds or removes code block flags (`expandable`, `lines`, `wrap`) in MDX documentation files.
+
+## Usage
+
+```bash
+writechoice fix codeblocks [options]
+```
+
+## Options
+
+| Option                 | Alias | Description                                           | Default |
+| ---------------------- | ----- | ----------------------------------------------------- | ------- |
+| `--file <path>`        | `-f`  | Fix a single MDX file                                 | -       |
+| `--dir <path>`         | `-d`  | Fix MDX files in a specific directory                 | -       |
+| `--threshold <number>` | `-t`  | Line count threshold for `expandable`                 | `15`    |
+| `--no-expandable`      | -     | Skip `expandable` threshold processing                | -       |
+| `--lines`              | -     | Add `lines` to all code blocks that lack it           | -       |
+| `--remove-lines`       | -     | Remove `lines` from all code blocks that have it      | -       |
+| `--wrap`               | -     | Add `wrap` to all code blocks that lack it            | -       |
+| `--remove-wrap`        | -     | Remove `wrap` from all code blocks that have it       | -       |
+| `--dry-run`            | -     | Preview changes without writing files                 | `false` |
+| `--quiet`              | -     | Suppress terminal output                              | `false` |
+
+## How It Works
+
+Scans MDX files for fenced code blocks and modifies their info strings (the text after the opening triple backtick). Each flag is handled independently.
+
+### `expandable`
+
+Controlled by `--threshold` (default: 15). Automatically adds or removes `expandable` based on line count:
+
+- Has `expandable` **and** lines **< threshold** → remove it
+- Lacks `expandable` **and** lines **> threshold** → add it
+- Use `--no-expandable` to skip this flag entirely
+
+### `lines`
+
+Shows line numbers in the rendered code block.
+
+- `--lines` — adds `lines` to every block that lacks it
+- `--remove-lines` — removes `lines` from every block that has it
+
+### `wrap`
+
+Enables word wrapping in the rendered code block.
+
+- `--wrap` — adds `wrap` to every block that lacks it
+- `--remove-wrap` — removes `wrap` from every block that has it
+
+## Examples
+
+```bash
+# Preview changes without writing
+writechoice fix codeblocks --dry-run
+
+# Add lines and wrap to all code blocks
+writechoice fix codeblocks --lines --wrap
+
+# Use a custom expandable threshold
+writechoice fix codeblocks --threshold 20
+
+# Remove lines from all code blocks
+writechoice fix codeblocks --remove-lines
+
+# Fix only a specific directory
+writechoice fix codeblocks -d docs/api --lines
+
+# Skip expandable and only manage lines
+writechoice fix codeblocks --no-expandable --lines
+```
+
+## Config File
+
+```json
+{
+  "codeblocks": {
+    "threshold": 20,
+    "lines": "add",
+    "wrap": null,
+    "expandable": true
+  }
+}
+```
+
+| Field | Type | Description | Default |
+|---|---|---|---|
+| `threshold` | number | Line count threshold for `expandable` | `15` |
+| `expandable` | boolean | Enable expandable threshold processing | `true` |
+| `lines` | `"add"` \| `"remove"` \| `null` | Manage `lines` flag | `null` |
+| `wrap` | `"add"` \| `"remove"` \| `null` | Manage `wrap` flag | `null` |
+
+CLI flags always take precedence over config values.
+
+## Safety
+
+- Only modifies code block info strings — never the code content
+- Idempotent: running twice produces the same result
+- Use `--dry-run` to preview before writing
+- Revert with `git checkout .` if needed
+
+---
+
+# Fix Images
+
+# Fix Images Command
+
+Automatically wraps standalone images in `<Frame>` components in MDX documentation files.
+
+## Usage
+
+```bash
+writechoice fix images [options]
+```
+
+## Options
+
+| Option             | Alias | Description                                                        | Default |
+| ------------------ | ----- | ------------------------------------------------------------------ | ------- |
+| `--file <path>`    | `-f`  | Fix a single MDX file                                              | -       |
+| `--dir <path>`     | `-d`  | Fix MDX files in a specific directory                              | -       |
+| `--download [url]` | -     | Download missing local images (uses `source` from config or a URL) | -       |
+| `--dry-run`        | -     | Preview changes without writing files                              | `false` |
+| `--quiet`          | -     | Suppress terminal output                                           | `false` |
+
+## What Gets Wrapped
+
+**Markdown images** on their own line:
+
+```mdx
+![Alt text](https://example.com/image.png)
+```
+
+**HTML `<img>` tags** on their own line:
+
+```mdx
+<img src="https://example.com/image.png" alt="Alt text" />
+```
+
+Both become:
+
+```mdx
+<Frame>
+![Alt text](https://example.com/image.png)
+</Frame>
+```
+
+## What Is Skipped
+
+| Protected region | Example |
+|---|---|
+| Existing `<Frame>` blocks | `<Frame>![img](url)</Frame>` |
+| Fenced code blocks | ` ``` ` ... ` ``` ` |
+| Markdown tables | `\| ![img](url) \| data \|` |
+| HTML tables | `<table><tr><td><img /></td></table>` |
+
+Images that are part of inline text (not alone on a line) are also left unchanged — use [Fix Inline Images](./inlineimages.md) for those.
+
+## Examples
+
+```bash
+# Preview changes before writing
+writechoice fix images --dry-run
+
+# Fix all MDX files in the current directory
+writechoice fix images
+
+# Fix a specific directory
+writechoice fix images -d docs/api
+
+# Download missing images using source from config.json
+writechoice fix images --download
+
+# Download missing images from a specific URL
+writechoice fix images --download https://docs.example.com
+```
+
+## Downloading Missing Images
+
+When `--download` is used:
+
+- Root-relative paths (e.g. `/images/logo.png`) are downloaded from the provided or configured base URL
+- External URLs are skipped
+- Files already on disk are not re-downloaded
+- Failures are written to `image_download.json`
+
+## Config File
+
+```json
+{
+  "images": {
+    "dir": "docs",
+    "download": false,
+    "dry-run": false,
+    "quiet": false
+  }
+}
+```
+
+## Safety
+
+- Never removes or modifies image attributes
+- Images already in `<Frame>` are never touched
+- Idempotent: running twice produces the same result
+- Use `--dry-run` before writing
+- Revert with `git checkout .` if needed
+
+---
+
+# Fix Inline Images
+
+# Fix Inline Images Command
+
+Converts images that appear inline within text to `<InlineImage>` components in MDX files, and automatically adds the required import statement.
+
+## Usage
+
+```bash
+writechoice fix inlineimages [options]
+```
+
+## Options
+
+| Option          | Alias | Description                           | Default |
+| --------------- | ----- | ------------------------------------- | ------- |
+| `--file <path>` | `-f`  | Fix a single MDX file                 | -       |
+| `--dir <path>`  | `-d`  | Fix MDX files in a specific directory | -       |
+| `--dry-run`     | -     | Preview changes without writing files | `false` |
+| `--quiet`       | -     | Suppress terminal output              | `false` |
+
+## What Gets Converted
+
+Images that **share a line with other text**:
+
+```mdx
+<!-- Before -->
+Click the ![icon](/images/icon.png) button to continue.
+
+<!-- After -->
+Click the <InlineImage src="/images/icon.png" alt="icon" /> button to continue.
+```
+
+HTML `<img>` tags inline with text are also converted.
+
+### Import Injection
+
+The command automatically adds the import after the frontmatter block (or at the top if there's no frontmatter). Already-present imports are not duplicated.
+
+```mdx
+---
+title: My Page
+---
+
+import { InlineImage } from "/snippets/InlineImage.jsx";
+```
+
+## What Is Skipped
+
+| Protected region | Example |
+|---|---|
+| Fenced code blocks | ` ``` ` ... ` ``` ` |
+| Inline code spans | `` `![img](url)` `` |
+| Markdown tables | `\| ![img](url) \| data \|` |
+| HTML tables | `<table>...<img />...</table>` |
+| `<Frame>` blocks | `<Frame>![img](url)</Frame>` |
+| Linked images | `[![img](url)](link)` |
+| **Standalone images** | `![img](url)` alone on a line |
+
+Use [Fix Images](./images.md) to wrap standalone images in `<Frame>`.
+
+## Examples
+
+```bash
+# Preview changes before writing
+writechoice fix inlineimages --dry-run
+
+# Fix all MDX files in the current directory
+writechoice fix inlineimages
+
+# Fix a specific directory
+writechoice fix inlineimages -d docs/api
+```
+
+## Relationship to Fix Images
+
+| Command | What it handles |
+|---|---|
+| `fix images` | Standalone images → wraps in `<Frame>` |
+| `fix inlineimages` | Inline images (sharing a line with text) → converts to `<InlineImage>` |
+
+Run both to fully handle all images in your documentation:
+
+```bash
+writechoice fix images
+writechoice fix inlineimages
+```
+
+## Config File
+
+```json
+{
+  "inlineimages": {
+    "dir": "docs",
+    "dry-run": false,
+    "quiet": false
+  }
+}
+```
+
+## Safety
+
+- Never modifies standalone images (those alone on their own line)
+- Import is only added once per file, even if re-run
+- Idempotent: running on an already-converted file produces no changes
+- Revert with `git checkout .` if needed
+
+---
+
+# Fix H1
+
+# Fix H1 Command
+
+Removes duplicate H1 headings that repeat the frontmatter `title` field in MDX documentation files.
+
+## Usage
+
+```bash
+writechoice fix h1 [options]
+```
+
+## Options
+
+| Option          | Alias | Description                           | Default |
+| --------------- | ----- | ------------------------------------- | ------- |
+| `--file <path>` | `-f`  | Fix a single MDX file                 | -       |
+| `--dir <path>`  | `-d`  | Fix MDX files in a specific directory | -       |
+| `--dry-run`     | -     | Preview changes without writing files | `false` |
+| `--quiet`       | -     | Suppress terminal output              | `false` |
+
+## Why This Is Needed
+
+Mintlify automatically renders the frontmatter `title` as a visible page heading. If a file also contains a Markdown H1 (`# Title`) right after the frontmatter with the same text, the title appears twice on the page. This command removes the redundant H1.
+
+## What Gets Removed
+
+The first non-empty line after frontmatter is removed **only if** it is an H1 that exactly matches the frontmatter `title` (case-sensitive, whitespace-trimmed). The blank line immediately following is also removed.
+
+```mdx
+<!-- Before -->
+---
+title: Getting Started
+---
+
+# Getting Started
+
+Welcome to the documentation.
+
+<!-- After -->
+---
+title: Getting Started
+---
+
+Welcome to the documentation.
+```
+
+## What Is Left Unchanged
+
+- Files with no frontmatter or no `title` field
+- H1s that don't exactly match the frontmatter title
+- H1s that appear anywhere other than the first non-empty line after frontmatter
+
+## Examples
+
+```bash
+# Preview changes before writing
+writechoice fix h1 --dry-run
+
+# Fix all MDX files in the current directory
+writechoice fix h1
+
+# Fix a specific directory
+writechoice fix h1 -d docs/api
+```
+
+## Config File
+
+```json
+{
+  "h1": {
+    "dir": "docs",
+    "dry-run": false,
+    "quiet": false
+  }
+}
+```
+
+## Safety
+
+- Only removes the H1 if it exactly matches the frontmatter title
+- Idempotent: running again on an already-fixed file produces no changes
+- Use `--dry-run` to preview before writing
+- Revert with `git checkout .` if needed
+
+---
+
+# Fix Imports
+
+# Fix Imports Command
+
+Scans MDX files for custom JSX component usage, validates import statements, and automatically adds missing imports when the component file is found in the `snippets/` folder.
+
+## Usage
+
+```bash
+writechoice fix imports [options]
+```
+
+## Options
+
+| Option              | Alias | Description                                         | Default    |
+| ------------------- | ----- | --------------------------------------------------- | ---------- |
+| `--file <path>`     | `-f`  | Check a single MDX file                             | -          |
+| `--dir <path>`      | `-d`  | Check MDX files in a specific directory             | -          |
+| `--snippets <path>` | -     | Path to the snippets folder                         | `snippets` |
+| `--dry-run`         | -     | Preview changes without writing files               | `false`    |
+| `--quiet`           | -     | Suppress terminal output                            | `false`    |
+
+## How It Works
+
+1. **Scan** — Finds all PascalCase JSX components used in each MDX file (skips code blocks and inline code)
+2. **Filter** — Ignores Mintlify built-in components that require no import
+3. **Check imports** — For each custom component, verifies import paths exist on disk
+4. **Fix** — Adds missing imports when a matching file is found in `snippets/`; inserted after frontmatter alongside existing imports
+
+Exit code `1` is returned when invalid import paths or unresolved components are found.
+
+## Mintlify Built-ins (ignored)
+
+These require no import and are always skipped:
+
+`Note` `Warning` `Info` `Tip` `Card` `CardGroup` `Tabs` `Tab` `Steps` `Step` `Accordion` `AccordionGroup` `Frame` `Tooltip` `Check` `CodeGroup` `Icon` `Snippet` `Update` `ResponseField` `Expandable` `ParamField` `Columns` `Badge`
+
+## Snippet File Matching
+
+For a component like `MyButton`, the following file variants are tried inside `snippets/` (recursively):
+
+- `MyButton.mdx`, `my-button.mdx`, `mybutton.mdx`
+- Same names with `.jsx`, `.tsx`, `.js`, `.ts`
+
+## Import Format
+
+| Snippet file type | Generated import |
+|---|---|
+| `.mdx` | `import MyButton from '/snippets/my-button.mdx'` |
+| `.js` / `.ts` / `.jsx` / `.tsx` | `import { MyButton } from '/snippets/my-button.js'` |
+
+## Examples
+
+```bash
+# Check all MDX files and fix missing imports
+writechoice fix imports
+
+# Preview without writing
+writechoice fix imports --dry-run
+
+# Check a single file
+writechoice fix imports -f docs/getting-started.mdx
+
+# Use a non-default snippets folder
+writechoice fix imports --snippets src/components
+```
+
+## Safety
+
+- Only adds imports — never removes or modifies existing ones
+- Idempotent: already-imported components are not duplicated
+- Use `--dry-run` to preview before writing
+- Revert with `git checkout .` if needed
+
+---
+
+# Fix Redirects
+
+# Fix Redirects Command
+
+Reads the `redirects` array from `docs.json` and replaces stale source paths with their destination paths inside MDX files. Fixes internal links that still point to old URLs after a navigation restructure.
+
+## Usage
+
+```bash
+wc fix redirects
+```
+
+## Options
+
+| Option | Description | Default |
+|---|---|---|
+| `--docs <file>` | Path to docs.json | `docs.json` |
+| `-d, --dir <path>` | Directory to scan for MDX files | cwd |
+| `--dry-run` | Preview replacements without writing files | `false` |
+| `--quiet` | Suppress terminal output | `false` |
+
+## How It Works
+
+For each `{ source, destination }` entry in `docs.json`'s `redirects` array, the command searches all `.mdx` files for the source path used in link contexts and replaces it with the destination path.
+
+### Matched Link Contexts
+
+| Pattern | Example |
+|---|---|
+| Markdown link | `[text](/old/path)` |
+| Markdown link with anchor | `[text](/old/path#section)` |
+| JSX href (double quotes) | `href="/old/path"` |
+| JSX href (single quotes) | `href='/old/path'` |
+
+Only **exact** path matches are replaced — `/docs/foo` will not replace `/docs/foo-bar`.
+
+## Typical Workflow
+
+Run after `nav folders` to fix any internal links that referenced the old paths:
+
+```bash
+wc nav folders
+wc fix redirects
+```
+
+## Examples
+
+```bash
+# Preview all replacements without writing
+wc fix redirects --dry-run
+
+# Scope the scan to a specific folder
+wc fix redirects --dir docs/api
+
+# Use a custom docs.json
+wc fix redirects --docs path/to/docs.json
+```
+
+## Config File
+
+```json
+{
+  "nav": {
+    "redirects": {
+      "docs": "docs.json",
+      "dir": "docs",
+      "dry-run": false,
+      "quiet": false
+    }
+  }
+}
+```
+
+## Safety
+
+- Only replaces exact path matches in link contexts — no partial matches
+- Idempotent: already-updated links are not re-replaced
+- Use `--dry-run` to preview before writing
+- Revert with `git checkout .` if needed
+
+---
+
+# Nav Folders
+
+# Nav Folders Command
+
+Restructures MDX files on disk to match the navigation hierarchy defined in `docs.json`. Also updates `docs.json` page references to the new paths and generates `redirects.json` for all moved files.
+
+## Usage
+
+```bash
+wc nav folders
+```
+
+## Options
+
+| Option | Description | Default |
+|---|---|---|
+| `--docs <file>` | Path to docs.json | `docs.json` |
+| `--base <dir>` | Base directory for all output paths | `docs` |
+| `--skip-level <n>` | Skip a navigation level (repeatable, 1-based) | — |
+| `--rename` | Rename each file using a kebab-case slug of its frontmatter title | `false` |
+| `--dry-run` | Preview moves without writing files | `false` |
+| `--quiet` | Suppress terminal output | `false` |
+
+## How It Works
+
+For every page string in `docs.json` navigation, the command computes a new path based on the hierarchy of containers above it (tabs, anchors, menu items, groups, dropdowns, etc.), then moves the file to that path.
+
+### Supported Navigation Container Types
+
+- `tabs` / `tab`
+- `anchors` / `anchor`
+- `menu` / `item`
+- `groups` / `group`
+- `dropdowns` / `dropdown`
+- `versions` / `version`
+- `languages` / `language`
+- `products` / `product`
+
+### Path Construction
+
+Each container in the path hierarchy becomes a folder, slugified to lowercase with hyphens:
+
+```
+Tab: "Integrate POS Device"    →  integrate-pos-device/
+  Item: "Marshall"             →  marshall/
+    Group: "Guides"            →  guides/
+      Page: "docs/marshall-sdk"  →  marshall-sdk.mdx
+```
+
+Result: `docs/integrate-pos-device/marshall/guides/marshall-sdk.mdx`
+
+### `index.mdx` Rule
+
+If a page's filename (slugified) matches the **last folder** in its generated path, the file is named `index.mdx` instead.
+
+### `--rename`
+
+When `--rename` is set, each file is renamed to a kebab-case slug of its frontmatter `title` instead of keeping its original filename.
+
+## Skip Levels
+
+Navigation levels are numbered 1-based by their position in the path:
+
+| Level | Typically corresponds to |
+|---|---|
+| 1 | Tab (or first container) |
+| 2 | Menu item / anchor |
+| 3 | Group |
+| 4 | Nested group |
+
+```bash
+# Skip tab folders (level 1)
+wc nav folders --skip-level 1
+
+# Skip tabs and menu items
+wc nav folders --skip-level 1 --skip-level 2
+```
+
+## Output Files
+
+**`docs.json`** — updated in place with the new page paths.
+
+**`redirects.json`** — one entry per moved file:
+
+```json
+[
+  {
+    "source": "/docs/marshall-sdk",
+    "destination": "/docs/integrate-pos-device/marshall/guides/marshall-sdk"
+  }
+]
+```
+
+## Examples
+
+```bash
+# Preview changes without moving anything
+wc nav folders --dry-run
+
+# Rename files from their frontmatter titles
+wc nav folders --rename
+
+# Use a custom docs.json and skip tab-level folders
+wc nav folders --docs mintlify/docs.json --base pages --skip-level 1
+```
+
+## Config File
+
+```json
+{
+  "nav": {
+    "folders": {
+      "docs": "docs.json",
+      "base": "docs",
+      "skip_levels": [1],
+      "rename": false,
+      "dry-run": false,
+      "quiet": false
+    }
+  }
+}
+```
+
+---
+
+# Nav Root
+
+# Nav Root Command
+
+For each group nested inside another group, checks whether the group's first page has a frontmatter `title` that matches the group name. If it matches, that page is moved out of `pages` and into a `"root"` key on the group object, and `docs.json` is updated in place.
+
+## Usage
+
+```bash
+wc nav root
+```
+
+## Options
+
+| Option | Description | Default |
+|---|---|---|
+| `--docs <file>` | Path to docs.json | `docs.json` |
+| `--dry-run` | Preview changes without writing files | `false` |
+| `--quiet` | Suppress terminal output | `false` |
+
+## How It Works
+
+The command walks the `docs.json` navigation tree and applies a promotion check to every group that is **nested inside another group's `pages` array**. Top-level groups (direct children of `tabs`, `menu`, `anchors`, `dropdowns`, `versions`, `languages`, or `products`) are never touched.
+
+For each eligible nested group:
+
+1. Look at `pages[0]` — if it is not a string (it's a sub-group), skip.
+2. Find the file on disk. Falls back to searching for the filename anywhere in the project if the path doesn't resolve.
+3. Read the file's frontmatter `title`.
+4. Slugify both the title and the group name and compare them.
+5. If they match, move `pages[0]` to `"root"` and remove it from `pages`.
+
+## Example
+
+**Before:**
+
+```json
+{
+  "group": "General",
+  "pages": [
+    "docs/methods/general/info",
+    "docs/methods/general/status"
+  ]
+}
+```
+
+**After** (when `docs/methods/general/info.mdx` has `title: "General"`):
+
+```json
+{
+  "group": "General",
+  "root": "docs/methods/general/info",
+  "pages": [
+    "docs/methods/general/status"
+  ]
+}
+```
+
+## Which Groups Are Processed
+
+| Level | Example | Processed? |
+|---|---|---|
+| Direct child of `tabs` / `menu` / `anchors` | `Getting Started`, `Methods` | No |
+| Nested inside another group's `pages` | `General`, `Payment` inside `Methods` | Yes |
+
+## Examples
+
+```bash
+# Preview which pages would be promoted
+wc nav root --dry-run
+
+# Run against a custom docs.json
+wc nav root --docs path/to/docs.json
+```
+
+## Config File
+
+```json
+{
+  "nav": {
+    "root": {
+      "docs": "docs.json",
+      "dry-run": false,
+      "quiet": false
+    }
+  }
+}
+```
+
+---
+
+# Docusaurus Convert
+
+# Docusaurus Convert Command
+
+Converts a Docusaurus docs folder to Mintlify-ready MDX files. Applies all known structural and syntax transformations automatically, and copies non-Markdown files (images, etc.) as-is.
+
+## Usage
+
+```bash
+wc docusaurus convert <folder> [options]
+```
+
+## Arguments
+
+| Argument | Description |
+|---|---|
+| `<folder>` | Path to the Docusaurus project root (contains a `docs/` subfolder) or directly to a docs folder |
+
+## Options
+
+| Option | Description | Default |
+|---|---|---|
+| `-o, --output <dir>` | Output directory for converted files | `mintlify` |
+| `--dry-run` | Preview conversions without writing files | `false` |
+| `--quiet` | Suppress terminal output | `false` |
+
+## What Gets Converted
+
+### Admonitions → Mintlify callout components
+
+Docusaurus `:::type` blocks are converted to Mintlify JSX components:
+
+| Docusaurus | Mintlify |
+|---|---|
+| `:::note` | `<Note>` |
+| `:::tip` | `<Tip>` |
+| `:::info` | `<Info>` |
+| `:::warning` | `<Warning>` |
+| `:::caution` | `<Warning>` |
+| `:::danger` | `<Danger>` |
+| `:::success` | `<Check>` |
+
+```mdx
+<!-- Before -->
+:::note
+This is a note.
+:::
+
+<!-- After -->
+<Note>
+This is a note.
+</Note>
+```
+
+Titled admonitions (`:::note[My Title]`) have the title rendered as bold text inside the component.
+
+### Tabs → Mintlify Tabs
+
+```mdx
+<!-- Before -->
+<Tabs groupId="os">
+  <TabItem value="mac" label="macOS">macOS steps</TabItem>
+  <TabItem value="win" label="Windows">Windows steps</TabItem>
+</Tabs>
+
+<!-- After -->
+<Tabs>
+  <Tab title="macOS">macOS steps</Tab>
+  <Tab title="Windows">Windows steps</Tab>
+</Tabs>
+```
+
+### Accordions → Mintlify Accordion
+
+```mdx
+<!-- Before -->
+<details>
+  <summary>Click to expand</summary>
+  Hidden content here.
+</details>
+
+<!-- After -->
+<Accordion title="Click to expand">
+  Hidden content here.
+</Accordion>
+```
+
+### H1 reconciliation with frontmatter
+
+Handles all combinations of H1 heading and `title` frontmatter:
+
+| Situation | Result |
+|---|---|
+| H1 equals `title` | H1 removed (duplicate) |
+| H1 differs from `title` | H1 becomes new `title`; old `title` moves to `sidebarTitle` |
+| No `title` in frontmatter | H1 becomes `title`, H1 removed from body |
+| No frontmatter at all | Frontmatter created with `title` from H1 |
+
+### Frontmatter key renames
+
+| Docusaurus key | Mintlify key |
+|---|---|
+| `sidebar_label` | `sidebarTitle` |
+
+All other frontmatter keys are preserved as-is.
+
+### Theme imports removed
+
+```mdx
+<!-- Removed automatically -->
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import Admonition from '@docusaurus/Admonition';
+```
+
+### Internal links — extensions stripped
+
+```mdx
+<!-- Before -->
+[See setup](./installation.md)
+[API reference](../api/index.mdx#authentication)
+
+<!-- After -->
+[See setup](./installation)
+[API reference](../api/index#authentication)
+```
+
+### Images — paths converted and wrapped in `<Frame>`
+
+- Absolute Docusaurus paths (`/img/foo.png`) → `/static/img/foo.png`
+- Relative paths are resolved and converted where possible
+- All standalone images are wrapped in `<Frame>`
+
+```mdx
+<!-- Before -->
+![Dashboard](/img/dashboard.png)
+
+<!-- After -->
+<Frame>![Dashboard](/static/img/dashboard.png)</Frame>
+```
+
+The `static/` folder from the Docusaurus project root is also copied to `<output>/static/`.
+
+### Snippets — `_`-prefixed files routed to `snippets/`
+
+Files whose names start with `_` or that live inside a `_snippets/` directory are moved into the `snippets/` output folder. Import paths in other files are rewritten to use the Mintlify absolute `/snippets/...` path.
+
+### HTML comments → JSX comments
+
+```mdx
+<!-- Before -->
+<!-- This is a comment -->
+
+<!-- After -->
+{/* This is a comment */}
+```
+
+## Examples
+
+```bash
+# Convert a Docusaurus project root
+wc docusaurus convert ./my-docusaurus-site
+
+# Convert just a docs subfolder
+wc docusaurus convert ./my-docusaurus-site/docs
+
+# Preview without writing
+wc docusaurus convert ./my-docusaurus-site --dry-run
+
+# Write to a custom output directory
+wc docusaurus convert ./my-docusaurus-site --output ./converted
+```
+
+## Output Structure
+
+Given a Docusaurus project at `./my-site`:
+
+```
+my-site/
+├── docs/
+│   ├── intro.md
+│   ├── tutorial/
+│   │   └── basics.mdx
+│   └── _shared/
+│       └── _note.mdx     ← snippet
+└── static/
+    └── img/
+        └── logo.png
+```
+
+Running `wc docusaurus convert ./my-site` produces:
+
+```
+mintlify/
+├── intro.mdx
+├── tutorial/
+│   └── basics.mdx
+├── snippets/
+│   └── _shared/
+│       └── _note.mdx
+└── static/
+    └── img/
+        └── logo.png
+```
+
+## Typical Workflow
+
+This command is step 1 of a three-step Docusaurus → Mintlify migration:
+
+```bash
+# 1. Convert all files
+wc docusaurus convert ./my-docusaurus-site
+
+# 2. Rename files to match their frontmatter slug/id
+wc docusaurus slugify ./mintlify
+
+# 3. Generate Mintlify navigation from sidebars.js
+wc docusaurus nav ./my-docusaurus-site/sidebars.js --prefix mintlify
+```
+
+## Config File
+
+```json
+{
+  "docusaurus": {
+    "output": "mintlify",
+    "dry-run": false,
+    "quiet": false
+  }
+}
+```
+
+---
+
+# Docusaurus Slugify
+
+# Docusaurus Slugify Command
+
+Renames and moves converted MDX files so their paths match the `slug` (or `id`) in their frontmatter. Also updates any matching page paths in `docs.json`.
+
+Run this after [`wc docusaurus convert`](./convert.md) to ensure each file lives at the URL its frontmatter declares.
+
+## Usage
+
+```bash
+wc docusaurus slugify <folder> [options]
+```
+
+## Arguments
+
+| Argument | Description |
+|---|---|
+| `<folder>` | The converted output folder (e.g. `./mintlify`) |
+
+## Options
+
+| Option | Description | Default |
+|---|---|---|
+| `--docs <file>` | Path to `docs.json` to update | `docs.json` |
+| `--dry-run` | Preview renames without writing files | `false` |
+| `--quiet` | Suppress terminal output | `false` |
+
+## How It Works
+
+1. Walks all `.md` / `.mdx` files in `<folder>`.
+2. Reads each file's frontmatter and looks for a `slug` field. Falls back to `id` if `slug` is absent.
+3. Computes the target path from the slug: strips the leading `/`, removes the extension, appends `.mdx`.
+4. If the current path already matches the target, skips the file.
+5. Moves the file to the new path, creating directories as needed.
+6. Updates any matching string entries in `docs.json`.
+
+### Frontmatter lookup order
+
+| Frontmatter field | Notes |
+|---|---|
+| `slug` | Used first; may be an absolute path like `/cloud/manage/cloud-tiers` |
+| `id` | Used as fallback if `slug` is absent |
+
+Files with neither field are left in place.
+
+## Example
+
+Given a converted file:
+
+```
+mintlify/cloud/features/01_cloud_tiers.mdx
+```
+
+With frontmatter:
+
+```yaml
+---
+slug: /cloud/manage/cloud-tiers
+---
+```
+
+Running `wc docusaurus slugify ./mintlify` moves it to:
+
+```
+mintlify/cloud/manage/cloud-tiers.mdx
+```
+
+And updates any reference in `docs.json`:
+
+```json
+// Before
+"mintlify/cloud/features/01_cloud_tiers"
+
+// After
+"mintlify/cloud/manage/cloud-tiers"
+```
+
+## Examples
+
+```bash
+# Rename files in the default output folder
+wc docusaurus slugify ./mintlify
+
+# Preview without writing
+wc docusaurus slugify ./mintlify --dry-run
+
+# Specify a different docs.json path
+wc docusaurus slugify ./mintlify --docs path/to/docs.json
+```
+
+## Typical Workflow
+
+```bash
+# 1. Convert all files
+wc docusaurus convert ./my-docusaurus-site
+
+# 2. Rename files to match their frontmatter slug/id
+wc docusaurus slugify ./mintlify
+
+# 3. Generate Mintlify navigation from sidebars.js
+wc docusaurus nav ./my-docusaurus-site/sidebars.js --prefix mintlify
+```
+
+## Notes
+
+- If a target path already exists on disk, the rename is skipped with a warning.
+- Directories are created automatically when moving a file into a new location.
+- The command only modifies file paths — it does not change file contents.
+
+---
+
+# Docusaurus Nav
+
+# Docusaurus Nav Command
+
+Converts a Docusaurus `sidebars.js` file into Mintlify navigation JSON, ready to paste into `docs.json`.
+
+## Usage
+
+```bash
+wc docusaurus nav <file> [options]
+```
+
+## Arguments
+
+| Argument | Description |
+|---|---|
+| `<file>` | Path to the Docusaurus `sidebars.js` (or `sidebars.ts`) file |
+
+## Options
+
+| Option | Description | Default |
+|---|---|---|
+| `--prefix <path>` | Prepend a path prefix to every page ID (e.g. `mintlify`) | — |
+| `--docs-dir <dir>` | Docs folder used to expand `autogenerated` items | `docs/` next to `sidebars.js` |
+| `-o, --output <file>` | Write result to this file instead of stdout | `nav.json` |
+| `--quiet` | Suppress terminal output | `false` |
+
+## Output Format
+
+The output structure depends on how many sidebars are defined:
+
+| Sidebars count | Output structure |
+|---|---|
+| One sidebar | `{ anchors: [{ anchor, pages }] }` |
+| Multiple sidebars | `{ tabs: [{ tab, pages }] }` |
+
+This JSON is designed to be merged into or used as the `navigation` value in `docs.json`.
+
+## Supported Item Types
+
+| Docusaurus type | Handled as |
+|---|---|
+| String (bare doc ID) | Page path string |
+| `{ type: 'doc', id }` | Page path string |
+| `{ type: 'category', label, items }` | `{ group, pages }` object |
+| `{ type: 'autogenerated', dirName }` | Expanded by reading the docs folder |
+| `{ type: 'link' }` | Skipped (external links) |
+| `{ type: 'html' }` | Skipped (decorative separators) |
+| `{ type: 'ref' }` | Treated as a doc ID |
+
+### Autogenerated expansion
+
+When a sidebar contains `{ type: 'autogenerated', dirName: 'faq' }`, the command walks the corresponding directory in the docs folder and builds the equivalent structure:
+
+- Reads `_category_.json` in subdirectories for folder `label` and `position`
+- Reads `sidebar_position` from each file's frontmatter for ordering
+- Falls back to alphabetical sort when positions are equal or absent
+- Skips files and directories whose names start with `_`
+
+## Examples
+
+```bash
+# Convert sidebars.js, write result to nav.json
+wc docusaurus nav ./my-site/sidebars.js
+
+# Add a prefix so all page IDs start with "mintlify/"
+wc docusaurus nav ./my-site/sidebars.js --prefix mintlify
+
+# Write to a specific output file
+wc docusaurus nav ./my-site/sidebars.js -o navigation.json
+
+# Specify docs folder explicitly
+wc docusaurus nav ./my-site/sidebars.js --docs-dir ./my-site/docs --prefix mintlify
+```
+
+## Example Input → Output
+
+**`sidebars.js`:**
+
+```js
+module.exports = {
+  tutorialSidebar: [
+    'intro',
+    {
+      type: 'category',
+      label: 'Tutorial',
+      items: [
+        'tutorial/basics',
+        'tutorial/deploy',
+      ],
+    },
+  ],
+};
+```
+
+**`nav.json` output** (with `--prefix mintlify`):
+
+```json
+{
+  "anchors": [
+    {
+      "anchor": "Tutorial Sidebar",
+      "pages": [
+        "mintlify/intro",
+        {
+          "group": "Tutorial",
+          "pages": [
+            "mintlify/tutorial/basics",
+            "mintlify/tutorial/deploy"
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Multiple sidebars** produce `tabs` instead of `anchors`:
+
+```json
+{
+  "tabs": [
+    {
+      "tab": "Docs",
+      "pages": [...]
+    },
+    {
+      "tab": "API",
+      "pages": [...]
+    }
+  ]
+}
+```
+
+## Typical Workflow
+
+```bash
+# 1. Convert all files
+wc docusaurus convert ./my-docusaurus-site
+
+# 2. Rename files to match their frontmatter slug/id
+wc docusaurus slugify ./mintlify
+
+# 3. Generate Mintlify navigation
+wc docusaurus nav ./my-docusaurus-site/sidebars.js --prefix mintlify
+
+# 4. Inspect nav.json and merge into docs.json
+cat nav.json
+```
+
+## Notes
+
+- The command loads `sidebars.js` using `require()`. If that fails (e.g. TypeScript or ESM syntax), it falls back to a text-based parser that handles common patterns.
+- Sidebar key names are converted from `camelCase`/`snake_case` to Title Case for the `anchor` / `tab` label.
+- `link` and `html` items are silently skipped — they have no Mintlify equivalent.
+
+---
+
+# Metadata
+
+# Metadata Command
+
+Fetches meta tags from your live documentation pages and writes them into the frontmatter of the corresponding MDX source files. Existing frontmatter keys are updated (overwritten); missing keys are appended.
+
+## Usage
+
+```bash
+writechoice metadata [baseUrl] [options]
+```
+
+## Arguments
+
+| Argument | Description |
+|---|---|
+| `baseUrl` | Base URL of the live documentation site (optional if set in `config.json` as `source`) |
+
+## Options
+
+| Option | Alias | Description | Default |
+|---|---|---|---|
+| `--file <path>` | `-f` | Process a single MDX file | - |
+| `--dir <path>` | `-d` | Process MDX files in a specific directory | - |
+| `--concurrency <number>` | `-c` | Number of parallel HTTP requests | `15` |
+| `--dry-run` | - | Preview changes without writing files | `false` |
+| `--quiet` | - | Suppress terminal output | `false` |
+
+## How It Works
+
+For each MDX file, the command:
+
+1. **Constructs a URL** by appending the file's path (relative to the scan directory, without `.mdx`) to the base URL
+2. **Fetches the live page** using an HTTP request
+3. **Extracts meta tags** from the HTML (`og:*`, `twitter:*`)
+4. **Updates the frontmatter** — existing keys are overwritten, new keys are appended
+
+### URL Mapping
+
+```
+Base URL : https://docs.example.com
+File     : docs/api/reference.mdx
+→ URL    : https://docs.example.com/api/reference
+```
+
+### Meta Tags Fetched
+
+| Tag | Frontmatter key |
+|---|---|
+| `og:title` | `og:title` |
+| `og:description` | `og:description` |
+| `og:image` | `og:image` |
+| `twitter:title` | `twitter:title` |
+| `twitter:description` | `twitter:description` |
+
+## Examples
+
+```bash
+# Use source from config.json
+writechoice metadata
+
+# Specify base URL directly
+writechoice metadata https://docs.example.com
+
+# Process a single file
+writechoice metadata https://docs.example.com -f docs/api/reference.mdx
+
+# Preview without writing
+writechoice metadata --dry-run
+
+# Process with lower concurrency
+writechoice metadata https://docs.example.com -c 5
+```
+
+## Config File
+
+```json
+{
+  "source": "https://docs.example.com",
+  "metadata": {
+    "concurrency": 15,
+    "quiet": false
+  }
+}
+```
+
+---
+
+# Session
+
+# Session Command
+
+Captures an authenticated browser session so `wc scrape` can access pages behind a login.
+
+## Usage
+
+```bash
+wc session <url>
+wc session <url> --output my-session.json
+```
+
+## Options
+
+| Option | Description | Default |
+|---|---|---|
+| `<url>` | URL to open (login page or any protected page) | — |
+| `-o, --output <file>` | Path to save the session file | `session.json` |
+
+## How It Works
+
+1. Opens a **visible** browser window at the given URL
+2. You log in manually in the browser
+3. Press **Enter** in the terminal when done
+4. The session (cookies + localStorage) is saved to the output file
+
+```bash
+wc session https://docs.example.com/login
+# → browser opens, you log in, press Enter
+# → session saved to session.json
+```
+
+## Using the Session with Scrape
+
+Set `storage_state` in `config.json` under `scrape.playwright_config`:
+
+```json
+{
+  "scrape": {
+    "playwright_config": {
+      "storage_state": "session.json"
+    }
+  }
+}
+```
+
+### With Playwright (`playwright: true`)
+
+The session is loaded into the Playwright browser context — use this when the site requires JavaScript rendering in addition to authentication.
+
+### Without Playwright (`playwright: false`)
+
+Cookies from the session file are extracted and injected as a `Cookie` header into native `fetch` requests. This is faster (no browser overhead) and works when only the auth cookie is needed.
+
+```json
+{
+  "scrape": {
+    "playwright": false,
+    "playwright_config": {
+      "storage_state": "session.json"
+    }
+  }
+}
+```
+
+## Refreshing a Session
+
+Sessions expire when the site's cookies expire. Re-run the command to capture a fresh one:
+
+```bash
+wc session https://docs.example.com/login
+```
+
+---
+
+# Config
+
+# Config Command
+
+Generates a `config.json` template file with all available configuration options.
+
+## Usage
+
+```bash
+writechoice config [options]
+```
+
+## Options
+
+| Option | Description | Default |
+|---|---|---|
+| `--force` | Overwrite existing config.json | `false` |
+| `--quiet` | Suppress terminal output | `false` |
+
+## How It Works
+
+Creates a `config.json` file in your current working directory with all available configuration options, placeholder values for required fields, and default values for optional fields.
+
+## Examples
+
+```bash
+# Create config.json in current directory
+writechoice config
+
+# Overwrite existing config.json
+writechoice config --force
+
+# Create config.json without terminal output
+writechoice config --quiet
+```
+
+## Generated Template
+
+```json
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "description": "Configuration file for WriteChoice Mint CLI",
+
+  "source": "https://docs.example.com",
+  "target": "http://localhost:3000",
+
+  "links": {
+    "file": null,
+    "dir": null,
+    "output": "links_report",
+    "dry-run": false,
+    "quiet": false,
+    "concurrency": 25,
+    "headless": true
+  },
+
+  "parse": {
+    "file": null,
+    "dir": null,
+    "quiet": false
+  }
+}
+```
+
+## Next Steps
+
+1. Edit `config.json` and set your `source` and `target` URLs.
+2. Run any command without arguments — they'll use the config values automatically.
+
+See the [Configuration File](../configuration/config-file.md) reference for all available options and their descriptions.
+
+## Error Handling
+
+**File already exists:**
+
+```
+✗ Error: config.json already exists in the current directory.
+Use --force to overwrite the existing file:
+  writechoice config --force
+```
+
+---
+
+# Update
+
+# Update Command
+
+Updates the CLI to the latest version from npm.
+
+## Usage
+
+```bash
+writechoice update
+```
+
+## How It Works
+
+1. Checks npm for the latest published version
+2. Compares it with your currently installed version
+3. If a newer version is available, installs it globally
+4. Displays the new version number
+
+## Examples
+
+```bash
+$ writechoice update
+Checking for updates...
+
+Update available: 0.0.7 → 0.0.8
+
+Updating @writechoice/mint-cli...
+
+✓ Successfully updated to version 0.0.8
+```
+
+**Already up to date:**
+
+```bash
+$ writechoice update
+Checking for updates...
+✓ You're already on the latest version (0.0.8)
+```
+
+## Automatic Update Notifications
+
+When you run any command, the CLI automatically checks for updates in the background and shows a notice if a newer version is available:
+
+```
+┌─────────────────────────────────────────────────┐
+│  Update available: 0.0.7 → 0.0.8               │
+│  Run: writechoice update                        │
+└─────────────────────────────────────────────────┘
+```
+
+## Manual Update (Alternative)
+
+```bash
+npm install -g @writechoice/mint-cli@latest
+```
+
+## Troubleshooting
+
+**Permission errors on Linux/macOS:**
+
+```bash
+sudo npm install -g @writechoice/mint-cli@latest
+```
+
+Or use [nvm](https://github.com/nvm-sh/nvm) to avoid needing `sudo`.
+
+**Check available versions:**
+
+```bash
+npm view @writechoice/mint-cli versions
+```
+
+---
+
+# Configuration File Reference
+
+# Configuration File
+
+WriteChoice Mint CLI supports an optional `config.json` file for setting default values and avoiding repetitive CLI arguments.
+
+## Quick Start
+
+### Generate Config File
+
+The easiest way to create a `config.json` is using the config command:
+
+```bash
+writechoice config
+```
+
+This creates a template file with all available options. Then edit the placeholder values:
+
+```json
+{
+  "source": "https://docs.example.com",
+  "target": "http://localhost:3000"
+}
+```
+
+### Manual Creation
+
+Alternatively, create `config.json` manually in your project root:
+
+```json
+{
+  "source": "https://docs.example.com",
+  "target": "http://localhost:3000"
+}
+```
+
+Now you can run commands without arguments:
+
+```bash
+writechoice check links
+writechoice check parse
+writechoice fix links
+```
+
+## Configuration Priority
+
+Configuration values are merged with this priority (highest to lowest):
+
+1. **CLI arguments** — Values passed directly to the command
+2. **Command-specific config** — Settings in `links`, `parse`, etc.
+3. **Global config** — Top-level settings in `config.json`
+4. **Built-in defaults** — Hardcoded fallback values
+
+## Global Settings
+
+| Field | Type | Description | Used By |
+|---|---|---|---|
+| `source` | string | Base URL for production documentation | `check links`, `metadata` |
+| `target` | string | Base URL for validation environment | `check links` |
+| `preview` | string | Shared default base URL for live checkers | `check pages`, `check images`, `check katex` |
+
+## Command Settings
+
+### `links` — Check Links
+
+```json
+{
+  "links": {
+    "file": null,
+    "dir": null,
+    "output": "links_report",
+    "dry-run": false,
+    "quiet": false,
+    "concurrency": 25,
+    "headless": true
+  }
+}
+```
+
+### `parse` — Check Parse
+
+```json
+{
+  "parse": {
+    "file": null,
+    "dir": null,
+    "quiet": false
+  }
+}
+```
+
+### `pages` — Check Pages
+
+```json
+{
+  "pages": {
+    "url": null,
+    "docs": "docs.json",
+    "output": "pages_report.json",
+    "concurrency": 50,
+    "quiet": false
+  }
+}
+```
+
+### `imageCheck` — Check Images
+
+```json
+{
+  "imageCheck": {
+    "url": null,
+    "docs": "docs.json",
+    "output": "images_report.json",
+    "concurrency": 10,
+    "quiet": false
+  }
+}
+```
+
+### `katex` — Check KaTeX
+
+```json
+{
+  "katex": {
+    "url": null,
+    "reportFile": "katex_errors.json",
+    "docs": "docs.json",
+    "output": "katex_errors.json",
+    "concurrency": 50,
+    "quiet": false
+  }
+}
+```
+
+### `codeblocks` — Fix Codeblocks
+
+```json
+{
+  "codeblocks": {
+    "file": null,
+    "dir": null,
+    "dry-run": false,
+    "quiet": false,
+    "threshold": 15,
+    "expandable": true,
+    "lines": null,
+    "wrap": null
+  }
+}
+```
+
+`lines` and `wrap` accept `"add"`, `"remove"`, or `null`.
+
+### `images` — Fix Images
+
+```json
+{
+  "images": {
+    "file": null,
+    "dir": null,
+    "download": false,
+    "dry-run": false,
+    "quiet": false
+  }
+}
+```
+
+### `inlineimages` — Fix Inline Images
+
+```json
+{
+  "inlineimages": {
+    "file": null,
+    "dir": null,
+    "dry-run": false,
+    "quiet": false
+  }
+}
+```
+
+### `h1` — Fix H1
+
+```json
+{
+  "h1": {
+    "file": null,
+    "dir": null,
+    "dry-run": false,
+    "quiet": false
+  }
+}
+```
+
+### `metadata` — Metadata
+
+```json
+{
+  "metadata": {
+    "file": null,
+    "dir": null,
+    "concurrency": 15,
+    "dry-run": false,
+    "quiet": false
+  }
+}
+```
+
+### `nav` — Nav Commands
+
+```json
+{
+  "nav": {
+    "folders": {
+      "docs": "docs.json",
+      "base": "docs",
+      "skip_levels": [],
+      "rename": false,
+      "dry-run": false,
+      "quiet": false
+    },
+    "root": {
+      "docs": "docs.json",
+      "dry-run": false,
+      "quiet": false
+    },
+    "redirects": {
+      "docs": "docs.json",
+      "dir": ".",
+      "dry-run": false,
+      "quiet": false
+    }
+  }
+}
+```
+
+### `scrape` — Scrape
+
+```json
+{
+  "scrape": {
+    "urls_file": "urls.json",
+    "output": "output",
+    "concurrency": 3,
+    "playwright": false,
+    "content_selector": "main",
+    "title_selector": "h1",
+    "elements_to_remove": [],
+    "html_preserve_elements": ["table", "iframe"],
+    "images": {
+      "strategy": "keep_remote"
+    },
+    "playwright_config": {
+      "headless": true,
+      "storage_state": null
+    }
+  }
+}
+```
+
+## Complete Example
+
+```json
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "description": "Configuration file for WriteChoice Mint CLI",
+
+  "source": "https://docs.example.com",
+  "target": "http://localhost:3000",
+  "preview": "https://preview.docs.example.com",
+
+  "links": {
+    "output": "links_report",
+    "concurrency": 25,
+    "headless": true
+  },
+
+  "parse": {
+    "quiet": false
+  },
+
+  "pages": {
+    "concurrency": 50
+  },
+
+  "imageCheck": {
+    "concurrency": 10
+  },
+
+  "codeblocks": {
+    "threshold": 15,
+    "lines": "add"
+  }
+}
+```
+
+## Best Practices
+
+1. **Add `config.json` to `.gitignore`** if it contains environment-specific URLs; commit `config.example.json` instead.
+2. **Add report files to `.gitignore`**:
+   ```
+   links_report.json
+   links_report.md
+   mdx_errors_report.json
+   pages_report.json
+   images_report.json
+   katex_errors.json
+   ```
+3. **Use `quiet: true` in CI** to keep logs clean while still generating report files.
+4. **Use `preview`** when all your live checkers point to the same deployment.
+
+## Schema Support
+
+Add `$schema` for IDE autocompletion and inline validation:
+
+```json
+{
+  "$schema": "https://json-schema.org/draft-07/schema#"
+}
+```
+
+---
+
+# Advanced Configuration
+
+# Advanced Configuration
+
+This page covers advanced configuration patterns for the WriteChoice Mint CLI — CI/CD integration, performance tuning, environment-specific setups, and report customization.
+
+## Environment-Specific Configuration
+
+### Development
+
+For local development validation:
+
+```json
+{
+  "source": "https://docs.example.com",
+  "target": "http://localhost:3000",
+  "links": {
+    "headless": false,
+    "concurrency": 5
+  }
+}
+```
+
+### Staging
+
+For staging environment validation:
+
+```json
+{
+  "source": "https://docs.example.com",
+  "target": "https://staging.example.com",
+  "links": {
+    "quiet": true,
+    "concurrency": 25
+  }
+}
+```
+
+### Production
+
+For validating the live site:
+
+```json
+{
+  "source": "https://docs.example.com",
+  "target": "https://docs.example.com",
+  "links": {
+    "quiet": true,
+    "concurrency": 10
+  }
+}
+```
+
+## CI/CD Integration
+
+### GitHub Actions
+
+```yaml
+name: Validate Documentation
+
+on: [push, pull_request]
+
+jobs:
+  validate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install CLI
+        run: npm install -g @writechoice/mint-cli
+
+      - name: Install Playwright
+        run: npx playwright install chromium
+
+      - name: Validate MDX Parsing
+        run: writechoice check parse
+
+      - name: Validate Links
+        run: writechoice check links https://docs.example.com --quiet
+
+      - name: Upload Reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: validation-reports
+          path: |
+            links_report.json
+            mdx_errors_report.json
+```
+
+### GitLab CI
+
+```yaml
+validate-docs:
+  stage: test
+  image: node:18
+  script:
+    - npm install -g @writechoice/mint-cli
+    - npx playwright install chromium
+    - writechoice check parse
+    - writechoice check links https://docs.example.com --quiet
+  artifacts:
+    when: always
+    paths:
+      - links_report.json
+      - mdx_errors_report.json
+```
+
+## Excluded Directories
+
+The following directories are excluded from scanning by default:
+
+- `snippets/`
+- `node_modules/`
+- `.git/`
+
+## Performance Tuning
+
+### Link Validation Concurrency
+
+Adjust concurrency based on your system resources:
+
+| System | RAM | Recommended `-c` |
+|---|---|---|
+| Low-end | 4 GB, 2 cores | 5–10 |
+| Mid-range | 8 GB, 4 cores | 25 |
+| High-end | 16+ GB, 8+ cores | 50–100 |
+
+```bash
+writechoice check links docs.example.com -c 10
+```
+
+### Memory Management
+
+If you encounter out-of-memory errors:
+
+```bash
+NODE_OPTIONS="--max-old-space-size=4096" writechoice check links docs.example.com
+```
+
+Or validate in smaller batches:
+
+```bash
+writechoice check links docs.example.com -d docs/api
+writechoice check links docs.example.com -d docs/guides
+```
+
+## Report Customization
+
+### Custom Output Paths
+
+```bash
+# Link validation report
+writechoice check links docs.example.com -o custom_links
+
+# After parse — rename the output
+writechoice check parse && mv mdx_errors_report.json custom_mdx.json
+```
+
+### Consuming Reports in Scripts
+
+Reports are JSON and can be processed with any script:
+
+```python
+import json
+
+with open('links_report.json') as f:
+    report = json.load(f)
+
+failed_links = [
+    result for file_results in report['results_by_file'].values()
+    for result in file_results
+    if result['status'] == 'failure'
+]
+
+print(f"Found {len(failed_links)} failed links")
+for link in failed_links:
+    print(f"  {link['source']['filePath']}:{link['source']['lineNumber']}")
+```
+
+## File Patterns
+
+### MDX File Detection
+
+The CLI automatically detects `.mdx` files in the current directory and subdirectories.
+
+### Link Patterns Recognized
+
+| Format | Example |
+|---|---|
+| Markdown links | `[text](url)` |
+| HTML anchors | `<a href="url">text</a>` |
+| JSX Cards | `<Card href="url" />` |
+| JSX Buttons | `<Button href="url">text</Button>` |
+
+Images are automatically excluded from link validation.
+
+---
+
+# Publishing
+
+# Publishing Guide
+
+Detailed guide for publishing and managing versions of the WriteChoice Mint CLI package.
+
+## Prerequisites
+
+### npm Account Setup
+
+- Create an account at [npmjs.com](https://www.npmjs.com/signup)
+- Verify your email address
+- Enable two-factor authentication (recommended)
+
+### npm CLI Authentication
+
+```bash
+npm login
+npm whoami  # verify authentication
+```
+
+## Initial Publication
+
+### 1. Prepare the Package
+
+Verify `package.json` metadata:
+
+```json
+{
+  "name": "@writechoice/mint-cli",
+  "version": "1.0.0",
+  "description": "CLI tool for Mintlify documentation validation and utilities",
+  "author": "WriteChoice",
+  "license": "MIT"
+}
+```
+
+Test the package locally:
+
+```bash
+npm install
+npx playwright install chromium
+node bin/cli.js check links --help
+npm link
+writechoice --version
+```
+
+Check what will be published:
+
+```bash
+npm pack --dry-run
+```
+
+Verify that:
+- Source files are included (`src/`, `bin/`)
+- Test files are excluded
+- `node_modules/` is excluded
+- `README.md`, `LICENSE`, `package.json` are included
+
+### 2. Publish
+
+```bash
+npm publish --access public
+```
+
+The `--access public` flag is required for scoped packages on first publication.
+
+### 3. Verify
+
+```bash
+npm view @writechoice/mint-cli
+npm install -g @writechoice/mint-cli
+writechoice --version
+```
+
+## Publishing New Versions
+
+### Semantic Versioning
+
+Follow [SemVer](https://semver.org/):
+
+| Change type | Version bump | Example |
+|---|---|---|
+| Breaking changes | MAJOR | 1.0.0 → 2.0.0 |
+| New features (backwards compatible) | MINOR | 1.0.0 → 1.1.0 |
+| Bug fixes | PATCH | 1.0.0 → 1.0.1 |
+
+### Version Update Workflow
+
+#### 1. Update Version
+
+```bash
+npm version patch   # 1.0.0 → 1.0.1
+npm version minor   # 1.0.0 → 1.1.0
+npm version major   # 1.0.0 → 2.0.0
+```
+
+This updates `package.json`, creates a git commit, and creates a git tag.
+
+#### 2. Push Changes
+
+```bash
+git push origin main
+git push origin --tags
+```
+
+#### 3. Publish
+
+```bash
+npm publish
+```
+
+No need for `--access public` after first publication.
+
+#### 4. Verify
+
+```bash
+npm view @writechoice/mint-cli
+npm install -g @writechoice/mint-cli@latest
+writechoice --version
+```
+
+## Pre-release Versions
+
+```bash
+# Create a beta version
+npm version 1.1.0-beta.1
+npm publish --tag beta
+
+# Install the beta
+npm install -g @writechoice/mint-cli@beta
+
+# Promote to stable when ready
+npm version 1.1.0
+npm publish
+```
+
+## npm Commands Reference
+
+```bash
+npm version                          # check current version
+npm view @writechoice/mint-cli       # view package info
+npm view @writechoice/mint-cli versions  # see all published versions
+npm dist-tag add @writechoice/mint-cli@1.1.0-beta.1 beta  # add dist-tag
+npm deprecate @writechoice/mint-cli@1.0.0 "Please upgrade to 1.0.1"
+```
+
+## GitHub Actions Automation
+
+```yaml
+# .github/workflows/publish.yml
+name: Publish to npm
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+      - run: npm test
+      - run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+```
+
+## Best Practices
+
+1. **Always test before publishing** — use `npm link` and test all CLI commands
+2. **Check included files** — run `npm pack --dry-run` before every publish
+3. **Follow semantic versioning** — breaking changes = major, features = minor, fixes = patch
+4. **Maintain a changelog** — document all changes in `CHANGELOG.md`
+5. **Use git tags** — `npm version` does this automatically
+6. **Use pre-release versions** for beta testing before stable release
+7. **Deprecate instead of unpublish** — use `npm deprecate` to preserve version history
+
+## Troubleshooting
+
+**"You must be logged in to publish packages":**
+
+```bash
+npm login
+```
+
+**"You do not have permission to publish":**
+
+Check if you own the `@writechoice` scope on npm, or ask the scope owner to add you as a collaborator.
+
+**"Version already exists":**
+
+```bash
+npm version patch  # increment version
+```

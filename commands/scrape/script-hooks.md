@@ -1,0 +1,263 @@
+# Script Hooks
+
+# Script Hooks
+
+Script hooks let you inject custom JavaScript into the scrape pipeline at two points — before and after the HTML-to-Markdown conversion. Use them when the config options alone can't express what you need: DOM cleanup, custom MDX component generation, or post-conversion string transformations.
+
+## Setup
+
+Add a `scripts` key inside `scrape` in your `config.json`:
+
+```json
+{
+  "scrape": {
+    "scripts": {
+      "pre":  "./scripts/pre.js",
+      "post": ["./scripts/normalize.js", "./scripts/fix-links.js"]
+    }
+  }
+}
+```
+
+Both `pre` and `post` accept a single path string or an array of paths. Multiple scripts run in the order listed. Paths are resolved relative to your working directory.
+
+## Where Each Hook Runs
+
+```
+HTML fetched
+    ↓
+Elements removed (elements_to_remove)
+    ↓
+► PRE-PROCESS scripts run here (DOM is live)
+    ↓
+Components converted (scrape.components)
+    ↓
+HTML preserved (tables, iframes)
+    ↓
+Images processed
+    ↓
+Turndown converts HTML → Markdown
+    ↓
+Component placeholders restored
+    ↓
+Built-in cleanup (spacing, anchors, blank lines)
+    ↓
+► POST-PROCESS scripts run here (final markdown string)
+    ↓
+Frontmatter added → MDX file written
+```
+
+## Error Handling
+
+- **Load errors** (file not found, syntax error) — stop the scrape immediately. Silent failures would mask misconfiguration.
+- **Runtime errors** on a specific page — fail that page and continue with others, matching the behavior of HTTP errors.
+
+---
+
+## Pre-process Scripts
+
+Runs while the Cheerio DOM is still live, before Turndown. You can read, add, remove, or restructure any element. Mutations to `$` are reflected in the final output.
+
+### Signature
+
+```js
+export default function($, pageUrl, config, { pm }) { ... }
+// async is also supported:
+export default async function($, pageUrl, config, { pm }) { ... }
+```
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `$` | Cheerio instance | The content DOM, already scoped to `content_selector` — mutate it directly |
+| `pageUrl` | string | URL of the page being scraped |
+| `config` | object | Full `scrape` config section from `config.json` |
+| `{ pm }` | object | Context object — contains the `PlaceholderManager` (see below) |
+
+### DOM Cleanup
+
+The simplest use case: remove elements and fix attributes before conversion.
+
+```js
+// scripts/pre.js
+export default function($, pageUrl) {
+  // remove chrome that shouldn't be in the output
+  $(".page-nav, .feedback-widget, .last-updated, .edit-on-github").remove();
+
+  // rewrite legacy internal links
+  $("a[href^='/old-docs']").each((_, el) => {
+    $(el).attr("href", $(el).attr("href").replace("/old-docs", "/docs"));
+  });
+
+  // unwrap unnecessary container divs
+  $(".content-wrapper > div.inner").each((_, el) => {
+    $(el).replaceWith($(el).html());
+  });
+}
+```
+
+### Conditional Logic by URL
+
+Scripts receive the page URL, so you can apply different transformations per section of the site.
+
+```js
+export default function($, pageUrl) {
+  if (pageUrl.includes("/api-reference/")) {
+    $(".param-table th:last-child").remove(); // strip "Required" column on API pages
+    $(".param-table td:last-child").remove();
+  }
+
+  if (pageUrl.includes("/changelog/")) {
+    $("time.release-date").each((_, el) => {
+      $(el).replaceWith(`**${$(el).text()}**`);
+    });
+  }
+}
+```
+
+---
+
+## Custom MDX Conversions with the PlaceholderManager
+
+The `pm` argument is the key to converting HTML patterns into arbitrary MDX components. Without it, any text you write into the DOM would get processed by Turndown and potentially escaped or restructured. With it, you can store MDX content as an opaque token that Turndown ignores entirely.
+
+### How it works
+
+```
+$el.replaceWith(pm.store("<Steps>...</Steps>", "CUSTOM"))
+         ↓
+Turndown sees: ||CUSTOM|0|a1b2||  ← opaque token, passed through unchanged
+         ↓
+pm.restore() runs after all conversion steps
+         ↓
+Output contains: <Steps>...</Steps>  ← exactly as written
+```
+
+`pm.store(content, label)` accepts any string — valid MDX, raw HTML, or a mix. The `label` is just a human-readable tag used in the token; it doesn't affect behavior.
+
+### Example: `<Steps>` / `<Step>`
+
+```js
+// scripts/pre.js
+export default function($, pageUrl, config, { pm }) {
+  $("div.procedure, ol.steps").each((_, el) => {
+    const $el = $(el);
+
+    const steps = $el.find("> li, > .step").map((i, step) => {
+      const $step = $(step);
+      const title = $step.find(".step-title, > strong").first().text().trim();
+      $step.find(".step-title, > strong").first().remove();
+      const body = $step.html()?.trim() || "";
+      return `<Step title="${title}">\n\n${body}\n\n</Step>`;
+    }).get().join("\n\n");
+
+    $el.replaceWith(pm.store(`<Steps>\n\n${steps}\n\n</Steps>`, "STEPS"));
+  });
+}
+```
+
+### Example: `<Tabs>` from a custom pattern
+
+```js
+export default function($, pageUrl, config, { pm }) {
+  $(".platform-switcher").each((_, el) => {
+    const $el = $(el);
+
+    const tabs = $el.find(".platform-tab").map((_, tab) => {
+      const $tab = $(tab);
+      const title = $tab.attr("data-platform") || "Tab";
+      const body = $tab.html()?.trim() || "";
+      return `<Tab title="${title}">\n\n${body}\n\n</Tab>`;
+    }).get().join("\n\n");
+
+    $el.replaceWith(pm.store(`<Tabs>\n\n${tabs}\n\n</Tabs>`, "TABS"));
+  });
+}
+```
+
+### Example: preserve a raw HTML block unchanged
+
+```js
+export default function($, pageUrl, config, { pm }) {
+  // keep complex SVG diagrams as raw HTML — Turndown would strip them
+  $("figure.diagram").each((_, el) => {
+    const $el = $(el);
+    $el.replaceWith(pm.store($.html($el), "SVG"));
+  });
+}
+```
+
+---
+
+## Post-process Scripts
+
+Runs on the final markdown string, after Turndown, component replacement, HTML restoration, and all built-in cleanup. The input is what will be written to the MDX file (minus frontmatter). You must return the string.
+
+### Signature
+
+```js
+export default function(markdown, pageUrl, config) { return markdown; }
+// async is also supported:
+export default async function(markdown, pageUrl, config) { return markdown; }
+```
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `markdown` | string | Fully converted Markdown/MDX content (no frontmatter) |
+| `pageUrl` | string | URL of the page being scraped |
+| `config` | object | Full `scrape` config section from `config.json` |
+
+If a script returns a non-string value, a warning is printed and the original markdown is kept.
+
+### Pattern Replacement
+
+Good for cleaning up artifacts left by the conversion — legacy shortcodes, misformatted syntax, or recurring structural issues.
+
+```js
+// scripts/post.js
+export default function(markdown, pageUrl) {
+  // replace Hugo shortcodes not caught by the HTML converter
+  markdown = markdown.replace(/\{\{<\s*note\s*>\}\}/g, "<Note>");
+  markdown = markdown.replace(/\{\{<\s*\/note\s*>\}\}/g, "</Note>");
+
+  // fix double-escaped backticks that Turndown sometimes produces
+  markdown = markdown.replace(/\\`\\`\\`/g, "```");
+
+  return markdown;
+}
+```
+
+### Per-page Logic by URL
+
+```js
+export default function(markdown, pageUrl) {
+  // strip auto-generated boilerplate intro on API pages
+  if (pageUrl.includes("/api-reference/")) {
+    markdown = markdown.replace(/^> This page was auto-generated.*?\n\n/m, "");
+  }
+
+  // add a deprecation notice to legacy pages
+  if (pageUrl.includes("/v1/")) {
+    markdown = `:::warning\nThis page documents a deprecated API version.\n:::\n\n` + markdown;
+  }
+
+  return markdown;
+}
+```
+
+### Chaining Multiple Scripts
+
+When `post` is an array, scripts run in order — each receives the output of the previous.
+
+```json
+{
+  "scripts": {
+    "post": [
+      "./scripts/fix-shortcodes.js",
+      "./scripts/normalize-links.js",
+      "./scripts/add-notices.js"
+    ]
+  }
+}
+```
+
+This lets you keep each script focused on one concern rather than combining everything in one file.

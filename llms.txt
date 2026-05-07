@@ -1,42 +1,57 @@
 # WriteChoice Mint CLI
 
-> Validate, fix, and manage Mintlify documentation with confidence.
+> API documentation for My Platform
+- [Introduction](/.md): wcc is a CLI tool for validating, fixing, and managing Mintlify documentation projects.
 
-- [WriteChoice Mint CLI](/index.md)
-
-## commands
-
-- [Check Images Command](/commands/check/images.md): Validates that all images on your deployed documentation pages load successfully.
-- [Check KaTeX Command](/commands/check/katex.md): Finds pages with KaTeX render errors by scanning for .katex-error elements in the live HTML.
-- [Check Links Command](/commands/check/links.md): Validates internal links and anchors in MDX documentation files using browser automation.
-- [Check Pages Command](/commands/check/pages.md): Validates that every page listed in docs.json navigation loads successfully by checking HTTP response status.
-- [Check Parse Command](/commands/check/parse.md): Validates MDX files for parsing errors using the official @mdx-js/mdx compiler.
-- [Config Command](/commands/config.md): Generates a config.json template file with all available configuration options.
-- [Docusaurus Convert Command](/commands/docusaurus/convert.md): Converts a Docusaurus docs folder to Mintlify-ready MDX files. Applies all known structural and syntax transformations automatically, and copies non-Markdown files (images, etc.) as-is.
-- [Docusaurus Nav Command](/commands/docusaurus/nav.md): Converts a Docusaurus sidebars.js file into Mintlify navigation JSON, ready to paste into docs.json.
-- [Docusaurus Slugify Command](/commands/docusaurus/slugify.md): Renames and moves converted MDX files so their paths match the slug (or id) in their frontmatter. Also updates any matching page paths in docs.json.
-- [Fix Codeblocks Command](/commands/fix/codeblocks.md): Automatically adds or removes code block flags (expandable, lines, wrap) in MDX documentation files.
-- [Fix H1 Command](/commands/fix/h1.md): Removes duplicate H1 headings that repeat the frontmatter title field in MDX documentation files.
-- [Fix Images Command](/commands/fix/images.md): Automatically wraps standalone images in `` components in MDX documentation files.
-- [Fix Imports Command](/commands/fix/imports.md): Scans MDX files for custom JSX component usage, validates import statements, and automatically adds missing imports when the component file is found in the snippets/ folder.
-- [Fix Inline Images Command](/commands/fix/inlineimages.md): Converts images that appear inline within text to `` components in MDX files, and automatically adds the required import statement.
-- [Fix Links Command](/commands/fix/links.md): Automatically fixes broken anchor links in MDX files based on validation reports.
-- [Fix Parse Command](/commands/fix/parse.md): Automatically fixes common MDX parsing errors in documentation files.
-- [Fix Redirects Command](/commands/fix/redirects.md): Reads the redirects array from docs.json and replaces stale source paths with their destination paths inside MDX files. Fixes internal links that still point to old URLs after a navigation restructure.
-- [Metadata Command](/commands/metadata.md): Fetches meta tags from your live documentation pages and writes them into the frontmatter of the corresponding MDX source files. Existing frontmatter keys are updated (overwritten); missing keys are appended.
-- [Nav Folders Command](/commands/nav/folders.md): Restructures MDX files on disk to match the navigation hierarchy defined in docs.json. Also updates docs.json page references to the new paths and generates redirects.json for all moved files.
-- [Nav Root Command](/commands/nav/root.md): For each group nested inside another group, checks whether the group's first page has a frontmatter title that matches the group name. If it matches, that page is moved out of pages and into a "root" key on the group object, and docs.json is updated in place.
-- [Scrape Command](/commands/scrape.md): Scrapes documentation URLs and converts each page into an MDX file ready for Mintlify.
-- [Session Command](/commands/session.md): Captures an authenticated browser session so wc scrape can access pages behind a login.
-- [Update Command](/commands/update.md): Updates the CLI to the latest version from npm.
-
-## configuration
-
-- [Advanced Configuration](/configuration/advanced.md): This page covers advanced configuration patterns for the WriteChoice Mint CLI — CI/CD integration, performance tuning, environment-specific setups, and report customization.
-- [Configuration File](/configuration/config-file.md): WriteChoice Mint CLI supports an optional config.json file for setting default values and avoiding repetitive CLI arguments.
-- [Publishing Guide](/configuration/publishing.md): Detailed guide for publishing and managing versions of the WriteChoice Mint CLI package.
-
-## getting-started
+## Getting Started
 
 - [Installation](/getting-started/installation.md): Requirements
 - [Quick Start](/getting-started/quick-start.md): This guide walks you through setting up the CLI and running your first validation in under five minutes.
+
+## Commands
+
+
+### Scrape
+
+- [Script Hooks](/commands/scrape/script-hooks.md): Script hooks let you inject custom JavaScript into the scrape pipeline at two points — before and after the HTML-to-Markdown conversion. Use them when the config options alone can't express what you need: DOM cleanup, custom MDX component generation, or post-conversion string transformations.
+- [Config Reference](/commands/scrape/config-reference.md): Full scrape section for config.json, with every key explained.
+
+### Check
+
+- [Check Links](/commands/check/links.md): Validates internal links and anchors in MDX documentation files using browser automation.
+- [Check Parse](/commands/check/parse.md): Validates MDX files for parsing errors using the official @mdx-js/mdx compiler.
+- [Check Images](/commands/check/images.md): Validates that all images on your deployed documentation pages load successfully.
+- [Check Pages](/commands/check/pages.md): Validates that every page listed in docs.json navigation loads successfully by checking HTTP response status.
+- [Check KaTeX](/commands/check/katex.md): Finds pages with KaTeX render errors by scanning for .katex-error elements in the live HTML.
+
+### Fix
+
+- [Fix Links](/commands/fix/links.md): Automatically fixes broken anchor links in MDX files based on validation reports.
+- [Fix Parse](/commands/fix/parse.md): Automatically fixes common MDX parsing errors in documentation files.
+- [Fix Codeblocks](/commands/fix/codeblocks.md): Automatically adds or removes code block flags (expandable, lines, wrap) in MDX documentation files.
+- [Fix Images](/commands/fix/images.md): Automatically wraps standalone images in `` components in MDX documentation files.
+- [Fix Inline Images](/commands/fix/inlineimages.md): Converts images that appear inline within text to `` components in MDX files, and automatically adds the required import statement.
+- [Fix H1](/commands/fix/h1.md): Removes duplicate H1 headings that repeat the frontmatter title field in MDX documentation files.
+- [Fix Imports](/commands/fix/imports.md): Scans MDX files for custom JSX component usage, validates import statements, and automatically adds missing imports when the component file is found in the snippets/ folder.
+- [Fix Redirects](/commands/fix/redirects.md): Reads the redirects array from docs.json and replaces stale source paths with their destination paths inside MDX files. Fixes internal links that still point to old URLs after a navigation restructure.
+
+### Nav
+
+- [Nav Folders](/commands/nav/folders.md): Restructures MDX files on disk to match the navigation hierarchy defined in docs.json. Also updates docs.json page references to the new paths and generates redirects.json for all moved files.
+- [Nav Root](/commands/nav/root.md): For each group nested inside another group, checks whether the group's first page has a frontmatter title that matches the group name. If it matches, that page is moved out of pages and into a "root" key on the group object, and docs.json is updated in place.
+
+### Docusaurus
+
+- [Docusaurus Convert](/commands/docusaurus/convert.md): Converts a Docusaurus docs folder to Mintlify-ready MDX files. Applies all known structural and syntax transformations automatically, and copies non-Markdown files (images, etc.) as-is.
+- [Docusaurus Slugify](/commands/docusaurus/slugify.md): Renames and moves converted MDX files so their paths match the slug (or id) in their frontmatter. Also updates any matching page paths in docs.json.
+- [Docusaurus Nav](/commands/docusaurus/nav.md): Converts a Docusaurus sidebars.js file into Mintlify navigation JSON, ready to paste into docs.json.
+- [Metadata](/commands/metadata.md): Fetches meta tags from your live documentation pages and writes them into the frontmatter of the corresponding MDX source files. Existing frontmatter keys are updated (overwritten); missing keys are appended.
+- [Session](/commands/session.md): Captures an authenticated browser session so wc scrape can access pages behind a login.
+- [Config](/commands/config.md): Generates a config.json template file with all available configuration options.
+- [Update](/commands/update.md): Updates the CLI to the latest version from npm.
+
+## Configuration
+
+- [Configuration File Reference](/configuration/config-file.md): WriteChoice Mint CLI supports an optional config.json file for setting default values and avoiding repetitive CLI arguments.
+- [Advanced Configuration](/configuration/advanced.md): This page covers advanced configuration patterns for the WriteChoice Mint CLI — CI/CD integration, performance tuning, environment-specific setups, and report customization.
+- [Publishing](/configuration/publishing.md): Detailed guide for publishing and managing versions of the WriteChoice Mint CLI package.

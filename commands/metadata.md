@@ -1,30 +1,32 @@
+# Metadata
+
 # Metadata Command
 
 Fetches meta tags from your live documentation pages and writes them into the frontmatter of the corresponding MDX source files. Existing frontmatter keys are updated (overwritten); missing keys are appended.
 
-## Usage[​](#usage "Direct link to Usage")
+## Usage
 
-```
+```bash
 writechoice metadata [baseUrl] [options]
 ```
 
-## Arguments[​](#arguments "Direct link to Arguments")
+## Arguments
 
-| Argument  | Description                                                                            |
-| --------- | -------------------------------------------------------------------------------------- |
+| Argument | Description |
+|---|---|
 | `baseUrl` | Base URL of the live documentation site (optional if set in `config.json` as `source`) |
 
-## Options[​](#options "Direct link to Options")
+## Options
 
-| Option                   | Alias | Description                               | Default |
-| ------------------------ | ----- | ----------------------------------------- | ------- |
-| `--file <path>`          | `-f`  | Process a single MDX file                 | -       |
-| `--dir <path>`           | `-d`  | Process MDX files in a specific directory | -       |
-| `--concurrency <number>` | `-c`  | Number of parallel HTTP requests          | `15`    |
-| `--dry-run`              | -     | Preview changes without writing files     | `false` |
-| `--quiet`                | -     | Suppress terminal output                  | `false` |
+| Option | Alias | Description | Default |
+|---|---|---|---|
+| `--file <path>` | `-f` | Process a single MDX file | - |
+| `--dir <path>` | `-d` | Process MDX files in a specific directory | - |
+| `--concurrency <number>` | `-c` | Number of parallel HTTP requests | `15` |
+| `--dry-run` | - | Preview changes without writing files | `false` |
+| `--quiet` | - | Suppress terminal output | `false` |
 
-## How It Works[​](#how-it-works "Direct link to How It Works")
+## How It Works
 
 For each MDX file, the command:
 
@@ -33,72 +35,51 @@ For each MDX file, the command:
 3. **Extracts meta tags** from the HTML (`og:*`, `twitter:*`)
 4. **Updates the frontmatter** — existing keys are overwritten, new keys are appended
 
-### URL Mapping[​](#url-mapping "Direct link to URL Mapping")
+### URL Mapping
 
 ```
 Base URL : https://docs.example.com
-
 File     : docs/api/reference.mdx
-
 → URL    : https://docs.example.com/api/reference
 ```
 
-### Meta Tags Fetched[​](#meta-tags-fetched "Direct link to Meta Tags Fetched")
+### Meta Tags Fetched
 
-| Tag                   | Frontmatter key       |
-| --------------------- | --------------------- |
-| `og:title`            | `og:title`            |
-| `og:description`      | `og:description`      |
-| `og:image`            | `og:image`            |
-| `twitter:title`       | `twitter:title`       |
+| Tag | Frontmatter key |
+|---|---|
+| `og:title` | `og:title` |
+| `og:description` | `og:description` |
+| `og:image` | `og:image` |
+| `twitter:title` | `twitter:title` |
 | `twitter:description` | `twitter:description` |
 
-## Examples[​](#examples "Direct link to Examples")
+## Examples
 
-```
+```bash
 # Use source from config.json
-
 writechoice metadata
 
-
-
 # Specify base URL directly
-
 writechoice metadata https://docs.example.com
 
-
-
 # Process a single file
-
 writechoice metadata https://docs.example.com -f docs/api/reference.mdx
 
-
-
 # Preview without writing
-
 writechoice metadata --dry-run
 
-
-
 # Process with lower concurrency
-
 writechoice metadata https://docs.example.com -c 5
 ```
 
-## Config File[​](#config-file "Direct link to Config File")
+## Config File
 
-```
+```json
 {
-
   "source": "https://docs.example.com",
-
   "metadata": {
-
     "concurrency": 15,
-
     "quiet": false
-
   }
-
 }
 ```
