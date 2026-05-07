@@ -151,6 +151,10 @@
     ],
     "codeblock": {
       "language_class_patterns": ["language-", "lang-", "highlight-"]
+    },
+    "scripts": {
+      "pre": null,
+      "post": null
     }
   },
 

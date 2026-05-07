@@ -26,6 +26,7 @@ import { preserveAll } from "./html-preserver.js";
 import { ImageProcessor } from "./image-processor.js";
 import { preProcessCodeBlocks, createTurndownCodeRule } from "./codeblock-processor.js";
 import { postProcessAll } from "./post-processor.js";
+import { runPreScripts, runPostScripts } from "./script-runner.js";
 
 /**
  * Converts an HTML page to MDX content.
@@ -49,6 +50,7 @@ export async function convertPage(html, pageUrl, scrapeConfig = {}) {
   const langPatterns = codeblockConfig.language_class_patterns || ["language-", "lang-", "highlight-"];
   const outputDir = scrapeConfig.output || "output";
   const dryRun = scrapeConfig.dryRun || false;
+  const scriptsConfig = scrapeConfig.scripts || {};
 
   // Step 1: Parse HTML
   const $ = cheerio.load(html);
@@ -94,23 +96,26 @@ export async function convertPage(html, pageUrl, scrapeConfig = {}) {
     }
   }
 
-  // Step 4: Process components (imgProcessor needed early for card img resolution)
+  // Step 4: Run pre-process scripts (DOM still live; scripts may use pm for MDX placeholders)
+  if (scriptsConfig.pre) {
+    await runPreScripts($doc, pageUrl, scrapeConfig, pm, scriptsConfig.pre);
+  }
+
+  // Step 5: Process components (imgProcessor needed early for card img resolution)
   const imgProcessor = new ImageProcessor(pageUrl, imageConfig, outputDir, dryRun);
   processAllComponents($doc, componentsConfig, pm, imgProcessor);
 
-  // Step 5 & 6: Preserve HTML + process images
+  // Step 6 & 7: Preserve HTML + process images
   preserveAll($doc, htmlPreserveElements, htmlPreserveCustom, pm, imgProcessor);
   imgProcessor.processImages($doc, pm);
 
-  // Step 7: Pre-process code blocks (add data-detected-lang)
+  // Step 8: Pre-process code blocks (add data-detected-lang)
   preProcessCodeBlocks($doc, langPatterns);
 
-  // Step 8: Convert to Markdown via turndown
+  // Step 9: Convert to Markdown via turndown
   const td = buildTurndownService();
   const bodyHtml = $doc.html() || "";
   let markdown = td.turndown(bodyHtml);
-
-  // Step 9: (Code block language is handled by custom turndown rule above)
 
   // Step 10: Escape HTML entities outside code blocks
   markdown = pm.escapeHtmlEntities(markdown);
@@ -124,7 +129,12 @@ export async function convertPage(html, pageUrl, scrapeConfig = {}) {
   // Step 13: Post-process
   markdown = postProcessAll(markdown, title);
 
-  // Step 14: Add YAML frontmatter
+  // Step 14: Run post-process scripts (markdown string, fully converted)
+  if (scriptsConfig.post) {
+    markdown = await runPostScripts(markdown, pageUrl, scrapeConfig, scriptsConfig.post);
+  }
+
+  // Step 15: Add YAML frontmatter
   const metaTags = {};
   if (pageUrl) metaTags.permalink = pageUrl;
   // if (metaDesc) metaTags.description = metaDesc;

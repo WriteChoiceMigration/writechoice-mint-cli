@@ -297,6 +297,132 @@ For components that accept `title` as a JSX prop (e.g. `<Accordion title="...">`
 ]
 ```
 
+## Script Hooks
+
+For cases where config options aren't enough, you can inject custom JavaScript scripts into the scrape pipeline at two points.
+
+```json
+"scrape": {
+  "scripts": {
+    "pre":  "./scripts/pre.js",
+    "post": ["./scripts/normalize.js", "./scripts/fix-links.js"]
+  }
+}
+```
+
+Both `pre` and `post` accept a single path string or an array of paths. Paths are resolved relative to your working directory. Scripts run in order when multiple are provided.
+
+Scripts are standard ES module files (`.js`). Load failures (file not found, syntax errors) stop the scrape immediately — silent failures would mask misconfiguration. Runtime errors on a specific page fail that page and let others continue, matching the behavior of HTTP errors.
+
+---
+
+### Pre-process scripts
+
+Runs **after** unwanted elements are removed, **before** Turndown converts the DOM to Markdown. The Cheerio instance is fully live — you can read, add, remove, or restructure any element.
+
+**Signature:**
+
+```js
+export default function($, pageUrl, config, { pm }) { ... }
+// or async:
+export default async function($, pageUrl, config, { pm }) { ... }
+```
+
+| Argument | Type | Description |
+| -------- | ---- | ----------- |
+| `$` | Cheerio instance | The scoped content DOM — mutate it directly |
+| `pageUrl` | string | URL of the page being scraped |
+| `config` | object | Full `scrape` config section from `config.json` |
+| `{ pm }` | object | Context — contains the `PlaceholderManager` (see below) |
+
+**DOM cleanup example** — remove elements, fix attributes:
+
+```js
+// scripts/pre.js
+export default function($, pageUrl) {
+  // strip navigation and feedback widgets
+  $(".page-nav, .feedback-widget, .last-updated").remove();
+
+  // fix relative links that will break after migration
+  $("a[href^='/old-docs']").each((_, el) => {
+    $(el).attr("href", $(el).attr("href").replace("/old-docs", "/docs"));
+  });
+}
+```
+
+#### Custom MDX conversions with the PlaceholderManager
+
+If you want to convert an HTML pattern into an MDX component that the built-in config can't express, use the `pm` (PlaceholderManager) passed in the fourth argument. Storing content as a placeholder makes it invisible to Turndown — it gets restored exactly as written after conversion is complete.
+
+```js
+export default function($, pageUrl, config, { pm }) {
+  // convert <div class="steps"> into Mintlify <Steps> / <Step> components
+  $("div.steps").each((_, el) => {
+    const $el = $(el);
+
+    const steps = $el.find(".step").map((_, step) => {
+      const $step = $(step);
+      const title = $step.find(".step-title").text().trim();
+      const body  = $step.find(".step-body").html() || "";
+      return `<Step title="${title}">\n${body.trim()}\n</Step>`;
+    }).get().join("\n\n");
+
+    const mdx = `<Steps>\n${steps}\n</Steps>`;
+    $el.replaceWith(pm.store(mdx, "CUSTOM")); // survives Turndown unchanged
+  });
+}
+```
+
+**How it works:** `pm.store(content, label)` returns an opaque token like `||CUSTOM|0|a1b2c3d4||`. Turndown treats it as plain text and passes it through. After all conversion steps finish, `pm.restore()` swaps every token back for its stored content — so the MDX you wrote ends up verbatim in the output file.
+
+This means you can implement any MDX structure — `<Steps>`, `<Tooltip>`, multi-level wrappers, anything — purely in a script, with no changes to the CLI itself.
+
+---
+
+### Post-process scripts
+
+Runs **after** Turndown, component replacement, HTML restoration, and all built-in cleanup. The input is the final Markdown string. You must return the (modified) string.
+
+**Signature:**
+
+```js
+export default function(markdown, pageUrl, config) { return markdown; }
+// or async:
+export default async function(markdown, pageUrl, config) { return markdown; }
+```
+
+| Argument | Type | Description |
+| -------- | ---- | ----------- |
+| `markdown` | string | Fully converted Markdown/MDX content (no frontmatter) |
+| `pageUrl` | string | URL of the page being scraped |
+| `config` | object | Full `scrape` config section from `config.json` |
+
+If a script returns a non-string value, a warning is printed and the original markdown is kept.
+
+**Pattern replacement example:**
+
+```js
+// scripts/post.js
+export default function(markdown, pageUrl) {
+  // replace legacy shortcodes leftover from conversion
+  markdown = markdown.replace(/\{\{%\s*note\s*%\}\}/g, "<Note>");
+  markdown = markdown.replace(/\{\{%\s*endnote\s*%\}\}/g, "</Note>");
+  return markdown;
+}
+```
+
+**Per-page logic based on URL:**
+
+```js
+export default function(markdown, pageUrl) {
+  if (pageUrl.includes("/api-reference/")) {
+    // strip the auto-generated intro paragraph on API pages
+    markdown = markdown.replace(/^> This page.*?\n\n/m, "");
+  }
+  return markdown;
+}
+```
+
 ## Frontmatter Output
 
 Each scraped page produces a frontmatter block with:
