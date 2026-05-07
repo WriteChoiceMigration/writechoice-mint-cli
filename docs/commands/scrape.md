@@ -91,33 +91,32 @@ Add a `scrape` section to your `config.json` to configure advanced options:
       "strategy": "download_by_page",
       "folder": "images"
     },
-    "components": {
-      "callouts": [
-        {
-          "type": "Note",
-          "selector": "div.callout.note",
-          "title_selector": ".callout-title",
-          "content_selector": ".callout-body"
-        },
-        {
-          "type": "Warning",
-          "selector": "div.callout.warning",
-          "title_selector": ".callout-title",
-          "content_selector": null
-        }
-      ],
-      "accordion": {
-        "group_selector": ".accordion-group",
-        "item_selector": ".accordion-item",
-        "title_selector": ".accordion-title",
-        "content_selector": ".accordion-content"
+    "components": [
+      {
+        "name": "Note",
+        "selector": "div.callout.note",
+        "props": { "title": ".callout-title" },
+        "content": ".callout-body"
       },
-      "tabs": {
-        "group_selector": ".tabs",
-        "item_selector": ".tab-panel",
-        "title_attr": "data-tab-label"
+      {
+        "name": "Warning",
+        "selector": "div.callout.warning",
+        "props": { "title": ".callout-title" }
+      },
+      {
+        "name": "Accordion",
+        "selector": ".accordion-item",
+        "group": { "selector": ".accordion-group", "wrapper": "AccordionGroup" },
+        "props": { "title": ".accordion-title" },
+        "content": ".accordion-content"
+      },
+      {
+        "name": "Tab",
+        "selector": ".tab-panel",
+        "group": { "selector": ".tabs", "wrapper": "Tabs" },
+        "props": { "title": { "attr": "data-tab-label" } }
       }
-    }
+    ]
   }
 }
 ```
@@ -164,117 +163,137 @@ Controls Playwright behavior when `playwright: true`. Also used to load a saved 
 
 ### Component Mappings
 
-Each component type maps HTML elements to Mintlify MDX components:
+`scrape.components` is an array of component definitions. Each entry tells the scraper how to find an HTML pattern on the page and convert it into a Mintlify MDX component.
 
-**Callouts** → `<Note>`, `<Info>`, `<Warning>`, `<Tip>`, `<Check>`, `<Danger>`
+The `name` you provide becomes the JSX tag in the output — so `"name": "Note"` produces `<Note>...</Note>`, `"name": "Accordion"` produces `<Accordion>...</Accordion>`, and so on. You can target any Mintlify component this way.
 
-```json
-{
-  "type": "Note",
-  "selector": "div.note",
-  "title_selector": "div.note-title",
-  "content_selector": "div.note-body"
-}
-```
+Native `<details>`/`<summary>` elements are always converted to `<Accordion>` automatically, regardless of your components config.
 
-**Accordions** → `<AccordionGroup>` / `<Accordion>`
+#### Component definition
 
-Native `<details>`/`<summary>` elements are always converted automatically. For custom accordion patterns, configure `accordion` as an object or an array of objects (to handle multiple patterns on the same site).
+| Key        | Type            | Description                                             |
+| ---------- | --------------- | ------------------------------------------------------- |
+| `name`     | string          | MDX component name — becomes the JSX tag (e.g. `Note`) |
+| `selector` | string          | CSS selector matching each component element            |
+| `props`    | object          | Map of prop name → extraction rule (see below)          |
+| `content`  | string          | CSS selector for the inner content (defaults to full innerHTML) |
+| `group`    | object          | Optional grouping config (see below)                    |
 
-`group_selector` is optional — if omitted, all matching `item_selector` elements are collected and wrapped in a single `<AccordionGroup>`.
+#### Extracting props
 
-```json
-{
-  "group_selector": ".accordion",
-  "item_selector": ".accordion-item",
-  "title_selector": ".accordion-header",
-  "content_selector": ".accordion-content"
-}
-```
+Each key in `props` maps to an extraction rule. There are three forms:
 
-Array form (multiple patterns):
+| Form | Example | Behavior |
+| ---- | ------- | -------- |
+| String | `"title": ".callout-title"` | Finds the child element, uses its text content; element is removed from the content area |
+| Object with `selector` | `"title": { "selector": ".callout-title" }` | Same as string shorthand |
+| Object with `selector` + `attr` | `"icon": { "selector": "img", "attr": "src" }` | Reads an attribute from the child element |
+| Object with `attr` only | `"href": { "attr": "href" }` | Reads an attribute from the matched element itself (no child lookup) |
+| Add `"image": true` | `"img": { "attr": "data-src", "image": true }` | Treats the value as an image URL — downloaded and resolved per your `images` strategy |
+| Add `"child": true` | `"title": { "selector": ".callout-title", "child": true }` | Renders the value as `**bold text**` inside the component body instead of as a JSX prop — use this for Mintlify callouts (`<Note>`, `<Warning>`, etc.) where the title is a child, not an attribute |
+
+#### Grouping
+
+Use `group` when matched items need to be wrapped in a parent component (e.g. `<AccordionGroup>`, `<Tabs>`).
+
+| Form | Behavior |
+| ---- | -------- |
+| `"group": { "selector": ".faq-group", "wrapper": "AccordionGroup" }` | Finds each container matching `selector`, collects items inside it, wraps them in `wrapper` |
+| `"group": { "wrapper": "AccordionGroup" }` | Auto-groups: consecutive sibling matches are collected into one `wrapper` block |
+| No `group` key | Each match is converted independently, with no surrounding wrapper |
+
+#### Examples
+
+**Callouts** (`<Note>`, `<Warning>`, `<Tip>`, …)
+
+Mintlify callout titles are children, not props — use `"child": true` so the title is rendered as `**bold text**` inside the component body:
 
 ```json
 [
-  { "item_selector": ".accordion-item", "title_selector": ".accordion-header" },
-  { "group_selector": ".faq", "item_selector": ".faq-item", "title_selector": ".faq-question" }
+  {
+    "name": "Note",
+    "selector": ".admonition.note",
+    "props": { "title": { "selector": ".admonition-title", "child": true } },
+    "content": ".admonition-body"
+  },
+  {
+    "name": "Warning",
+    "selector": ".admonition.warning",
+    "props": { "title": { "selector": ".admonition-title", "child": true } },
+    "content": ".admonition-body"
+  }
 ]
 ```
 
-**Cards** → `<Columns>` / `<Card>`
+Output:
 
-Configure `card` as an object or an array of objects. `group_selector` is optional — if omitted, consecutive sibling matches are grouped into separate `<Columns>` blocks.
+```mdx
+<Note>
+**My callout title**
 
-| Key               | Description                                               |
-| ----------------- | --------------------------------------------------------- |
-| `item_selector`   | CSS selector for each card element (required)             |
-| `group_selector`  | CSS selector for the card grid container (optional)       |
-| `cols`            | Number of columns in `<Columns>` (default: `2`)           |
-| `title_selector`  | CSS selector — extracts title from element text           |
-| `title_attr`      | HTML attribute on the card element containing the title   |
-| `icon_attr`       | HTML attribute containing the icon name                   |
-| `img_selector`    | CSS selector for a child `<img>` — uses `src`/`data-src` |
-| `img_attr`        | HTML attribute on the card element containing an image URL|
-| `href_attr`       | HTML attribute for the card link URL                      |
-| `content_selector`| CSS selector for the card body (defaults to full item)    |
-| `prop_selectors`  | Map of prop name → CSS selector — adds arbitrary props    |
-
-Images found via `img_selector` or `img_attr` are downloaded using the same strategy as page images.
-
-```json
-{
-  "group_selector": ".card-grid",
-  "item_selector": ".card",
-  "cols": 3,
-  "title_selector": "h3.card-title",
-  "img_selector": "img.card-image",
-  "href_attr": "data-href",
-  "content_selector": ".card-body"
-}
+Content here...
+</Note>
 ```
 
-Array form (multiple patterns):
+For components that accept `title` as a JSX prop (e.g. `<Accordion title="...">`), omit `"child": true` and the value will be written as an attribute instead.
+
+**Accordions** (explicit group container)
 
 ```json
 [
-  { "item_selector": "a.feature-card", "title_selector": "h3", "cols": 3 },
-  { "group_selector": ".links-grid", "item_selector": "a", "title_attr": "data-label" }
+  {
+    "name": "Accordion",
+    "selector": ".faq-item",
+    "group": { "selector": ".faq-section", "wrapper": "AccordionGroup" },
+    "props": { "title": ".faq-question" },
+    "content": ".faq-answer"
+  }
 ]
 ```
 
-**Tabs** → `<Tabs>` / `<Tab>`
-
-```json
-{
-  "group_selector": ".tab-container",
-  "item_selector": ".tab-pane",
-  "title_attr": "data-tab-title"
-}
-```
-
-**Code Groups** → `<CodeGroup>`
-
-```json
-{
-  "group_selector": ".code-example",
-  "item_selector": "pre"
-}
-```
-
-**Numbered Lists**
-
-Converts matching `<ul>` elements to numbered (ordered) lists. Useful when a site renders ordered lists using `<ul>` with a custom attribute or class.
-
-```json
-{ "selector": "ul[data-testid='volt-numbered-list']" }
-```
-
-Array form (multiple patterns):
+**Accordions** (auto-group consecutive siblings)
 
 ```json
 [
-  { "selector": "ul[data-testid='volt-numbered-list']" },
-  { "selector": "ul.ordered-steps" }
+  {
+    "name": "Accordion",
+    "selector": ".accordion-item",
+    "group": { "wrapper": "AccordionGroup" },
+    "props": { "title": ".accordion-header" },
+    "content": ".accordion-body"
+  }
+]
+```
+
+**Cards** with image and link
+
+```json
+[
+  {
+    "name": "Card",
+    "selector": "a.card",
+    "group": { "wrapper": "CardGroup" },
+    "props": {
+      "title": "h3.card-title",
+      "icon": { "attr": "data-icon" },
+      "href": { "attr": "href" },
+      "img":  { "selector": "img.card-thumb", "attr": "src", "image": true }
+    },
+    "content": ".card-description"
+  }
+]
+```
+
+**Tabs**
+
+```json
+[
+  {
+    "name": "Tab",
+    "selector": ".tab-panel",
+    "group": { "selector": ".tabs", "wrapper": "Tabs" },
+    "props": { "title": { "attr": "data-title" } }
+  }
 ]
 ```
 

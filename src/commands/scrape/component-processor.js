@@ -2,20 +2,32 @@
  * Component Processor
  *
  * Transforms HTML elements into Mintlify MDX component placeholders
- * before markdown conversion. Processing order matters:
- *   callouts → accordions → cards → tabs → code groups
+ * before markdown conversion.
+ *
+ * Supports two config formats:
+ *
+ * Generic (new) — scrape.components is an array:
+ *   Each entry defines a component by name, selector, props, and optional grouping.
+ *
+ * Legacy (old) — scrape.components is an object with specific keys:
+ *   callouts, accordion, card, tabs, codegroup, numberedList
  *
  * All placeholders are created via PlaceholderManager and restored
  * after markdown conversion.
  */
 
 /**
- * Processes all configured components in the correct order.
+ * Dispatches to generic or legacy processor based on config shape.
  * @param {Object} $ - Cheerio instance
- * @param {Object} componentsConfig - scrape.components from config
+ * @param {Array|Object} componentsConfig - scrape.components from config
  * @param {import('./placeholder-manager.js').PlaceholderManager} pm
  */
 export function processAllComponents($, componentsConfig = {}, pm, imgProcessor = null) {
+  if (Array.isArray(componentsConfig)) {
+    processGenericComponents($, componentsConfig, pm, imgProcessor);
+    return;
+  }
+  // Legacy format
   if (componentsConfig.callouts?.length) {
     processCallouts($, componentsConfig.callouts, pm);
   }
@@ -51,6 +63,169 @@ export function processAllComponents($, componentsConfig = {}, pm, imgProcessor 
       processNumberedLists($, cfg);
     }
   }
+}
+
+// ─── Generic Component Processor ─────────────────────────────────────────────
+
+/**
+ * Processes an array of generic component definitions.
+ *
+ * Each definition:
+ *   {
+ *     name: "Accordion",           // MDX component name (becomes the JSX tag)
+ *     selector: ".faq-item",       // CSS selector for matching elements
+ *     group: {                     // Optional grouping
+ *       selector: ".faq-group",    //   explicit container selector, OR
+ *       wrapper: "AccordionGroup"  //   MDX wrapper tag (auto-groups consecutive siblings)
+ *     },
+ *     props: {
+ *       title: ".faq-question",                        // string → child text
+ *       href:  { attr: "href" },                       // attr on matched element
+ *       icon:  { selector: ".icon", attr: "data-id" }, // attr on child
+ *       img:   { selector: "img", attr: "src", image: true } // resolved image src
+ *     },
+ *     content: ".faq-answer"        // inner content selector (optional, defaults to full innerHTML)
+ *   }
+ *
+ * @param {Object} $ - Cheerio instance
+ * @param {Array} componentsConfig - Array of component definition objects
+ * @param {import('./placeholder-manager.js').PlaceholderManager} pm
+ */
+export function processGenericComponents($, componentsConfig, pm, imgProcessor = null) {
+  // Always convert native <details>/<summary>
+  processDetailsElements($, pm);
+
+  if (!Array.isArray(componentsConfig) || !componentsConfig.length) return;
+
+  for (const def of componentsConfig) {
+    if (!def.name || !def.selector) continue;
+    _processOneGenericComponent($, def, pm, imgProcessor);
+  }
+}
+
+function _processOneGenericComponent($, def, pm, imgProcessor) {
+  const { name, selector, group, props: propsConfig = {}, content: contentSelector } = def;
+
+  if (group?.selector) {
+    // Explicit container: find items inside group.selector, wrap in group.wrapper
+    $(group.selector).each((_, groupEl) => {
+      const $group = $(groupEl);
+      const placeholders = [];
+
+      $group.find(selector).each((_, item) => {
+        placeholders.push(_buildGenericPlaceholder($(item), name, propsConfig, contentSelector, pm, imgProcessor));
+      });
+
+      if (placeholders.length) {
+        const wrapper = group.wrapper || `${name}Group`;
+        $group.replaceWith(`<${wrapper}>\n${placeholders.join("\n\n")}\n</${wrapper}>`);
+      }
+    });
+  } else if (group?.wrapper) {
+    // Auto-group: collect consecutive sibling matches into one wrapper
+    const processed = new Set();
+
+    $(selector).each((_, el) => {
+      if (processed.has(el)) return;
+
+      const batch = [el];
+      processed.add(el);
+
+      let $curr = $(el);
+      let $next = $curr.next();
+      while ($next.length && !processed.has($next[0]) && $next.is(selector)) {
+        batch.push($next[0]);
+        processed.add($next[0]);
+        $curr = $next;
+        $next = $curr.next();
+      }
+
+      const placeholders = batch.map((item) =>
+        _buildGenericPlaceholder($(item), name, propsConfig, contentSelector, pm, imgProcessor)
+      );
+      $(batch[0]).replaceWith(`<${group.wrapper}>\n${placeholders.join("\n\n")}\n</${group.wrapper}>`);
+      for (let i = 1; i < batch.length; i++) $(batch[i]).remove();
+    });
+  } else {
+    // No grouping: replace each match independently
+    $(selector).each((_, el) => {
+      const placeholder = _buildGenericPlaceholder($(el), name, propsConfig, contentSelector, pm, imgProcessor);
+      $(el).replaceWith(placeholder);
+    });
+  }
+}
+
+function _buildGenericPlaceholder($item, name, propsConfig, contentSelector, pm, imgProcessor) {
+  const props = {};
+  const childLines = []; // values rendered as bold text inside the component body
+
+  for (const [propName, propDef] of Object.entries(propsConfig)) {
+    const isChild = typeof propDef === "object" && propDef !== null && propDef.child === true;
+    const value = _extractProp($item, propDef, imgProcessor);
+    if (value == null) continue;
+
+    if (isChild) {
+      childLines.push(`**${value}**`);
+    } else {
+      props[propName] = value;
+    }
+  }
+
+  let contentHtml;
+  if (contentSelector) {
+    const $content = $item.find(contentSelector).first();
+    contentHtml = $content.length ? $content.html() || "" : $item.html() || "";
+  } else {
+    contentHtml = $item.html() || "";
+  }
+
+  const prefix = childLines.join("\n\n");
+  const fullContent = prefix ? `${prefix}\n\n${contentHtml.trim()}` : contentHtml.trim();
+
+  return pm.createComponentPlaceholder(name, fullContent, props);
+}
+
+/**
+ * Extracts a single prop value from a matched element.
+ *
+ * propDef forms:
+ *   ".selector"                           — child element text (child removed from DOM)
+ *   { selector: ".x" }                   — child element text (child removed)
+ *   { selector: ".x", attr: "data-v" }   — child element attribute (child removed)
+ *   { attr: "href" }                      — attribute on the matched element itself
+ *   { selector: "img", attr: "src", image: true } — image src, resolved via imgProcessor
+ */
+function _extractProp($item, propDef, imgProcessor) {
+  if (typeof propDef === "string") {
+    const $el = $item.find(propDef).first();
+    if (!$el.length) return null;
+    const value = $el.text().trim();
+    $el.remove();
+    return value || null;
+  }
+
+  if (typeof propDef !== "object" || propDef === null) return null;
+
+  const { selector, attr, image } = propDef;
+
+  if (selector) {
+    const $el = $item.find(selector).first();
+    if (!$el.length) return null;
+    let value = attr ? ($el.attr(attr) || null) : $el.text().trim();
+    $el.remove();
+    if (!value) return null;
+    if (image && imgProcessor) value = imgProcessor.resolveUrl(value);
+    return value;
+  }
+
+  // No selector: read attribute from the matched element itself (no DOM removal)
+  if (attr) {
+    let value = $item.attr(attr) || null;
+    if (value && image && imgProcessor) value = imgProcessor.resolveUrl(value);
+    return value;
+  }
+
+  return null;
 }
 
 /**

@@ -1,2 +1,0 @@
-- validar imports de snippets/components
-  - checar se não tem dupla importação caso tenha multiplos snippets

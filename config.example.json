@@ -95,13 +95,60 @@
       "strategy": "keep_remote",
       "folder": "images"
     },
-    "components": {
-      "callouts": [],
-      "accordion": null,
-      "card": null,
-      "tabs": null,
-      "codegroup": null
-    },
+    "components": [
+      {
+        "name": "Note",
+        "selector": ".admonition.note",
+        "props": {
+          "title": { "selector": ".admonition-title", "child": true }
+        },
+        "content": ".admonition-body"
+      },
+      {
+        "name": "Warning",
+        "selector": ".admonition.warning",
+        "props": {
+          "title": { "selector": ".admonition-title", "child": true }
+        },
+        "content": ".admonition-body"
+      },
+      {
+        "name": "Accordion",
+        "selector": ".faq-item",
+        "group": {
+          "selector": ".faq-group",
+          "wrapper": "AccordionGroup"
+        },
+        "props": {
+          "title": ".faq-question"
+        },
+        "content": ".faq-answer"
+      },
+      {
+        "name": "Card",
+        "selector": "a.card",
+        "group": {
+          "wrapper": "CardGroup"
+        },
+        "props": {
+          "title": ".card-title",
+          "icon": { "attr": "data-icon" },
+          "href": { "attr": "href" }
+        },
+        "content": ".card-body"
+      },
+      {
+        "name": "Tab",
+        "selector": ".tab-panel",
+        "group": {
+          "selector": ".tabs",
+          "wrapper": "Tabs"
+        },
+        "props": {
+          "title": { "attr": "data-title" }
+        }
+      }
+    ],
     "codeblock": {
       "language_class_patterns": ["language-", "lang-", "highlight-"]
     }
