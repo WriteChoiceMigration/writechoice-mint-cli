@@ -32,7 +32,7 @@ export function preserveAll($, elements = [], customSelectors = [], pm, imagePro
         $el.find("colgroup").remove();
       }
 
-      const html = $.html($el);
+      const html = $.html($el).trim();
       const placeholder = pm.store(html, tag.toUpperCase());
       $el.replaceWith(placeholder);
     });

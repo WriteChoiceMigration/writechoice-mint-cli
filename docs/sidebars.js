@@ -23,7 +23,12 @@ const sidebars = {
           type: "category",
           label: "Scrape",
           link: { type: "doc", id: "commands/scrape/index" },
-          items: ["commands/scrape/script-hooks", "commands/scrape/config-reference"],
+          items: [
+            "commands/scrape/playwright",
+            "commands/scrape/authenticated-scraping",
+            "commands/scrape/script-hooks",
+            "commands/scrape/config-reference",
+          ],
         },
         {
           type: "category",

@@ -20,7 +20,9 @@ export function postProcessAll(text, title = "") {
   result = removeHeadingAnchors(result);
   result = removeDuplicateH1(result, title);
   result = fixComponentSpacing(result);
-  result = selfCloseBr(result);
+  result = fixPreservedBlockSpacing(result);
+  result = convertInlineStylesToReact(result);
+  result = selfCloseVoidElements(result);
   result = cleanExtraBlankLines(result);
   return result;
 }
@@ -70,16 +72,26 @@ export function fixComponentSpacing(text) {
 }
 
 /**
- * Ensures all <br> tags are self-closed as <br/>.
- * Handles <br>, <BR>, <br >, <br/>, <br /> — all normalized to <br/>.
+ * Self-closes all HTML void elements for JSX/MDX compatibility.
+ * e.g. <img src="x.png"> → <img src="x.png"/>
+ * Handles already-self-closed tags and skips code blocks.
  * @param {string} text
  * @returns {string}
  */
-export function selfCloseBr(text) {
-  return text.replace(/<br(\s[^>]*)?\s*\/?>/gi, (_, attrs) => {
-    const cleanAttrs = attrs ? attrs.replace(/\s*\/?$/, "").trimEnd() : "";
-    return `<br${cleanAttrs}/>`;
-  });
+export function selfCloseVoidElements(text) {
+  const voidTags = "area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr";
+  const re = new RegExp(`<(${voidTags})(\\s[^>]*)?>`, "gi");
+  const parts = text.split(/(```[\s\S]*?```)/g);
+  return parts
+    .map((part, i) => {
+      if (i % 2 === 1) return part;
+      return part.replace(re, (match, tag, attrs) => {
+        if (match.endsWith("/>")) return match;
+        const cleanAttrs = attrs ? attrs.replace(/\s*\/$/, "").trimEnd() : "";
+        return `<${tag}${cleanAttrs}/>`;
+      });
+    })
+    .join("");
 }
 
 /**
@@ -105,4 +117,52 @@ export function normalizeLinks(text) {
     }
     return match;
   });
+}
+
+/**
+ * Ensures preserved block HTML elements (tables, iframes) are surrounded by blank lines.
+ * Without this, Turndown can leave the placeholder inline with surrounding text.
+ * @param {string} text
+ * @returns {string}
+ */
+export function fixPreservedBlockSpacing(text) {
+  // Blank line before <table> / <iframe> when preceded by non-newline content
+  let result = text.replace(/([^\n])(<(?:table|iframe)[\s>])/gi, "$1\n\n$2");
+  // Blank line after </table> / </iframe> — handle any trailing whitespace including non-breaking spaces
+  result = result.replace(/(<\/(?:table|iframe)>)[^\n]*\n(?!\n)/g, "$1\n\n");
+  return result;
+}
+
+/**
+ * Converts HTML inline style attributes to React JSX object syntax.
+ * e.g. style="font-size: 14px; color: red" → style={{fontSize: "14px", color: "red"}}
+ * Skips content inside fenced code blocks.
+ * @param {string} text
+ * @returns {string}
+ */
+export function convertInlineStylesToReact(text) {
+  const parts = text.split(/(```[\s\S]*?```)/g);
+  return parts
+    .map((part, i) => {
+      if (i % 2 === 1) return part; // inside a code block — leave as-is
+      return part.replace(/\bstyle="([^"]*)"/g, (_, css) => {
+        const pairs = css
+          .split(";")
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .map((decl) => {
+            const idx = decl.indexOf(":");
+            if (idx === -1) return null;
+            const prop = decl
+              .slice(0, idx)
+              .trim()
+              .replace(/-([a-z])/g, (_, l) => l.toUpperCase());
+            const value = decl.slice(idx + 1).trim();
+            return `${prop}: "${value}"`;
+          })
+          .filter(Boolean);
+        return `style={{${pairs.join(", ")}}}`;
+      });
+    })
+    .join("");
 }

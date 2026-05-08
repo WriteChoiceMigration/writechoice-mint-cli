@@ -196,6 +196,11 @@ Full `scrape` section for `config.json`, with every key explained.
       // Run Chromium without a visible window.
       "headless": true,
 
+      // Apply stealth patches to make headless Chromium less detectable.
+      // Bypasses Cloudflare bot challenges and similar bot-detection systems.
+      // Uses playwright-extra + puppeteer-extra-plugin-stealth under the hood.
+      "stealth": true,
+
       // Wait for this CSS selector to appear before capturing the page HTML.
       // Useful for SPAs that render content after initial load.
       // If null, waits for "wait_time" seconds instead.
@@ -210,8 +215,9 @@ Full `scrape` section for `config.json`, with every key explained.
 
       // Path to a Playwright storageState file saved by "wc session".
       // Loads cookies and localStorage into the browser context.
+      // Run: wc session <url>  →  saves session.json  →  set this path to reuse it.
       // Also works with "playwright": false — cookies are injected into native fetch.
-      "storage_state": null
+      "storage_state": "session.json"
     }
 
   }

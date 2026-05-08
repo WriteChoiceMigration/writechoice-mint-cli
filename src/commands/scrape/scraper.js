@@ -61,13 +61,22 @@ export async function fetchHtml(url, cookieHeader = null) {
  * @returns {Promise<string>} HTML string
  */
 export async function fetchHtmlPlaywright(url, playwrightConfig = {}) {
-  const { chromium } = await import("playwright");
-
   const headless = playwrightConfig.headless !== false;
   const waitForSelector = playwrightConfig.wait_for_selector || null;
   const waitTime = playwrightConfig.wait_time || 3;
   const timeout = (playwrightConfig.page_load_timeout || 30) * 1000;
   const storageState = playwrightConfig.storage_state || null;
+  const stealth = playwrightConfig.stealth !== false;
+
+  let chromium;
+  if (stealth) {
+    const { chromium: playwrightExtraChromium } = await import("playwright-extra");
+    const StealthPlugin = (await import("puppeteer-extra-plugin-stealth")).default;
+    playwrightExtraChromium.use(StealthPlugin());
+    chromium = playwrightExtraChromium;
+  } else {
+    ({ chromium } = await import("playwright"));
+  }
 
   const browser = await chromium.launch({ headless });
   try {
