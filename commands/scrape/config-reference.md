@@ -186,6 +186,33 @@ Full `scrape` section for `config.json`, with every key explained.
       "post": null
     },
 
+    // ── API Mode ─────────────────────────────────────────────────────────────
+    //
+    // When present, URLs are fetched as JSON instead of HTML.
+    // Playwright and playwright_config are ignored.
+    // See the API Scraping guide for full documentation.
+    "api": {
+      // Dot-notation path to the HTML body in the JSON response.
+      "content": "article.body",
+
+      // Dot-notation path to the page URL.
+      // Used to derive the output file path and the "permalink" frontmatter field.
+      // The API endpoint URL and the page URL can be completely different.
+      "filepath": "article.html_url",
+
+      // Dot-notation path to the page title. Used as frontmatter "title".
+      "title": "article.title",
+
+      // Array of dot-notation paths for extra frontmatter fields.
+      // The last segment of each path becomes the frontmatter key:
+      //   "article.created_at" → created_at: "2024-01-15T10:00:00Z"
+      "fm": ["article.created_at", "article.updated_at"],
+
+      // HTTP headers sent with every request. Use for API authentication.
+      // Example: { "Authorization": "Bearer YOUR_TOKEN" }
+      "headers": {}
+    },
+
     // ── Playwright ────────────────────────────────────────────────────────────
 
     // Only applies when "playwright": true (or --playwright flag is set).
