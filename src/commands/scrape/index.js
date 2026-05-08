@@ -9,6 +9,7 @@ import { readFileSync, mkdirSync, writeFileSync, existsSync } from "fs";
 import { dirname, join, resolve } from "path";
 import chalk from "chalk";
 import { fetchPage } from "./scraper.js";
+import { fetchApiPage } from "./api-fetcher.js";
 import { convertPage } from "./converter.js";
 import { urlToFilePath } from "./url-utils.js";
 
@@ -38,12 +39,14 @@ export async function scrape(options) {
   const concurrency = options.concurrency || options.scrapeConfig?.concurrency || 3;
   const usePlaywright = options.playwright || options.scrapeConfig?.playwright || false;
   const playwrightConfig = options.scrapeConfig?.playwright_config || {};
+  const apiConfig = options.scrapeConfig?.api || null;
   const dryRun = options.dryRun || false;
 
   if (verbose) {
     console.log(chalk.cyan(`\nScraping ${urls.length} URL${urls.length !== 1 ? "s" : ""}...`));
     if (dryRun) console.log(chalk.yellow("  [dry-run] No files will be written"));
-    if (usePlaywright) console.log(chalk.yellow("  Using Playwright for JS rendering"));
+    if (apiConfig) console.log(chalk.yellow("  Using API mode (JSON fetch)"));
+    else if (usePlaywright) console.log(chalk.yellow("  Using Playwright for JS rendering"));
     console.log();
   }
 
@@ -53,7 +56,12 @@ export async function scrape(options) {
   for (let i = 0; i < urls.length; i += concurrency) {
     const batch = urls.slice(i, i + concurrency);
     await Promise.all(
-      batch.map((url) => scrapeOne(url, { outputDir, usePlaywright, playwrightConfig, dryRun, verbose, options }, results))
+      batch.map((url) => {
+        if (apiConfig) {
+          return scrapeOneApi(url, { outputDir, dryRun, verbose, options, apiConfig }, results);
+        }
+        return scrapeOne(url, { outputDir, usePlaywright, playwrightConfig, dryRun, verbose, options }, results);
+      })
     );
   }
 
@@ -118,6 +126,50 @@ async function scrapeOne(url, { outputDir, usePlaywright, playwrightConfig, dryR
     if (verbose) {
       console.log(chalk.red(` ✗ ${err.message}`));
     }
+  }
+}
+
+/**
+ * Fetches a single JSON API URL and writes the converted MDX file.
+ * The HTML body, page URL, title, and extra frontmatter are extracted
+ * from the JSON response using dot-notation paths from apiConfig.
+ */
+async function scrapeOneApi(apiUrl, { outputDir, dryRun, verbose, options, apiConfig }, results) {
+  try {
+    if (verbose) process.stdout.write(`  Fetching ${chalk.dim(apiUrl)}...`);
+
+    const { html, pageUrl, titleOverride, fmExtra } = await fetchApiPage(apiUrl, apiConfig);
+    const outPath = urlToFilePath(pageUrl, outputDir);
+
+    if (verbose) process.stdout.write(" converting...");
+
+    const scrapeConfig = {
+      ...(options.scrapeConfig || {}),
+      // Wrap body HTML in a container so content_selector can be skipped cleanly
+      content_selector: "#wc-api-content",
+      output: outputDir,
+      dryRun,
+    };
+
+    const wrappedHtml = `<div id="wc-api-content">${html}</div>`;
+    const overrides = { title: titleOverride, frontmatter: fmExtra };
+    const { mdx, imageFailures } = await convertPage(wrappedHtml, pageUrl, scrapeConfig, overrides);
+
+    if (!dryRun) {
+      const absPath = resolve(outPath);
+      mkdirSync(dirname(absPath), { recursive: true });
+      writeFileSync(absPath, mdx, "utf-8");
+    }
+
+    if (imageFailures.length) {
+      results.imageFailures.push(...imageFailures.map((f) => ({ ...f, page: apiUrl })));
+    }
+
+    results.success++;
+    if (verbose) console.log(chalk.green(` ✓ → ${outPath}`));
+  } catch (err) {
+    results.failed++;
+    if (verbose) console.log(chalk.red(` ✗ ${err.message}`));
   }
 }
 

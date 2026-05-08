@@ -153,8 +153,36 @@
       "language_class_patterns": ["language-", "lang-", "highlight-"]
     },
     "scripts": {
+      // Path (or array of paths) to pre-process script(s). Runs before Turndown with a live Cheerio DOM.
       "pre": null,
+      // Path (or array of paths) to post-process script(s). Runs on the final markdown string.
       "post": null
+    },
+    "playwright_config": {
+      // Run Chromium without a visible window. Set false for debugging.
+      "headless": true,
+      // Stealth patches to bypass Cloudflare and similar bot-detection systems.
+      "stealth": true,
+      // Wait for this CSS selector before capturing the page. Preferred over wait_time.
+      "wait_for_selector": null,
+      // Seconds to wait after page load when wait_for_selector is null.
+      "wait_time": 3,
+      // Max seconds to wait before timing out.
+      "page_load_timeout": 30,
+      // Path to a session file saved by "wc session". Injects cookies into Playwright or native fetch.
+      "storage_state": null
+    },
+    "api": {
+      // Dot-notation path to the HTML body in the JSON response.
+      "content": "article.body",
+      // Dot-notation path to the page URL — used for the output file path and permalink frontmatter.
+      "filepath": "article.html_url",
+      // Dot-notation path to the page title.
+      "title": "article.title",
+      // Extra frontmatter fields — last path segment becomes the key.
+      "fm": ["article.created_at", "article.updated_at"],
+      // HTTP headers for every request (e.g. API auth tokens).
+      "headers": {}
     }
   },
 

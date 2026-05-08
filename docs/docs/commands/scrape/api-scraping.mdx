@@ -1,0 +1,148 @@
+---
+title: API Scraping
+---
+
+# API Scraping
+
+Some platforms expose a JSON API that returns the article content directly — cleaner than scraping the rendered HTML and immune to bot detection. When `scrape.api` is configured, the scraper fetches each URL as JSON and extracts the HTML body, file path, title, and any extra frontmatter fields using dot-notation paths you define.
+
+Playwright and `playwright_config` are ignored in API mode.
+
+## When to use
+
+- The site has a public or authenticated REST API (e.g. Zendesk Help Center, Confluence, Notion)
+- You want cleaner HTML than what the rendered page produces
+- The site blocks headless browsers and you can't get a working session
+
+## Setup
+
+Add an `api` block inside `scrape` in `config.json`:
+
+```json
+{
+  "scrape": {
+    "api": {
+      "content": "article.body",
+      "filepath": "article.html_url",
+      "title": "article.title",
+      "fm": ["article.created_at", "article.updated_at"],
+      "headers": {
+        "Authorization": "Bearer YOUR_TOKEN"
+      }
+    }
+  }
+}
+```
+
+Then put API endpoint URLs in your `urls.json` (or `urls_file`):
+
+```json
+[
+  "https://support.example.com/api/v2/help_center/en-us/articles/123.json",
+  "https://support.example.com/api/v2/help_center/en-us/articles/456.json"
+]
+```
+
+## Options
+
+| Option | Type | Required | Description |
+| --- | --- | --- | --- |
+| `content` | string | Yes | Dot-notation path to the HTML body in the JSON response |
+| `filepath` | string | Yes | Dot-notation path to the page URL — used to determine the output file path and `permalink` frontmatter |
+| `title` | string | No | Dot-notation path to the page title — used as frontmatter `title` |
+| `fm` | string[] | No | Additional dot-notation paths — each becomes a frontmatter field, keyed by the last segment of the path |
+| `headers` | object | No | HTTP headers sent with every request — use for API authentication tokens |
+
+## Dot-notation paths
+
+All field paths are dot-notation strings that resolve against the JSON response object. For example, given this response:
+
+```json
+{
+  "article": {
+    "title": "Getting Started",
+    "html_url": "https://support.example.com/hc/en-us/articles/123-Getting-Started",
+    "body": "<p>Welcome...</p>",
+    "created_at": "2024-01-15T10:00:00Z"
+  }
+}
+```
+
+The path `"article.title"` resolves to `"Getting Started"`, `"article.body"` resolves to the HTML string, and so on. Deeply nested paths like `"data.attributes.content"` are also supported.
+
+## Frontmatter output
+
+Given the config above, the output MDX frontmatter will look like:
+
+```yaml
+---
+title: "Getting Started"
+created_at: "2024-01-15T10:00:00Z"
+updated_at: "2024-06-01T08:30:00Z"
+permalink: "https://support.example.com/hc/en-us/articles/123-Getting-Started"
+---
+```
+
+The `fm` paths use the **last segment** of the dot path as the frontmatter key: `"article.created_at"` → `created_at`.
+
+## File path mapping
+
+The value at `filepath` is treated as a full URL and mapped to an output path the same way regular scraping works:
+
+```
+https://support.example.com/hc/en-us/articles/123-Getting-Started
+  → output/hc/en-us/articles/123-Getting-Started.mdx
+```
+
+This means your API URLs and your page URLs can be completely different — the API endpoint is only used to fetch the data.
+
+## Authenticated APIs
+
+Pass credentials via the `headers` field:
+
+```json
+"api": {
+  "content": "article.body",
+  "filepath": "article.html_url",
+  "title": "article.title",
+  "headers": {
+    "Authorization": "Bearer eyJhbGci..."
+  }
+}
+```
+
+For Zendesk, you can use Basic auth with an API token:
+
+```json
+"headers": {
+  "Authorization": "Basic base64(email/token:TOKEN)"
+}
+```
+
+## Zendesk Help Center example
+
+Zendesk exposes articles at:
+```
+https://{subdomain}.zendesk.com/api/v2/help_center/{locale}/articles/{id}.json
+```
+
+Config:
+
+```json
+{
+  "scrape": {
+    "urls_file": "urls.json",
+    "output": "output",
+    "images": { "strategy": "download_by_page", "folder": "images" },
+    "html_preserve_elements": ["table", "iframe"],
+    "api": {
+      "content": "article.body",
+      "filepath": "article.html_url",
+      "title": "article.title",
+      "fm": ["article.created_at", "article.updated_at"]
+    }
+  }
+}
+```
+
+The full HTML conversion pipeline still applies — tables are preserved and spaced correctly, inline styles are converted to React format, void elements are self-closed, and all component mappings run as configured.

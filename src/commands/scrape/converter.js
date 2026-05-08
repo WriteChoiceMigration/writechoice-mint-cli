@@ -36,7 +36,7 @@ import { runPreScripts, runPostScripts } from "./script-runner.js";
  * @param {Object} scrapeConfig - The merged scrape configuration
  * @returns {{ mdx: string, imageFailures: Array }}
  */
-export async function convertPage(html, pageUrl, scrapeConfig = {}) {
+export async function convertPage(html, pageUrl, scrapeConfig = {}, overrides = {}) {
   const pm = new PlaceholderManager();
 
   const contentSelector = scrapeConfig.content_selector || "body";
@@ -68,6 +68,9 @@ export async function convertPage(html, pageUrl, scrapeConfig = {}) {
   if (title.includes(" | ")) {
     title = title.split(" | ")[0].trim();
   }
+
+  // Title override from API or other external source takes precedence
+  if (overrides.title) title = overrides.title;
 
   // const metaDesc = $("meta[name='description']").attr("content") || "";
   const ogTitle = $("meta[property='og:title']").attr("content") || "";
@@ -136,6 +139,7 @@ export async function convertPage(html, pageUrl, scrapeConfig = {}) {
 
   // Step 15: Add YAML frontmatter
   const metaTags = {};
+  if (overrides.frontmatter) Object.assign(metaTags, overrides.frontmatter);
   if (pageUrl) metaTags.permalink = pageUrl;
   // if (metaDesc) metaTags.description = metaDesc;
   if (ogTitle) metaTags["og:title"] = ogTitle;

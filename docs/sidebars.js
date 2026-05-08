@@ -26,6 +26,7 @@ const sidebars = {
           items: [
             "commands/scrape/playwright",
             "commands/scrape/authenticated-scraping",
+            "commands/scrape/api-scraping",
             "commands/scrape/script-hooks",
             "commands/scrape/config-reference",
           ],
