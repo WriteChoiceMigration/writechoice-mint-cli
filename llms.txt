@@ -13,6 +13,8 @@
 
 ### Scrape
 
+- [Playwright Configuration](/commands/scrape/playwright.md): When "playwright": true is set (or --playwright is passed), the scraper uses headless Chromium instead of native fetch. The playwright_config block controls how that browser behaves.
+- [Authenticated Scraping](/commands/scrape/authenticated-scraping.md): Some sites require you to be logged in to view content. The wc session command opens a real browser window so you can log in manually, then saves the resulting cookies and localStorage to a file. The scraper can load that file on every subsequent run.
 - [Script Hooks](/commands/scrape/script-hooks.md): Script hooks let you inject custom JavaScript into the scrape pipeline at two points — before and after the HTML-to-Markdown conversion. Use them when the config options alone can't express what you need: DOM cleanup, custom MDX component generation, or post-conversion string transformations.
 - [Config Reference](/commands/scrape/config-reference.md): Full scrape section for config.json, with every key explained.
 
