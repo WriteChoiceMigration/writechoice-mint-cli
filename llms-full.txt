@@ -839,9 +839,17 @@ Full `scrape` section for `config.json`, with every key explained.
     "elements_to_remove": [],
 
     // HTML tags whose content is preserved as raw HTML in the MDX output,
-    // bypassing Markdown conversion. Tables and iframes are kept by default
-    // because they don't have clean Markdown equivalents.
-    "html_preserve_elements": ["table", "iframe"],
+    // bypassing Markdown conversion.
+    //
+    // Table behaviour is controlled by whether "table" appears here:
+    //   - "table" included (default): all tables are kept as raw HTML.
+    //   - "table" omitted: simple text-only tables are converted to GFM
+    //     markdown tables. The original HTML is kept as a JSX comment
+    //     ({/* ... */}) directly above the markdown table so you can
+    //     review or restore it. Tables that contain lists, code blocks,
+    //     divs, or nested tables are too complex to convert cleanly and
+    //     are kept as raw HTML automatically.
+    "html_preserve_elements": ["iframe"],
 
     // Additional CSS selectors to preserve as raw HTML.
     // Useful for complex widgets or SVG diagrams you want to keep verbatim.
