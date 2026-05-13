@@ -114,6 +114,13 @@ export async function generateConfig(options) {
       quiet: false,
     },
 
+    tabs: {
+      file: null,
+      dir: null,
+      "dry-run": false,
+      quiet: false,
+    },
+
     metadata: {
       file: null,
       dir: null,

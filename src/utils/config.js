@@ -252,6 +252,25 @@ export function mergeImportsConfig(options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the fix tabs command
+ * CLI options take precedence over config file
+ *
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeTabsConfig(options, config) {
+  const tabsConfig = config?.tabs || {};
+
+  return {
+    file: options.file || tabsConfig.file || null,
+    dir: options.dir || tabsConfig.dir || null,
+    dryRun: options.dryRun !== undefined ? options.dryRun : (tabsConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (tabsConfig.quiet ?? false),
+  };
+}
+
+/**
  * Merges config file with CLI options for the nav folders command
  *
  * @param {Object} options - CLI options (docs, base, skipLevel, dryRun, quiet)

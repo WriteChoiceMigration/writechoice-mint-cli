@@ -54,6 +54,7 @@ const sidebars = {
             "commands/fix/h1",
             "commands/fix/imports",
             "commands/fix/redirects",
+            "commands/fix/tabs",
           ],
         },
         {

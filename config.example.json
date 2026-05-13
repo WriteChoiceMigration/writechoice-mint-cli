@@ -107,6 +107,18 @@
     "quiet": false
   },
 
+  // ── wc fix tabs ──────────────────────────────────────────────────────────────
+  "tabs": {
+    // Single MDX file to process. Mutually exclusive with dir.
+    "file": null,
+    // Directory of MDX files to process recursively. Mutually exclusive with file.
+    "dir": null,
+    // Preview changes without writing files.
+    "dry-run": false,
+    // Suppress progress output.
+    "quiet": false
+  },
+
   // ── wc nav ───────────────────────────────────────────────────────────────────
   "nav": {
     "folders": {

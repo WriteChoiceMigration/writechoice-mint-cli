@@ -289,6 +289,24 @@ fix
     await fixImages(mergedOptions);
   });
 
+// Fix tabs subcommand
+fix
+  .command("tabs")
+  .description("Convert <Tabs> groups where every <Tab> is a single code block into <CodeGroup>")
+  .option("-f, --file <path>", "Fix a single MDX file directly")
+  .option("-d, --dir <path>", "Fix MDX files in a specific directory")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeTabsConfig } = await import("../src/utils/config.js");
+    const { fixTabs } = await import("../src/commands/fix/tabs.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeTabsConfig(options, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await fixTabs(mergedOptions);
+  });
+
 // Scrape command
 program
   .command("scrape [urls...]")
