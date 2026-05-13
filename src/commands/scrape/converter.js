@@ -22,7 +22,7 @@ import * as cheerio from "cheerio";
 import TurndownService from "turndown";
 import { PlaceholderManager } from "./placeholder-manager.js";
 import { processAllComponents } from "./component-processor.js";
-import { preserveAll } from "./html-preserver.js";
+import { preserveAll, convertTablesAsMarkdown } from "./html-preserver.js";
 import { ImageProcessor } from "./image-processor.js";
 import { preProcessCodeBlocks, createTurndownCodeRule } from "./codeblock-processor.js";
 import { postProcessAll } from "./post-processor.js";
@@ -109,7 +109,12 @@ export async function convertPage(html, pageUrl, scrapeConfig = {}, overrides = 
   processAllComponents($doc, componentsConfig, pm, imgProcessor);
 
   // Step 6 & 7: Preserve HTML + process images
+  // When "table" is absent from html_preserve_elements, simple tables are converted to
+  // markdown automatically; complex tables are still kept as raw HTML.
   preserveAll($doc, htmlPreserveElements, htmlPreserveCustom, pm, imgProcessor);
+  if (!htmlPreserveElements.includes("table")) {
+    convertTablesAsMarkdown($doc, pm, imgProcessor);
+  }
   imgProcessor.processImages($doc, pm);
 
   // Step 8: Pre-process code blocks (add data-detected-lang)

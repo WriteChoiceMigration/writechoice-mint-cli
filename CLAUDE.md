@@ -36,3 +36,7 @@ Add or update docs in `docs/docs/`. The Docusaurus project lives in `docs/`.
 ## 5. config.example.json
 
 Update `config.example.json` with every new option. Add an inline `//` comment explaining what it does. Keep it in sync with `docs/docs/commands/scrape/config-reference.mdx`.
+
+## 6. config command
+
+Any change to the config structure (new option, renamed key, removed key, changed default) must also update `src/commands/config.js` so the generated template stays in sync with `config.example.json`. Also update `docs/docs/commands/config.md` (or the relevant config docs page) to reflect the change.

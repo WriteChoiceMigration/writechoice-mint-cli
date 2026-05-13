@@ -1,106 +1,215 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "description": "Configuration file for WriteChoice Mint CLI",
+
+  // Production documentation URL — used as the base for scraping and link resolution.
   "source": "https://docs.example.com",
+  // Validation environment URL (e.g. localhost:3000) — used by the link checker.
   "target": "http://localhost:3000",
+
+  // ── wc check links ───────────────────────────────────────────────────────────
   "links": {
+    // Single MDX file to check. Mutually exclusive with dir.
     "file": null,
+    // Directory of MDX files to check recursively. Mutually exclusive with file.
     "dir": null,
+    // Output file path for the broken-link report (no extension — written as JSON).
     "output": "links_report",
+    // Preview broken links without writing a report file.
     "dry-run": false,
+    // Suppress progress output.
     "quiet": false,
+    // Number of URLs to check in parallel.
     "concurrency": 25,
+    // Use a headless browser to follow JavaScript redirects.
     "headless": true
   },
+
+  // ── wc check parse ───────────────────────────────────────────────────────────
   "parse": {
+    // Single MDX file to validate. Mutually exclusive with dir.
     "file": null,
+    // Directory of MDX files to validate recursively. Mutually exclusive with file.
     "dir": null,
-    "quiet": false
-  },
-  "codeblocks": {
-    "file": null,
-    "dir": null,
-    "dry-run": false,
-    "quiet": false,
-    "threshold": 15,
-    "expandable": true,
-    "lines": null,
-    "wrap": null
-  },
-  "images": {
-    "file": null,
-    "dir": null,
-    "download": false,
-    "dry-run": false,
-    "quiet": false
-  },
-  "inlineimages": {
-    "file": null,
-    "dir": null,
-    "dry-run": false,
-    "quiet": false
-  },
-  "h1": {
-    "file": null,
-    "dir": null,
-    "dry-run": false,
-    "quiet": false
-  },
-  "imports": {
-    "file": null,
-    "dir": null,
-    "snippets": "snippets",
-    "dry-run": false,
+    // Suppress progress output.
     "quiet": false
   },
 
+  // ── wc fix codeblocks ────────────────────────────────────────────────────────
+  "codeblocks": {
+    // Single MDX file to process. Mutually exclusive with dir.
+    "file": null,
+    // Directory of MDX files to process recursively. Mutually exclusive with file.
+    "dir": null,
+    // Preview changes without writing files.
+    "dry-run": false,
+    // Suppress progress output.
+    "quiet": false,
+    // Line count above which a code block is wrapped in an <Expandable>.
+    "threshold": 15,
+    // Wrap oversized blocks in an <Expandable> component instead of truncating.
+    "expandable": true,
+    // Force a specific line count limit, overriding threshold.
+    "lines": null,
+    // Wrap long lines at this column width (null = no wrapping).
+    "wrap": null
+  },
+
+  // ── wc fix images ────────────────────────────────────────────────────────────
+  "images": {
+    // Single MDX file to process. Mutually exclusive with dir.
+    "file": null,
+    // Directory of MDX files to process recursively. Mutually exclusive with file.
+    "dir": null,
+    // Download remote images locally instead of keeping remote URLs.
+    "download": false,
+    // Preview changes without writing files.
+    "dry-run": false,
+    // Suppress progress output.
+    "quiet": false
+  },
+
+  // ── wc fix inlineimages ──────────────────────────────────────────────────────
+  "inlineimages": {
+    // Single MDX file to process. Mutually exclusive with dir.
+    "file": null,
+    // Directory of MDX files to process recursively. Mutually exclusive with file.
+    "dir": null,
+    // Preview changes without writing files.
+    "dry-run": false,
+    // Suppress progress output.
+    "quiet": false
+  },
+
+  // ── wc fix h1 ────────────────────────────────────────────────────────────────
+  "h1": {
+    // Single MDX file to process. Mutually exclusive with dir.
+    "file": null,
+    // Directory of MDX files to process recursively. Mutually exclusive with file.
+    "dir": null,
+    // Preview changes without writing files.
+    "dry-run": false,
+    // Suppress progress output.
+    "quiet": false
+  },
+
+  // ── wc fix imports ───────────────────────────────────────────────────────────
+  "imports": {
+    // Single MDX file to process. Mutually exclusive with dir.
+    "file": null,
+    // Directory of MDX files to process recursively. Mutually exclusive with file.
+    "dir": null,
+    // Directory where shared snippets are stored.
+    "snippets": "snippets",
+    // Preview changes without writing files.
+    "dry-run": false,
+    // Suppress progress output.
+    "quiet": false
+  },
+
+  // ── wc nav ───────────────────────────────────────────────────────────────────
   "nav": {
     "folders": {
+      // Path to the Mintlify docs.json navigation file.
       "docs": "docs.json",
+      // Include the base (root) folder as a nav group.
       "base": true,
+      // Folder depth levels to flatten/skip when building the nav tree.
       "skip_levels": [],
+      // Rename nav groups to title-case derived from folder names.
       "rename": false,
+      // Preview changes without writing docs.json.
       "dry-run": false,
+      // Suppress progress output.
       "quiet": false
     },
     "root": {
+      // Path to the Mintlify docs.json navigation file.
       "docs": "docs.json",
+      // Preview changes without writing docs.json.
       "dry-run": false,
+      // Suppress progress output.
       "quiet": false
     }
   },
 
+  // ── wc fix redirects ─────────────────────────────────────────────────────────
   "fix": {
     "redirects": {
+      // Path to the Mintlify docs.json file containing the redirects array.
       "docs": "docs.json",
+      // Directory of MDX files to scan for moved pages. Mutually exclusive with file.
       "dir": null,
+      // Preview changes without writing docs.json.
       "dry-run": false,
+      // Suppress progress output.
       "quiet": false
     }
   },
 
+  // ── wc scrape ────────────────────────────────────────────────────────────────
   "scrape": {
+    // JSON file listing the URLs to scrape. Each entry can be a string URL or an object.
     "urls_file": "urls.json",
+    // Directory to write the converted MDX files into.
     "output": "output",
+    // Number of pages to scrape in parallel.
     "concurrency": 3,
+    // Use a Playwright browser instead of native fetch (needed for JS-rendered pages).
     "playwright": false,
+    // Preview conversions without writing any MDX files.
     "dry-run": false,
+    // Suppress per-page progress output.
     "quiet": false,
+    // CSS selector for the main content area to extract. Everything outside is ignored.
     "content_selector": "body",
+    // CSS selector used to find the page title for the frontmatter.
     "title_selector": "h1",
+    // CSS selectors to remove before conversion (nav, sidebars, footers, etc.).
+    // Example: [".sidebar", ".toc", "nav", ".feedback-form"]
     "elements_to_remove": [],
-    "html_preserve_elements": ["table", "iframe"],
+    // HTML tags whose content is preserved as raw HTML in the MDX output,
+    // bypassing Markdown conversion.
+    //
+    // Table behaviour is controlled by whether "table" appears here:
+    //   - "table" included: all tables are kept as raw HTML.
+    //   - "table" omitted (default): simple text-only tables are converted to
+    //     GFM markdown tables. The original HTML is kept as a JSX comment
+    //     ({/* ... */}) directly above the markdown table. Tables that contain
+    //     lists, code blocks, divs, or nested tables are kept as raw HTML.
+    "html_preserve_elements": ["iframe"],
+    // Additional CSS selectors to preserve as raw HTML verbatim.
+    // Useful for custom widgets, SVG diagrams, or anything Turndown mangled.
+    // Example: ["figure.diagram", ".code-playground"]
     "html_preserve_custom": [],
+
+    // ── Image handling ────────────────────────────────────────────────────────
     "images": {
+      // How to handle image URLs in the scraped content:
+      //   "keep_remote"      — leave all src URLs as-is.
+      //   "download_by_url"  — download each image and save using its URL path.
+      //   "download_by_page" — download each image and save under the page slug.
       "strategy": "keep_remote",
+      // Subdirectory inside output where downloaded images are saved.
       "folder": "images"
     },
+
+    // ── Component mappings ────────────────────────────────────────────────────
+    // Each entry maps a CSS selector in the source HTML to a Mintlify MDX component.
+    // "name"     — MDX component name (e.g. "Note", "Accordion").
+    // "selector" — CSS selector matching the root element of this component.
+    // "props"    — key/value map of MDX props to extract from child elements or attributes.
+    // "content"  — CSS selector for the inner content to place inside the component.
+    // "group"    — optional wrapper component for repeated siblings (e.g. AccordionGroup).
     "components": [
       {
         "name": "Note",
         "selector": ".admonition.note",
         "props": {
-          "title": { "selector": ".admonition-title", "child": true }
+          "title": {
+            "selector": ".admonition-title",
+            "child": true
+          }
         },
         "content": ".admonition-body"
       },
@@ -108,7 +217,10 @@
         "name": "Warning",
         "selector": ".admonition.warning",
         "props": {
-          "title": { "selector": ".admonition-title", "child": true }
+          "title": {
+            "selector": ".admonition-title",
+            "child": true
+          }
         },
         "content": ".admonition-body"
       },
@@ -132,8 +244,12 @@
         },
         "props": {
           "title": ".card-title",
-          "icon": { "attr": "data-icon" },
-          "href": { "attr": "href" }
+          "icon": {
+            "attr": "data-icon"
+          },
+          "href": {
+            "attr": "href"
+          }
         },
         "content": ".card-body"
       },
@@ -145,19 +261,29 @@
           "wrapper": "Tabs"
         },
         "props": {
-          "title": { "attr": "data-title" }
+          "title": {
+            "attr": "data-title"
+          }
         }
       }
     ],
+
+    // ── Code block detection ──────────────────────────────────────────────────
     "codeblock": {
+      // CSS class prefixes used to detect the language of a code block.
+      // Matches the first class on <code> or <pre> that starts with one of these.
       "language_class_patterns": ["language-", "lang-", "highlight-"]
     },
+
+    // ── Custom scripts ────────────────────────────────────────────────────────
     "scripts": {
       // Path (or array of paths) to pre-process script(s). Runs before Turndown with a live Cheerio DOM.
       "pre": null,
       // Path (or array of paths) to post-process script(s). Runs on the final markdown string.
       "post": null
     },
+
+    // ── Playwright options ────────────────────────────────────────────────────
     "playwright_config": {
       // Run Chromium without a visible window. Set false for debugging.
       "headless": true,
@@ -172,6 +298,8 @@
       // Path to a session file saved by "wc session". Injects cookies into Playwright or native fetch.
       "storage_state": null
     },
+
+    // ── API mode ──────────────────────────────────────────────────────────────
     "api": {
       // Dot-notation path to the HTML body in the JSON response.
       "content": "article.body",
@@ -186,10 +314,15 @@
     }
   },
 
+  // ── wc metadata ──────────────────────────────────────────────────────────────
   "metadata": {
+    // Single MDX file to process. Mutually exclusive with dir.
     "file": null,
+    // Directory of MDX files to process recursively. Mutually exclusive with file.
     "dir": null,
+    // Number of pages to fetch metadata for in parallel.
     "concurrency": 15,
+    // Meta tag names/properties to extract from each page.
     "tags": [
       "og:title",
       "og:description",
@@ -199,7 +332,9 @@
       "twitter:description",
       "twitter:image"
     ],
+    // Preview without writing any files.
     "dry-run": false,
+    // Suppress progress output.
     "quiet": false
   }
 }

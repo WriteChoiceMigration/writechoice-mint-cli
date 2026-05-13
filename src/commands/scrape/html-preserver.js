@@ -8,6 +8,8 @@
  * Images inside tables are processed inline (without Frame wrapping).
  */
 
+import { isSimpleTable, tableToMarkdown, wrapWithOriginalComment } from "./table-converter.js";
+
 /**
  * Preserves all configured HTML elements by replacing them with placeholders.
  * @param {Object} $ - Cheerio instance
@@ -47,4 +49,38 @@ export function preserveAll($, elements = [], customSelectors = [], pm, imagePro
       $el.replaceWith(placeholder);
     });
   }
+}
+
+/**
+ * Converts all tables to markdown when "table" is absent from html_preserve_elements.
+ * Simple (text-only) tables become a GFM markdown table with the original HTML as a
+ * JSX comment above. Complex tables (containing ul, ol, pre, blockquote, div, or nested
+ * tables) are kept as raw HTML via a placeholder.
+ * @param {Object} $ - Cheerio instance
+ * @param {import('./placeholder-manager.js').PlaceholderManager} pm
+ * @param {import('./image-processor.js').ImageProcessor} imageProcessor - optional, for table images
+ */
+export function convertTablesAsMarkdown($, pm, imageProcessor = null) {
+  $("table").each((_, el) => {
+    const $el = $(el);
+
+    if (imageProcessor) {
+      imageProcessor.processTableImages($, $el);
+    }
+    $el.find("colgroup").remove();
+
+    const html = $.html($el).trim();
+
+    if (isSimpleTable($, $el)) {
+      const mdTable = tableToMarkdown($, $el);
+      if (mdTable) {
+        const content = wrapWithOriginalComment(html, mdTable);
+        $el.replaceWith(pm.store(content, "TABLE"));
+        return;
+      }
+    }
+
+    // Complex table — preserve as raw HTML
+    $el.replaceWith(pm.store(html, "TABLE"));
+  });
 }

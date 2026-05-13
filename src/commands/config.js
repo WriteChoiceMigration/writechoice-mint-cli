@@ -118,7 +118,15 @@ export async function generateConfig(options) {
       file: null,
       dir: null,
       concurrency: 15,
-      tags: null,
+      tags: [
+        "og:title",
+        "og:description",
+        "og:image",
+        "og:url",
+        "twitter:title",
+        "twitter:description",
+        "twitter:image",
+      ],
       "dry-run": false,
       quiet: false,
     },
@@ -162,6 +170,7 @@ export async function generateConfig(options) {
       playwright: false,
       playwright_config: {
         headless: true,
+        stealth: true,
         wait_for_selector: null,
         wait_time: 3,
         page_load_timeout: 30,
@@ -172,22 +181,79 @@ export async function generateConfig(options) {
       content_selector: "body",
       title_selector: "h1",
       elements_to_remove: [],
-      html_preserve_elements: ["table", "iframe"],
+      html_preserve_elements: ["iframe"],
       html_preserve_custom: [],
       images: {
-        strategy: "download_by_page",
+        strategy: "keep_remote",
         folder: "images",
       },
+      components: [
+        {
+          name: "Note",
+          selector: ".admonition.note",
+          props: {
+            title: { selector: ".admonition-title", child: true },
+          },
+          content: ".admonition-body",
+        },
+        {
+          name: "Warning",
+          selector: ".admonition.warning",
+          props: {
+            title: { selector: ".admonition-title", child: true },
+          },
+          content: ".admonition-body",
+        },
+        {
+          name: "Accordion",
+          selector: ".faq-item",
+          group: {
+            selector: ".faq-group",
+            wrapper: "AccordionGroup",
+          },
+          props: {
+            title: ".faq-question",
+          },
+          content: ".faq-answer",
+        },
+        {
+          name: "Card",
+          selector: "a.card",
+          group: {
+            wrapper: "CardGroup",
+          },
+          props: {
+            title: ".card-title",
+            icon: { attr: "data-icon" },
+            href: { attr: "href" },
+          },
+          content: ".card-body",
+        },
+        {
+          name: "Tab",
+          selector: ".tab-panel",
+          group: {
+            selector: ".tabs",
+            wrapper: "Tabs",
+          },
+          props: {
+            title: { attr: "data-title" },
+          },
+        },
+      ],
       codeblock: {
         language_class_patterns: ["language-", "lang-", "highlight-"],
       },
-      components: {
-        callouts: [],
-        accordion: null,
-        card: null,
-        tabs: null,
-        codegroup: null,
-        numberedList: null,
+      scripts: {
+        pre: null,
+        post: null,
+      },
+      api: {
+        content: "article.body",
+        filepath: "article.html_url",
+        title: "article.title",
+        fm: ["article.created_at", "article.updated_at"],
+        headers: {},
       },
     },
   };
