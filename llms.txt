@@ -37,6 +37,7 @@
 - [Fix H1](/commands/fix/h1.md): Removes duplicate H1 headings that repeat the frontmatter title field in MDX documentation files.
 - [Fix Imports](/commands/fix/imports.md): Scans MDX files for custom JSX component usage, validates import statements, and automatically adds missing imports when the component file is found in the snippets/ folder.
 - [Fix Redirects](/commands/fix/redirects.md): Reads the redirects array from docs.json and replaces stale source paths with their destination paths inside MDX files. Fixes internal links that still point to old URLs after a navigation restructure.
+- [Fix Tabs](/commands/fix/tabs.md): Converts ` groups where every  contains a single fenced code block into a `, moving the tab title onto the code block fence.
 
 ### Nav
 
