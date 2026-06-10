@@ -39,16 +39,22 @@ export default [
   },
   {
     path: '/',
-    component: ComponentCreator('/', 'afe'),
+    component: ComponentCreator('/', 'd67'),
     routes: [
       {
         path: '/',
-        component: ComponentCreator('/', '55e'),
+        component: ComponentCreator('/', '7ef'),
         routes: [
           {
             path: '/',
-            component: ComponentCreator('/', '7e4'),
+            component: ComponentCreator('/', 'e58'),
             routes: [
+              {
+                path: '/commands',
+                component: ComponentCreator('/commands', 'e3d'),
+                exact: true,
+                sidebar: "docs"
+              },
               {
                 path: '/commands/check/images',
                 component: ComponentCreator('/commands/check/images', '735'),
@@ -152,6 +158,12 @@ export default [
                 sidebar: "docs"
               },
               {
+                path: '/commands/fix/tabs',
+                component: ComponentCreator('/commands/fix/tabs', '250'),
+                exact: true,
+                sidebar: "docs"
+              },
+              {
                 path: '/commands/metadata',
                 component: ComponentCreator('/commands/metadata', '513'),
                 exact: true,
@@ -176,8 +188,26 @@ export default [
                 sidebar: "docs"
               },
               {
+                path: '/commands/scrape/api-scraping',
+                component: ComponentCreator('/commands/scrape/api-scraping', '86e'),
+                exact: true,
+                sidebar: "docs"
+              },
+              {
+                path: '/commands/scrape/authenticated-scraping',
+                component: ComponentCreator('/commands/scrape/authenticated-scraping', '3cc'),
+                exact: true,
+                sidebar: "docs"
+              },
+              {
                 path: '/commands/scrape/config-reference',
                 component: ComponentCreator('/commands/scrape/config-reference', 'c2c'),
+                exact: true,
+                sidebar: "docs"
+              },
+              {
+                path: '/commands/scrape/playwright',
+                component: ComponentCreator('/commands/scrape/playwright', 'd73'),
                 exact: true,
                 sidebar: "docs"
               },

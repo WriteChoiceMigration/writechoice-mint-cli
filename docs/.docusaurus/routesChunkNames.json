@@ -42,18 +42,22 @@
       "plugin": "plugin---docusaurus-debugb-38-ad3"
     }
   },
-  "/-afe": {
+  "/-d67": {
     "__comp": "__comp---theme-docs-root-5-e-9-0b6",
     "__context": {
       "plugin": "plugin---aba-d70"
     }
   },
-  "/-55e": {
+  "/-7ef": {
     "__comp": "__comp---theme-doc-version-roota-7-b-5de",
     "__props": "__props---22-d-307"
   },
-  "/-7e4": {
+  "/-e58": {
     "__comp": "__comp---theme-doc-roota-94-67a"
+  },
+  "/commands-e3d": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---commands-9-b-5-d97"
   },
   "/commands/check/images-735": {
     "__comp": "__comp---theme-doc-item-178-a40",
@@ -123,6 +127,10 @@
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---commands-fix-redirects-871-b08"
   },
+  "/commands/fix/tabs-250": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---commands-fix-tabsec-1-44e"
+  },
   "/commands/metadata-513": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---commands-metadata-0-a-9-f2f"
@@ -139,9 +147,21 @@
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---commands-scrape-95-a-2cb"
   },
+  "/commands/scrape/api-scraping-86e": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---commands-scrape-api-scrapingce-4-c43"
+  },
+  "/commands/scrape/authenticated-scraping-3cc": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---commands-scrape-authenticated-scraping-220-377"
+  },
   "/commands/scrape/config-reference-c2c": {
     "__comp": "__comp---theme-doc-item-178-a40",
     "content": "content---commands-scrape-config-reference-93-d-d1e"
+  },
+  "/commands/scrape/playwright-d73": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---commands-scrape-playwright-2-e-1-36f"
   },
   "/commands/scrape/script-hooks-ed5": {
     "__comp": "__comp---theme-doc-item-178-a40",

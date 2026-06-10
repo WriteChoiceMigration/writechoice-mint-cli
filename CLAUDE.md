@@ -9,6 +9,7 @@ Write the code. Keep changes focused — no refactors, cleanup, or extra abstrac
 ## 2. Backwards Compatibility
 
 New options must not change existing behavior when absent. Use safe defaults:
+
 - New config keys must default to `null`, `false`, or their previous implicit value
 - New function parameters must default so all existing call sites still work
 - New scrape pipeline steps must be gated on the new config being present
@@ -39,4 +40,4 @@ Update `config.example.json` with every new option. Add an inline `//` comment e
 
 ## 6. config command
 
-Any change to the config structure (new option, renamed key, removed key, changed default) must also update `src/commands/config.js` so the generated template stays in sync with `config.example.json`. Also update `docs/docs/commands/config.md` (or the relevant config docs page) to reflect the change.
+Any change to the config structure (new option, renamed key, removed key, changed default) must also update `src/commands/config.js` so the generated template stays in sync with `config.example.json`. Also update `docs/docs/commands/config.md` and `docs/docs/commands/index.md` (or the relevant config docs page) to reflect the change.

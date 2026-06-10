@@ -78,10 +78,12 @@ export function extractComponentNames(content) {
  * Returns Map<localName, { path: string, raw: string }>.
  */
 export function extractImports(content) {
+  // Strip fenced code blocks before scanning to avoid matching imports inside code samples
+  const stripped = content.replace(/^[ \t]*(`{3,}|~{3,})[ \t]*[^\n]*\n[\s\S]*?\n[ \t]*\1[ \t]*$/gm, "");
   const imports = new Map();
   const re = /^(import\s+([\s\S]+?)\s+from\s+['"]([^'"]+)['"])/gm;
   let m;
-  while ((m = re.exec(content)) !== null) {
+  while ((m = re.exec(stripped)) !== null) {
     const raw = m[1];
     const importClause = m[2].trim();
     const path = m[3];
@@ -197,11 +199,39 @@ export function insertImportLines(content, importLines) {
   const afterFm = content.slice(startPos);
   const lines = afterFm.split("\n");
 
-  // Find the last line of the existing import block
+  // Find the last line of the existing import block (skip fenced code blocks and multi-line imports)
   let lastImportIdx = -1;
+  let inCodeBlock = false;
+  let codeFence = "";
+  let inMultilineImport = false;
   for (let i = 0; i < lines.length; i++) {
+    const fenceMatch = lines[i].match(/^[ \t]*(`{3,}|~{3,})/);
+    if (fenceMatch) {
+      if (!inCodeBlock) {
+        inCodeBlock = true;
+        codeFence = fenceMatch[1];
+      } else if (lines[i].trim().startsWith(codeFence)) {
+        inCodeBlock = false;
+        codeFence = "";
+      }
+      continue;
+    }
+    if (inCodeBlock) continue;
+
+    if (inMultilineImport) {
+      if (/from\s+['"]/.test(lines[i])) {
+        lastImportIdx = i;
+        inMultilineImport = false;
+      }
+      continue;
+    }
+
     if (/^import\s/.test(lines[i])) {
-      lastImportIdx = i;
+      if (/from\s+['"]/.test(lines[i])) {
+        lastImportIdx = i;
+      } else {
+        inMultilineImport = true;
+      }
     } else if (lastImportIdx >= 0 && lines[i].trim() !== "") {
       break;
     }

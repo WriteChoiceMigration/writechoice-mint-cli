@@ -96,6 +96,16 @@
               "sidebar": "docs"
             },
             {
+              "id": "commands/fix/tabs",
+              "path": "/commands/fix/tabs",
+              "sidebar": "docs"
+            },
+            {
+              "id": "commands/index",
+              "path": "/commands",
+              "sidebar": "docs"
+            },
+            {
               "id": "commands/metadata",
               "path": "/commands/metadata",
               "sidebar": "docs"
@@ -111,6 +121,16 @@
               "sidebar": "docs"
             },
             {
+              "id": "commands/scrape/api-scraping",
+              "path": "/commands/scrape/api-scraping",
+              "sidebar": "docs"
+            },
+            {
+              "id": "commands/scrape/authenticated-scraping",
+              "path": "/commands/scrape/authenticated-scraping",
+              "sidebar": "docs"
+            },
+            {
               "id": "commands/scrape/config-reference",
               "path": "/commands/scrape/config-reference",
               "sidebar": "docs"
@@ -118,6 +138,11 @@
             {
               "id": "commands/scrape/index",
               "path": "/commands/scrape/",
+              "sidebar": "docs"
+            },
+            {
+              "id": "commands/scrape/playwright",
+              "path": "/commands/scrape/playwright",
               "sidebar": "docs"
             },
             {

@@ -18,6 +18,7 @@ const sidebars = {
       type: "category",
       label: "Commands",
       collapsed: false,
+      link: { type: "doc", id: "commands/index" },
       items: [
         {
           type: "category",
