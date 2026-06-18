@@ -373,6 +373,56 @@ nav
     await navRestructure(mergedOptions);
   });
 
+// Readme command group
+const readme = program.command("readme").description("readme.io conversion commands");
+
+readme
+  .command("convert")
+  .description("Convert readme.com markdown files to Mintlify MDX format")
+  .option("--from <dir>", "Source directory containing .md files (default: readme/docs)")
+  .option("--urls-file <file>", "JSON file with readme.io URLs to fetch .md from, then convert")
+  .option("-o, --output <dir>", "Output directory for .mdx files (default: pages)")
+  .option("--images-dir <dir>", "Directory to save downloaded images (default: images/docs)")
+  .option("--no-images", "Skip downloading images from files.readme.io")
+  .option("--dry-run", "Preview output without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeReadmeConvertConfig } = await import("../src/utils/config.js");
+    const { readmeConvert } = await import("../src/commands/readme/convert.js");
+
+    const config = loadConfig();
+    const merged = mergeReadmeConvertConfig(options, config);
+    await readmeConvert(merged);
+  });
+
+readme
+  .command("nav [url]")
+  .description("Scrape a readme.io sidebar and convert it to Mintlify navigation JSON")
+  .option("-o, --output <file>", "Output file for navigation JSON (default: nav.json)")
+  .option("--links-dir <dir>", "Directory for external link stubs (default: links)")
+  .option("--no-links", "Skip writing external link stub files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (url, options) => {
+    const { loadConfig, mergeReadmeNavConfig } = await import("../src/utils/config.js");
+    const { readmeScrapeNav } = await import("../src/commands/readme/scrape-nav.js");
+
+    const config = loadConfig();
+    const merged = mergeReadmeNavConfig(url, options, config);
+
+    if (!merged.url) {
+      console.error(
+        'Error: A readme.io URL is required.\n\n' +
+        'Provide it as an argument:\n' +
+        '  wcc readme nav <url>\n\n' +
+        'Or set it in config.json:\n' +
+        '  { "readme": { "url": "https://docs.example.com/docs" } }'
+      );
+      process.exit(1);
+    }
+
+    await readmeScrapeNav(merged.url, merged);
+  });
+
 // Docusaurus command group
 const docusaurus = program.command("docusaurus").description("Docusaurus conversion commands");
 

@@ -454,6 +454,55 @@ export function mergeKatexConfig(baseUrl, options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the readme convert command
+ *
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeReadmeConvertConfig(options, config) {
+  const convertConfig = config?.readme?.convert || {};
+
+  // Commander sets options.images=false when --no-images is passed
+  const noImages = options.images === false || (convertConfig["no-images"] ?? false);
+
+  return {
+    from: options.from || convertConfig.from || "readme/docs",
+    urlsFile: options.urlsFile || convertConfig["urls-file"] || null,
+    output: options.output || convertConfig.output || "pages",
+    imagesDir: options.imagesDir || convertConfig["images-dir"] || "images/docs",
+    noImages,
+    dryRun: options.dryRun !== undefined ? options.dryRun : (convertConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (convertConfig.quiet ?? false),
+  };
+}
+
+/**
+ * Merges config file with CLI options for the readme nav command
+ *
+ * @param {string|undefined} url - readme.io docs URL from CLI positional argument
+ * @param {Object} options - CLI options (output, linksDir, links, quiet)
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options including url
+ */
+export function mergeReadmeNavConfig(url, options, config) {
+  const readmeConfig = config?.readme || {};
+
+  // Commander sets options.links=false when --no-links is passed, true otherwise
+  const noLinksCli = options.links === false;
+  const noLinksConfig = readmeConfig["no-links"] ?? false;
+  const noLinks = noLinksCli || noLinksConfig;
+
+  return {
+    url: url || readmeConfig.url || config?.source || null,
+    output: options.output || readmeConfig.output || "nav.json",
+    linksDir: options.linksDir || readmeConfig["links-dir"] || "links",
+    noLinks,
+    quiet: options.quiet !== undefined ? options.quiet : (readmeConfig.quiet ?? false),
+  };
+}
+
+/**
  * Validates that required fields are present
  * @param {string|undefined} baseUrl - Base URL
  * @param {string} commandName - Name of the command for error messages

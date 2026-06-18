@@ -68,6 +68,11 @@ const sidebars = {
           label: "Docusaurus",
           items: ["commands/docusaurus/convert", "commands/docusaurus/slugify", "commands/docusaurus/nav"],
         },
+        {
+          type: "category",
+          label: "Readme",
+          items: ["commands/readme/convert", "commands/readme/nav"],
+        },
         "commands/metadata",
 
         "commands/session",

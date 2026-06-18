@@ -121,6 +121,23 @@ export async function generateConfig(options) {
       quiet: false,
     },
 
+    readme: {
+      convert: {
+        from: "readme/docs",
+        "urls-file": null,
+        output: "pages",
+        "images-dir": "images/docs",
+        "no-images": false,
+        "dry-run": false,
+        quiet: false,
+      },
+      url: null,
+      output: "nav.json",
+      "links-dir": "links",
+      "no-links": false,
+      quiet: false,
+    },
+
     metadata: {
       file: null,
       dir: null,

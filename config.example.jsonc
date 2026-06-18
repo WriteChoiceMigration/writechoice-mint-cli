@@ -326,6 +326,41 @@
     }
   },
 
+  // ── wcc readme ───────────────────────────────────────────────────────────────
+  "readme": {
+    // ── wcc readme convert ───────────────────────────────────────────────────
+    "convert": {
+      // Source directory containing raw .md files exported from readme.com.
+      "from": "readme/docs",
+      // JSON file listing readme.io page URLs to fetch (appends .md to each).
+      // When set, files are fetched into "from" before converting.
+      // When null, existing files in "from" are converted directly.
+      "urls-file": null,
+      // Output directory for the converted .mdx files.
+      "output": "pages",
+      // Directory where images from files.readme.io are saved locally.
+      "images-dir": "images/docs",
+      // Set to true to skip downloading and localising images.
+      "no-images": false,
+      // Preview conversions without writing files.
+      "dry-run": false,
+      // Suppress progress output.
+      "quiet": false
+    },
+
+    // ── wcc readme nav ───────────────────────────────────────────────────────
+    // readme.io docs URL to scrape (used when running without a URL argument).
+    "url": null,
+    // Output file path for the Mintlify navigation JSON.
+    "output": "nav.json",
+    // Directory where external sidebar link stubs are written.
+    "links-dir": "links",
+    // Set to true to skip writing stub files for external links.
+    "no-links": false,
+    // Suppress progress output.
+    "quiet": false
+  },
+
   // ── wc metadata ──────────────────────────────────────────────────────────────
   "metadata": {
     // Single MDX file to process. Mutually exclusive with dir.

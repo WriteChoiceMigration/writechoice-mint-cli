@@ -36,7 +36,7 @@ Add or update docs in `docs/docs/`. The Docusaurus project lives in `docs/`.
 
 ## 5. config.example.json
 
-Update `config.example.json` with every new option. Add an inline `//` comment explaining what it does. Keep it in sync with `docs/docs/commands/scrape/config-reference.mdx`.
+Update `config.example.jsonc` with every new option. Add an inline `//` comment explaining what it does. Keep it in sync with `docs/docs/commands/scrape/config-reference.mdx`.
 
 ## 6. config command
 
