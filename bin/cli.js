@@ -327,6 +327,37 @@ program
     await scrape(mergedOptions);
   });
 
+// Find command group
+const find = program.command("find").description("Commands for discovering information about your docs");
+
+find
+  .command("redirects [base]")
+  .description("Probe broken links for HTTP redirects and write a redirects JSON file")
+  .option("--input <file>", "Broken links report file to parse (default: br.txt)")
+  .option("-o, --output <file>", "Output JSON file for discovered redirects (default: br_redirects.json)")
+  .option("--delay <ms>", "Pause between requests in ms (default: 500)")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (base, options) => {
+    const { loadConfig, mergeFindRedirectsConfig } = await import("../src/utils/config.js");
+    const { findRedirects } = await import("../src/commands/find/redirects.js");
+
+    const config = loadConfig();
+    const merged = mergeFindRedirectsConfig(base, options, config);
+
+    if (!merged.base) {
+      console.error(
+        "Error: A base URL is required.\n\n" +
+        "Provide it as an argument:\n" +
+        "  wcc find redirects <base>\n\n" +
+        "Or set it in config.json:\n" +
+        '  { "source": "https://docs.example.com" }'
+      );
+      process.exit(1);
+    }
+
+    await findRedirects(merged);
+  });
+
 // Nav command group
 const nav = program.command("nav").description("Navigation structure commands");
 

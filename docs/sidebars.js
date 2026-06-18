@@ -70,6 +70,11 @@ const sidebars = {
         },
         {
           type: "category",
+          label: "Find",
+          items: ["commands/find/redirects"],
+        },
+        {
+          type: "category",
           label: "Readme",
           items: ["commands/readme/convert", "commands/readme/nav"],
         },

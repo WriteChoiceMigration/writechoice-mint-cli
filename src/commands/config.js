@@ -121,6 +121,16 @@ export async function generateConfig(options) {
       quiet: false,
     },
 
+    find: {
+      redirects: {
+        base: null,
+        input: "br.txt",
+        output: "br_redirects.json",
+        delay: 500,
+        quiet: false,
+      },
+    },
+
     readme: {
       convert: {
         from: "readme/docs",

@@ -454,6 +454,28 @@ export function mergeKatexConfig(baseUrl, options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the find redirects command
+ *
+ * @param {string|undefined} base - Base URL from CLI positional argument
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeFindRedirectsConfig(base, options, config) {
+  const findConfig = config?.find?.redirects || {};
+
+  return {
+    base: base || findConfig.base || config?.source || null,
+    input: options.input || findConfig.input || "br.txt",
+    output: options.output || findConfig.output || "br_redirects.json",
+    delay: options.delay != null
+      ? parseInt(options.delay, 10)
+      : (findConfig.delay ?? 500),
+    quiet: options.quiet !== undefined ? options.quiet : (findConfig.quiet ?? false),
+  };
+}
+
+/**
  * Merges config file with CLI options for the readme convert command
  *
  * @param {Object} options - CLI options

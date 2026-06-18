@@ -326,6 +326,22 @@
     }
   },
 
+  // ── wcc find ─────────────────────────────────────────────────────────────────
+  "find": {
+    "redirects": {
+      // Base URL of the live site to probe (falls back to "source" if not set).
+      "base": null,
+      // Mintlify broken-links report file to parse (lines containing ⎿).
+      "input": "br.txt",
+      // Output file for discovered { source, destination } redirect pairs.
+      "output": "br_redirects.json",
+      // Pause between HTTP requests in milliseconds (increase if rate-limited).
+      "delay": 500,
+      // Suppress progress output.
+      "quiet": false
+    }
+  },
+
   // ── wcc readme ───────────────────────────────────────────────────────────────
   "readme": {
     // ── wcc readme convert ───────────────────────────────────────────────────
