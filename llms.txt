@@ -50,6 +50,10 @@
 - [Docusaurus Slugify](/commands/docusaurus/slugify.md): Renames and moves converted MDX files so their paths match the slug (or id) in their frontmatter. Also updates any matching page paths in docs.json.
 - [Docusaurus Nav](/commands/docusaurus/nav.md): Converts a Docusaurus sidebars.js file into Mintlify navigation JSON, ready to paste into docs.json.
 
+### Find
+
+- [Find Redirects](/commands/find/redirects.md): Reads a Mintlify broken-links report, probes each broken path against the live site (without following redirects), and writes any discovered 3xx redirects to a JSON file.
+
 ### Readme
 
 - [Readme Convert](/commands/readme/convert.md): Converts readme.com markdown exports to Mintlify MDX format. Supports two modes:
