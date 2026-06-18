@@ -49,6 +49,11 @@
 - [Docusaurus Convert](/commands/docusaurus/convert.md): Converts a Docusaurus docs folder to Mintlify-ready MDX files. Applies all known structural and syntax transformations automatically, and copies non-Markdown files (images, etc.) as-is.
 - [Docusaurus Slugify](/commands/docusaurus/slugify.md): Renames and moves converted MDX files so their paths match the slug (or id) in their frontmatter. Also updates any matching page paths in docs.json.
 - [Docusaurus Nav](/commands/docusaurus/nav.md): Converts a Docusaurus sidebars.js file into Mintlify navigation JSON, ready to paste into docs.json.
+
+### Readme
+
+- [Readme Convert](/commands/readme/convert.md): Converts readme.com markdown exports to Mintlify MDX format. Supports two modes:
+- [Readme Nav](/commands/readme/nav.md): Scrapes a readme.io documentation site, expands all collapsed sidebar sections, and converts the sidebar into Mintlify navigation JSON ready to paste into docs.json.
 - [Metadata](/commands/metadata.md): Fetches meta tags from your live documentation pages and writes them into the frontmatter of the corresponding MDX source files. Existing frontmatter keys are updated (overwritten); missing keys are appended.
 - [Session](/commands/session.md): Captures an authenticated browser session so wc scrape can access pages behind a login.
 - [Config](/commands/config.md): Generates a config.json template file with all available configuration options.
