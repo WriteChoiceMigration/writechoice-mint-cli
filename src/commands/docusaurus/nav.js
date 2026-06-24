@@ -55,6 +55,13 @@ export async function docusaurusNav(file, options = {}) {
     process.exit(1);
   }
 
+  // Node.js 22+ can require() ESM files, returning a namespace object like
+  // { __esModule: true, default: { docs: [...], sdks: [...] } }.
+  // Unwrap it so we get the actual sidebar config.
+  if (sidebars.__esModule === true && sidebars.default && typeof sidebars.default === "object") {
+    sidebars = sidebars.default;
+  }
+
   const prefix = options.prefix ? options.prefix.replace(/\/+$/, "") : "";
   const keys = Object.keys(sidebars);
 
@@ -293,7 +300,7 @@ function evalSidebarsFile(absFile) {
   // Strip TypeScript type annotations in simple cases: `: SidebarsConfig`
   const stripped = src
     .replace(/:\s*SidebarsConfig\b/g, "")
-    .replace(/^export\s+default\s+/, "module.exports = ");
+    .replace(/^export\s+default\s+/m, "module.exports = ");
 
   // eslint-disable-next-line no-new-func
   const fn = new Function("module", "exports", "require", "__filename", "__dirname", stripped);
