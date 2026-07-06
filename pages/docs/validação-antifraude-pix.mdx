@@ -1,0 +1,191 @@
+---
+title: "Validação AntiFraude Pix"
+---
+Bem-vindo à documentação de integração do Validador Antifraude PIX!\
+Esta API foi desenvolvida para realizar consultas pontuais de risco associadas a um CPF ou CNPJ, agilizando mecanismos de antifraude através das análises combinadas de cenários da Resolução 6 do Banco Central e outras ferramentas antifraudes.
+
+Através da validação do CPF e do CNPJ é possível criar regras simples de fraudes com base nas informações daquela pessoa.
+
+A tomada de decisão é simplificada com base no retorno em indicadores objetivos de risco (LOW, HIGH, UNKNOWN).
+
+**Como funciona a nossa Matriz de Risco?**
+Ao enviar um documento para o endpoint, o motor antifraude da Celcoin avalia duas frentes críticas:
+
+Histórico & Ocorrências: Vasculha o histórico de chaves PIX associadas ao documento, contabilizando fraudes confirmadas, tentativas recentes e volume de ocorrências de segurança.
+
+Resolução 6 (Marcações de Fraude Associadas): Verifica se o documento possui marcações ativas de fraude registradas no sistema financeiro, identificando contas laranjas ou contas envolvidas em golpes ou ações fraudulentas.
+
+Basta informar o taxid que deseja consultar (CPF com 11 dígitos ou CNPJ com 14 digitos):
+
+## Consulta Simples
+
+**cURL da chamada**
+
+```bash curl
+curl --location --request GET 'https://apicorp.celcoin.com.br/ftm/v1/query/assess?taxid=12345678909' \
+--header 'accept: application/json' \
+--header 'Authorization: Bearer {{token}}'
+```
+
+<br />
+
+## Exemplo de retorno
+
+<Tip>
+**Sucesso 200**
+
+</Tip>
+
+```
+{
+  "taxid": "12345678909",
+  "timestamp": "2026-05-18T18:50:00Z",
+  "summary": {
+    "risk_level": "LOW",
+    "should_block_directory": false,
+    "should_block_res6": false,
+    "should_block_any": false
+  },
+  "services": {
+    "directory": {
+      "status": "ok",
+      "latency_ms": 115.4,
+      "consultas_count": 1,
+      "total_fraude_sum": 0,
+      "total_tentativa_fraude_sum": 0,
+      "has_fraud": false,
+      "matches": [
+        {
+          "tipo_chave": "CPF",
+          "chave": "12345678909",
+          "total_fraude": 0,
+          "total_tentativa_fraude": 0,
+          "ocorrencias_count": 0
+        }
+      ],
+      "raw": null
+    },
+    "res6": {
+      "status": "ok",
+      "latency_ms": 84.1,
+      "total_markings": 0,
+      "active_fraud_count": 0,
+      "has_active_fraud": false,
+      "raw": null
+    }
+  },
+  "errors": []
+}
+```
+
+<br />
+
+## Consulta Detalhada
+
+Além de informar o taxid que deseja consultar (CPF com 11 dígitos ou CNPJ com 14 digitos), informar também verbose=true.\
+Isso é muito útil para análises mais aprofundadas a respeito daquele taxID:
+
+```bash curl
+curl --location --request GET 'https://apicorp.celcoin.com.br/ftm/v1/query/assess?taxid=12345678909&verbose=true' \
+--header 'accept: application/json' \
+--header 'Authorization: Bearer {{token}}'
+```
+
+<br />
+
+## Exemplo de retorno
+
+<Tip>
+**Sucesso 200**
+
+</Tip>
+
+```
+{
+  "taxid": "12345678909",
+  "timestamp": "2026-05-18T18:50:00Z",
+  "summary": {
+    "risk_level": "LOW",
+    "should_block_directory": false,
+    "should_block_res6": false,
+    "should_block_any": false
+  },
+  "services": {
+    "directory": {
+      "status": "ok",
+      "latency_ms": 115.4,
+      "consultas_count": 1,
+      "total_fraude_sum": 0,
+      "total_tentativa_fraude_sum": 0,
+      "has_fraud": false,
+      "matches": [
+        {
+          "tipo_chave": "CPF",
+          "chave": "12345678909",
+          "total_fraude": 0,
+          "total_tentativa_fraude": 0,
+          "ocorrencias_count": 0
+        }
+      ],
+      "raw": {
+        "provider_transaction_id": "db-987654321-xyz",
+        "score_reputacao": 98,
+        "cadastro_ativo": true,
+        "historico_chaves_vinculadas": [
+          {
+            "id": "ch_01h",
+            "criado_em": "2023-01-15",
+            "reclamacoes_fraude": 0
+          }
+        ]
+      }
+    },
+    "res6": {
+      "status": "ok",
+      "latency_ms": 84.1,
+      "total_markings": 0,
+      "active_fraud_count": 0,
+      "has_active_fraud": false,
+      "raw": {
+        "protocolo_bacen": "20260518-R6-009",
+        "origem_notificacao": "SFS",
+        "detalhes_notificacoes": [],
+        "ultima_atualizacao_base": "2026-05-18T06:00:00Z"
+      }
+    }
+  },
+  "errors": []
+}
+```
+
+**Tabela de Apoio** **- O que fazer em cada cenário de retorno?**
+
+| Campo       | Valor   | Detalhes                                                                                              |
+| :---------- | :------ | :---------------------------------------------------------------------------------------------------- |
+| risk\_level | Low     | Baixo risco encontrado. Transação liberada na esteira de segurança.                                   |
+| risk\_level | High    | Alto risco de fraude detectado. Recomendado bloqueio ou análise humana.                               |
+| risk\_level | Unknown | Não foi possível determinar o risco. Recomendado que seja feita uma nova tentativa ou análise humana. |
+
+<br />
+
+<Warning>
+**Error 400**
+
+</Warning>
+
+```
+{
+  "error": "Parâmetro inválido",
+  "details": "taxid é obrigatório"
+}
+```
+
+<br />
+
+**Tabela de errorCode**
+
+| Error              | Descrição                                                                                                                            | Detalhes                                                     |
+| :----------------- | :----------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------- |
+| Parâmetro inválido | O cliente esqueceu de passar o CPF/CNPJ na URL da requisição.                                                                        | taxid é obrigatório                                          |
+| Parâmetro inválido | O documento enviado tem menos de 8 ou mais de 14 dígitos numéricos.                                                                  | taxid inválido: informe CPF/CNPJ com 8-14 dígitos            |
+| Parâmetro inválido | O documento passou no tamanho, mas falhou no cálculo matemático do Dígito Verificador (DV). É um documento falso ou digitado errado. | taxid inválido: dígito verificador incompatível com CPF/CNPJ |

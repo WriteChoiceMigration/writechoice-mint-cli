@@ -10,7 +10,7 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "fs";
-import { resolve, join, basename } from "path";
+import { resolve, join, basename, dirname, relative } from "path";
 import chalk from "chalk";
 
 const README_IMAGE_HOST = "files.readme.io";
@@ -75,6 +75,23 @@ const ICON_MAP = {
 
 function fmScalar(raw) {
   return raw.replace(/^[>|]-?\s*\n?/, "").split("\n").map(l => l.trim()).filter(Boolean).join(" ");
+}
+
+export function stripDocumentationIndex(content) {
+  const m = content.match(/^(?:>.*\n)+\n*/);
+  if (!m || !/Documentation Index/i.test(m[0])) return content;
+  return content.slice(m[0].length);
+}
+
+export function convertH1ToFrontmatterTitle(content) {
+  if (/^---\n/.test(content)) return content;
+
+  const m = content.match(/^\s*#\s+(.+?)\s*\n+/);
+  if (!m) return content;
+
+  const title = m[1].trim();
+  const rest = content.slice(m[0].length);
+  return `---\ntitle: "${title.replace(/"/g, '\\"')}"\n---\n${rest}`;
 }
 
 export function convertFrontmatter(content) {
@@ -271,7 +288,11 @@ function cssToReact(css) {
   const pairs = css.split(";").map(d => d.trim()).filter(d => d.includes(":")).map(d => {
     const [prop, ...rest] = d.split(":");
     const val = rest.join(":").trim();
-    const camel = prop.trim().split("-").map((p, i) => i === 0 ? p : p[0].toUpperCase() + p.slice(1)).join("");
+    const trimmedProp = prop.trim();
+    // CSS custom properties (--foo-bar) keep their literal name; React doesn't camelCase these.
+    const camel = trimmedProp.startsWith("--")
+      ? trimmedProp
+      : trimmedProp.split("-").filter(Boolean).map((p, i) => i === 0 ? p : p[0].toUpperCase() + p.slice(1)).join("");
     return `${camel}: "${val}"`;
   });
   return "{" + pairs.join(", ") + "}";
@@ -406,6 +427,8 @@ export async function convertMarkdownImages(content, opts) {
 // ---------------------------------------------------------------------------
 
 export async function convert(content, opts = {}) {
+  content = stripDocumentationIndex(content);
+  content = convertH1ToFrontmatterTitle(content);
   content = convertFrontmatter(content);
   content = convertCalloutTags(content);
   content = convertBlockquoteCallouts(content);
@@ -419,11 +442,15 @@ export async function convert(content, opts = {}) {
   return content;
 }
 
-export async function convertFile(src, targetDir, opts = {}) {
+export async function convertFile(src, sourceDir, targetDir, opts = {}) {
   const { dryRun, verbose } = opts;
   const text = readFileSync(src, "utf-8");
   const result = await convert(text, opts);
-  const out = join(targetDir, basename(src, ".md") + ".mdx");
+  // Preserve sourceDir's own folder name (e.g. "docs" in "readme/docs") plus any
+  // nested subdirectories, so readme/docs/file.md -> <targetDir>/docs/file.mdx
+  const relFromParent = relative(dirname(sourceDir), src);
+  const out = join(targetDir, relFromParent.replace(/\.md$/, ".mdx"));
+  const outDir = dirname(out);
 
   if (dryRun) {
     if (verbose) {
@@ -434,17 +461,44 @@ export async function convertFile(src, targetDir, opts = {}) {
       console.log(result);
     }
   } else {
-    mkdirSync(targetDir, { recursive: true });
+    mkdirSync(outDir, { recursive: true });
     writeFileSync(out, result, "utf-8");
-    if (verbose) console.log(`  ${chalk.dim(basename(src))}  →  ${chalk.green(out)}`);
+    if (verbose) console.log(`  ${chalk.dim(relative(sourceDir, src))}  →  ${chalk.green(out)}`);
   }
 
   return out;
 }
 
 // ---------------------------------------------------------------------------
+// Recursive .md file discovery
+// ---------------------------------------------------------------------------
+
+export function listMarkdownFiles(dir) {
+  const entries = readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name));
+  const files = [];
+  for (const entry of entries) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...listMarkdownFiles(full));
+    } else if (entry.isFile() && entry.name.endsWith(".md")) {
+      files.push(full);
+    }
+  }
+  return files;
+}
+
+// ---------------------------------------------------------------------------
 // Fetch mode
 // ---------------------------------------------------------------------------
+
+export function slugFromUrl(url) {
+  const rawSlug = url.replace(/\/$/, "").split("/").pop();
+  try {
+    return decodeURIComponent(rawSlug);
+  } catch {
+    return rawSlug;
+  }
+}
 
 async function fetchUrls(urls, sourceDir, opts) {
   const { dryRun, verbose } = opts;
@@ -453,7 +507,7 @@ async function fetchUrls(urls, sourceDir, opts) {
   const fetched = [];
   for (const url of urls) {
     const mdUrl = url.replace(/\/$/, "") + ".md";
-    const slug = url.replace(/\/$/, "").split("/").pop();
+    const slug = slugFromUrl(url);
     const dest = join(sourceDir, `${slug}.md`);
 
     if (dryRun) {
@@ -520,10 +574,7 @@ export async function readmeConvert(options) {
       console.error(chalk.red(`Error: source directory not found: ${sourceDir}`));
       process.exit(1);
     }
-    files = readdirSync(sourceDir)
-      .filter(f => f.endsWith(".md"))
-      .sort()
-      .map(f => join(sourceDir, f));
+    files = listMarkdownFiles(sourceDir);
 
     if (!files.length) {
       console.error(chalk.red(`Error: no .md files found in ${sourceDir}`));
@@ -537,7 +588,7 @@ export async function readmeConvert(options) {
   }
 
   for (const f of files) {
-    await convertFile(f, targetDir, opts);
+    await convertFile(f, sourceDir, targetDir, opts);
   }
 
   if (verbose && !options.dryRun) {

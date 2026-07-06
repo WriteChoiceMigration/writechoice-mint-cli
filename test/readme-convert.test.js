@@ -1,5 +1,8 @@
-import { describe, it } from "node:test";
+import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
+import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
+import { join } from "path";
+import { tmpdir } from "os";
 import {
   convertFrontmatter,
   convertCalloutTags,
@@ -9,6 +12,11 @@ import {
   convertHorizontalRules,
   convertTableTags,
   convertInlineStyles,
+  slugFromUrl,
+  stripDocumentationIndex,
+  convertH1ToFrontmatterTitle,
+  listMarkdownFiles,
+  convertFile,
 } from "../src/commands/readme/convert.js";
 import { mergeReadmeConvertConfig } from "../src/utils/config.js";
 
@@ -98,6 +106,52 @@ describe("convertFrontmatter", () => {
     const input = `---\ntitle: T\nexcerpt: A "quoted" word here\n---\n`;
     const result = convertFrontmatter(input);
     assert.ok(result.includes('\\"quoted\\"'));
+  });
+});
+
+// ─── stripDocumentationIndex ───────────────────────────────────────────────
+
+describe("stripDocumentationIndex", () => {
+  it("removes the leading Documentation Index blockquote", () => {
+    const input = `> ## Documentation Index\n> Fetch the complete documentation index at: https://example.com/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Title\n\nBody`;
+    const result = stripDocumentationIndex(input);
+    assert.equal(result, "# Title\n\nBody");
+  });
+
+  it("leaves content unchanged when no Documentation Index blockquote is present", () => {
+    const input = "# Title\n\nBody";
+    assert.equal(stripDocumentationIndex(input), input);
+  });
+
+  it("leaves an unrelated leading blockquote unchanged", () => {
+    const input = "> Some other note\n\n# Title\n\nBody";
+    assert.equal(stripDocumentationIndex(input), input);
+  });
+});
+
+// ─── convertH1ToFrontmatterTitle ───────────────────────────────────────────
+
+describe("convertH1ToFrontmatterTitle", () => {
+  it("converts the first H1 into frontmatter title and removes it", () => {
+    const input = "# Follow the Money\n\nBody text";
+    const result = convertH1ToFrontmatterTitle(input);
+    assert.equal(result, '---\ntitle: "Follow the Money"\n---\nBody text');
+  });
+
+  it("escapes double quotes in the title", () => {
+    const input = '# A "Quoted" Title\n\nBody';
+    const result = convertH1ToFrontmatterTitle(input);
+    assert.ok(result.includes('title: "A \\"Quoted\\" Title"'));
+  });
+
+  it("leaves content unchanged when frontmatter already exists", () => {
+    const input = '---\ntitle: "Existing"\n---\n# Heading\nBody';
+    assert.equal(convertH1ToFrontmatterTitle(input), input);
+  });
+
+  it("leaves content unchanged when there is no H1", () => {
+    const input = "## Not an H1\nBody";
+    assert.equal(convertH1ToFrontmatterTitle(input), input);
   });
 });
 
@@ -259,5 +313,86 @@ describe("convertInlineStyles", () => {
     const result = convertInlineStyles(`<td style="color: red; font-size: 12px">`);
     assert.ok(result.includes(`color: "red"`));
     assert.ok(result.includes(`fontSize: "12px"`));
+  });
+
+  it("keeps CSS custom properties (--foo) literal instead of camelCasing", () => {
+    const result = convertInlineStyles(`<div style="--main-color: blue">`);
+    assert.ok(result.includes(`--main-color: "blue"`));
+  });
+
+  it("does not crash on a double hyphen inside a property name", () => {
+    assert.doesNotThrow(() => convertInlineStyles(`<div style="border--color: red">`));
+  });
+
+  it("does not crash on a trailing hyphen inside a property name", () => {
+    assert.doesNotThrow(() => convertInlineStyles(`<div style="color-: red">`));
+  });
+
+  it("does not crash on a leading hyphen that isn't a custom property", () => {
+    assert.doesNotThrow(() => convertInlineStyles(`<div style="-color: red">`));
+  });
+});
+
+// ─── slugFromUrl ───────────────────────────────────────────────────────────
+
+describe("slugFromUrl", () => {
+  it("decodes percent-encoded accented characters", () => {
+    const result = slugFromUrl("https://developers.celcoin.com.br/docs/valida%C3%A7%C3%A3o-antifraude-pix");
+    assert.equal(result, "validação-antifraude-pix");
+  });
+
+  it("leaves plain ascii slugs untouched", () => {
+    const result = slugFromUrl("https://developers.celcoin.com.br/docs/bc-protege");
+    assert.equal(result, "bc-protege");
+  });
+
+  it("strips a trailing slash before extracting the slug", () => {
+    const result = slugFromUrl("https://developers.celcoin.com.br/docs/bc-protege/");
+    assert.equal(result, "bc-protege");
+  });
+
+  it("falls back to the raw slug on invalid percent-encoding", () => {
+    const result = slugFromUrl("https://developers.celcoin.com.br/docs/bad%zzslug");
+    assert.equal(result, "bad%zzslug");
+  });
+});
+
+// ─── listMarkdownFiles / convertFile — nested directory structure ──────────
+
+describe("listMarkdownFiles + convertFile", () => {
+  let tmp, src, out;
+
+  before(() => {
+    tmp = join(tmpdir(), `wc-readme-convert-test-${Date.now()}`);
+    src = join(tmp, "src");
+    out = join(tmp, "out");
+    mkdirSync(join(src, "sub1", "sub2"), { recursive: true });
+    writeFileSync(join(src, "top.md"), "# Top\n\nBody top");
+    writeFileSync(join(src, "sub1", "nested.md"), "# Nested\n\nBody nested");
+    writeFileSync(join(src, "sub1", "sub2", "deep.md"), "# Deep\n\nBody deep");
+  });
+
+  after(() => {
+    try { rmSync(tmp, { recursive: true, force: true }); } catch { /* ignore */ }
+  });
+
+  it("recursively discovers .md files in nested directories", () => {
+    const files = listMarkdownFiles(src);
+    assert.equal(files.length, 3);
+    assert.ok(files.includes(join(src, "top.md")));
+    assert.ok(files.includes(join(src, "sub1", "nested.md")));
+    assert.ok(files.includes(join(src, "sub1", "sub2", "deep.md")));
+  });
+
+  it("replicates the source directory's own name plus nested subdirectories", async () => {
+    const opts = { imagesDir: join(tmp, "images"), verbose: false, dryRun: false, noImages: true };
+    await convertFile(join(src, "sub1", "sub2", "deep.md"), src, out, opts);
+    assert.ok(existsSync(join(out, "src", "sub1", "sub2", "deep.mdx")));
+  });
+
+  it("nests top-level files under the source directory's own name", async () => {
+    const opts = { imagesDir: join(tmp, "images"), verbose: false, dryRun: false, noImages: true };
+    await convertFile(join(src, "top.md"), src, out, opts);
+    assert.ok(existsSync(join(out, "src", "top.mdx")));
   });
 });

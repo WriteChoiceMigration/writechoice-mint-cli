@@ -138,11 +138,14 @@ function convertItem(item, prefix, docsDir) {
   if (!item || typeof item !== "object") return null;
 
   switch (item.type) {
-    case "category":
-      return {
-        group: item.label,
-        pages: convertItems(item.items || [], prefix, docsDir),
-      };
+    case "category": {
+      const group = { group: item.label };
+      if (item.link?.type === "doc" && item.link.id) {
+        group.root = prefix ? `${prefix}/${item.link.id}` : item.link.id;
+      }
+      group.pages = convertItems(item.items || [], prefix, docsDir);
+      return group;
+    }
 
     case "doc":
       // { type: 'doc', id: 'foo/bar', label: 'Foo' }
