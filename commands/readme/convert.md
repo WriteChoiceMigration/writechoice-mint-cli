@@ -31,6 +31,8 @@ Each `.md` file goes through these transforms in order:
 
 | Step | What it does |
 |---|---|
+| Documentation index | Strips a leading `> ## Documentation Index` blockquote (present in readme.com's LLM-friendly `.md` exports) |
+| H1 title | If the file has no YAML frontmatter, promotes the first `# Heading` into a `title` frontmatter field and removes it from the body |
 | Frontmatter | Rewrites `title` + `excerpt` → Mintlify `title` + `description` |
 | Callout tags | `<Callout theme="info">` → `<Info>`, etc. |
 | Blockquote callouts | `> 👍 Title` → `<Tip>` |
@@ -56,6 +58,13 @@ Convert from a custom directory:
 wcc readme convert --from exported/docs --output mint/pages
 ```
 
+Subdirectories under `--from` are searched recursively. The output path
+replicates `--from`'s own folder name plus any nested subdirectories, with
+`--output` swapped in for everything above it:
+
+- `readme/docs/follow-the-money.md` → `pages/docs/follow-the-money.mdx`
+- `readme/docs/guides/setup.md` → `pages/docs/guides/setup.mdx`
+
 ## Fetch mode
 
 Fetch markdown from readme.io URLs and then convert:
@@ -73,7 +82,7 @@ wcc readme convert --urls-file urls.json
 ]
 ```
 
-The command appends `.md` to each URL, downloads the raw readme markdown into `--from`, then converts every file to `--output`.
+The command appends `.md` to each URL, downloads the raw readme markdown into `--from`, then converts every file to `--output`. The saved filename is derived from the last URL segment with any percent-encoding decoded, so `valida%C3%A7%C3%A3o-antifraude-pix` is saved as `validação-antifraude-pix.md` while the fetch itself still uses the original percent-encoded URL.
 
 ## Config file
 
