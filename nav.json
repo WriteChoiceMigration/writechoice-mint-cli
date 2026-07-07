@@ -1,0 +1,948 @@
+[
+  {
+    "group": "Documentation",
+    "pages": [
+      "reference/api-keys"
+    ]
+  },
+  {
+    "group": "Subskribe API",
+    "pages": [
+      {
+        "group": "Billing",
+        "root": "reference/getaccountreceivablecontact",
+        "pages": [
+          "reference/getaccountreceivablecontact",
+          "reference/putaccountreceivablecontact",
+          "reference/getsubscriptionchargealias",
+          "reference/addsubscriptionchargealias",
+          "reference/deletesubscriptionchargealias",
+          "reference/listaliasesforsubscription",
+          "reference/getautomatedinvoicerule",
+          "reference/updateautomatedinvoicerule",
+          "reference/getautomatedinvoicerules",
+          "reference/addautomatedinvoicerule",
+          "reference/sendinvoicereminder",
+          "reference/sendtestdunningemail",
+          "reference/getdunningsetting",
+          "reference/updatedunningsetting",
+          "reference/generateinvoice",
+          "reference/previewinvoicebyorderperiod",
+          "reference/previewinvoicebyorderperiod_1",
+          "reference/getinvoices",
+          "reference/getinvoice",
+          "reference/updateinvoice",
+          "reference/deleteinvoice",
+          "reference/getinvoicebalance",
+          "reference/deletevoidedinvoice",
+          "reference/postinvoice",
+          "reference/voidinvoice",
+          "reference/getinvoicedocumentpdf",
+          "reference/createinvoicedocument",
+          "reference/deletebillingschedule",
+          "reference/getbillingschedules",
+          "reference/addbillingschedule",
+          "reference/getbulkinvoicerun",
+          "reference/getbulkinvoicerunitems",
+          "reference/postinvoicesforbulkinvoicerun",
+          "reference/updateinvoicesequence",
+          "reference/getusageforsubscriptioncharge",
+          "reference/getcandeleteinvoice",
+          "reference/getrawinvoicedocumentjson",
+          "reference/createbulkinvoicerun",
+          "reference/getapplicablepaymentbankaccountsforinvoicepayment",
+          "reference/emailinvoice",
+          "reference/getsettlementapplications",
+          "reference/getsettlementapplication",
+          "reference/addandapplypayment",
+          "reference/applycreditmemo",
+          "reference/unapplycreditmemo",
+          "reference/previewallinvoice",
+          "reference/sendbulkinvoiceemail"
+        ]
+      },
+      {
+        "group": "Accounts",
+        "root": "reference/getaccountcontacts",
+        "pages": [
+          "reference/getaccountcontacts",
+          "reference/addaccountcontact",
+          "reference/adderpdetails",
+          "reference/getaccountcontact",
+          "reference/updateaccountcontact",
+          "reference/deleteaccountcontact",
+          "reference/importcrmaccount",
+          "reference/getaccounts",
+          "reference/getaccountpaymentconfig",
+          "reference/addaccount",
+          "reference/upsertaccountpaymentconfig",
+          "reference/getaccount",
+          "reference/updateaccount",
+          "reference/deleteaccount",
+          "reference/getaccountmetrics",
+          "reference/getpaymentmethod"
+        ]
+      },
+      {
+        "group": "Intelligent Sales Room",
+        "root": "reference/getaccountcontactviasharelink",
+        "pages": [
+          "reference/getaccountcontactviasharelink",
+          "reference/addaccountcontactviasharelink",
+          "reference/updateaccountcontactviasharelink",
+          "reference/createcompositeorderdocumentforsalesroom",
+          "reference/getcustomfieldsviasharelink",
+          "reference/updatecustomfieldsviasharelink",
+          "reference/getfiledownloadurlviasharelink",
+          "reference/updatecustomerinformationviasharelink",
+          "reference/sendemailforesignviasharelink",
+          "reference/createsalesroom",
+          "reference/getsalesroombyorderid",
+          "reference/getsalesroombyid",
+          "reference/updatewidget",
+          "reference/deletewidget",
+          "reference/reorderwidgets",
+          "reference/gettheme",
+          "reference/updatetheme",
+          "reference/trackevent",
+          "reference/generateaicontent",
+          "reference/updateaicontent",
+          "reference/activatesalesroom",
+          "reference/retractsalesroom",
+          "reference/acceptsalesroom",
+          "reference/getengagementsummary",
+          "reference/getactivitylogs",
+          "reference/getsharelinkaccesses",
+          "reference/getuniquevisitorcount",
+          "reference/updatecustomerinformation",
+          "reference/getcustomfields_1",
+          "reference/updatecustomfields_1",
+          "reference/getwidgets",
+          "reference/createwidget",
+          "reference/extracttheme",
+          "reference/getfiledownloadurl",
+          "reference/accessviasharelink",
+          "reference/getwidgetsviasharelink",
+          "reference/getthemeviasharelink",
+          "reference/getfilesviasharelink",
+          "reference/getsalesroomviasharelink",
+          "reference/getaicontentviasharelink",
+          "reference/downloadimageviasharelink",
+          "reference/getordermetadata",
+          "reference/getfiles",
+          "reference/uploadfile",
+          "reference/deletefile",
+          "reference/createorderdocumentforsalesroom",
+          "reference/acceptsalesroom_1"
+        ]
+      },
+      {
+        "group": "Accounting",
+        "root": "reference/specifycurrentaccountingperiod",
+        "pages": [
+          "reference/specifycurrentaccountingperiod",
+          "reference/getaccountingevents",
+          "reference/getcurrentaccountingperiod",
+          "reference/getjournalentries",
+          "reference/getrunningbalances",
+          "reference/getjournalentriessummary",
+          "reference/getledgeraccounts"
+        ]
+      },
+      {
+        "group": "AI Agent",
+        "root": "reference/createagentsession",
+        "pages": [
+          "reference/createagentsession",
+          "reference/chatresponse",
+          "reference/chatresponseasync",
+          "reference/chatmessages",
+          "reference/getagentsession",
+          "reference/generatesubscriptionsummary",
+          "reference/generatezeppaartifact"
+        ]
+      },
+      {
+        "group": "Experimental",
+        "root": "reference/fetchnextquestion",
+        "pages": [
+          "reference/fetchnextquestion",
+          "reference/fetchnextquestions",
+          "reference/buildorderfromanswers",
+          "reference/getanswersfromai"
+        ]
+      },
+      {
+        "group": "AI Summary",
+        "root": "reference/generateordersummary",
+        "pages": [
+          "reference/generateordersummary",
+          "reference/explainproration",
+          "reference/explainprorationasync"
+        ]
+      },
+      {
+        "group": "Integrations",
+        "root": "reference/addintegration",
+        "pages": [
+          "reference/addintegration",
+          "reference/synchubspotsubscriptionstatus",
+          "reference/synchubspotsubscription",
+          "reference/synchubspotaccount",
+          "reference/syncorder",
+          "reference/testintegration",
+          "reference/validateaddress",
+          "reference/getintegration",
+          "reference/getintegrationbytenant",
+          "reference/integrate",
+          "reference/ping",
+          "reference/getintegration_1",
+          "reference/completeintegration",
+          "reference/initiateintegration",
+          "reference/deleteintegration",
+          "reference/authorizationcodecallback",
+          "reference/initiateintegration_1",
+          "reference/deleteintegration_1",
+          "reference/setuphubspot",
+          "reference/verifysetup",
+          "reference/syncesigndetailsforordertohubspot",
+          "reference/syncordertosalesforce",
+          "reference/syncorderstosalesforce",
+          "reference/getaccountsbyname",
+          "reference/importaccount",
+          "reference/syncsubscriptiontosalesforce",
+          "reference/authorizationcodecallback_1",
+          "reference/initiateintegration_2",
+          "reference/deleteintegration_2",
+          "reference/synctenanttosalesforce",
+          "reference/syncdeletedorderstosalesforce",
+          "reference/syncaccounttosalesforce",
+          "reference/getaccountbyid",
+          "reference/getopportunitiesbyaccountid",
+          "reference/updateprimaryorderidforopportunity",
+          "reference/addintegration_1",
+          "reference/testintegration_1",
+          "reference/validateaddress_1",
+          "reference/getintegration_2",
+          "reference/opportunitynamechangenotification",
+          "reference/getcrmcontactsbyaccountid",
+          "reference/upsertcrmcontacts",
+          "reference/reauthenticateintegration"
+        ]
+      },
+      {
+        "group": "Authentication",
+        "root": "reference/getallapikeys",
+        "pages": [
+          "reference/getallapikeys",
+          "reference/createapikey",
+          "reference/revokeapikeybyid",
+          "reference/revokeapikey",
+          "reference/getapikeybyid",
+          "reference/addsamlintegration",
+          "reference/getsamlintegration",
+          "reference/deletesamlintegration"
+        ]
+      },
+      {
+        "group": "Approvals",
+        "root": "reference/getapprovalflowbyid",
+        "pages": [
+          "reference/getapprovalflowbyid",
+          "reference/updateapprovalflow",
+          "reference/deleteapprovalflow",
+          "reference/getapprovalflows",
+          "reference/addapprovalflow",
+          "reference/getapprovalmatrixascsv",
+          "reference/getallimportdetails",
+          "reference/uploadapprovalmatrixcsv",
+          "reference/getimportdetailsbyid",
+          "reference/getimportresult",
+          "reference/getimportpreview",
+          "reference/submitapprovalmatrixcsv",
+          "reference/getapprovalroles",
+          "reference/addapprovalrole",
+          "reference/getapprovalrolebyid",
+          "reference/updateapprovalrole",
+          "reference/deleteapprovalrole",
+          "reference/getapprovalsegments",
+          "reference/addapprovalsegment",
+          "reference/getapprovalsegmentbyid",
+          "reference/updateapprovalsegment",
+          "reference/deleteapprovalsegment",
+          "reference/getorderapprovalhistory"
+        ]
+      },
+      {
+        "group": "Attachments",
+        "root": "reference/modifyattachment",
+        "pages": [
+          "reference/modifyattachment",
+          "reference/listaccountattachments",
+          "reference/addattachmenttoaccount",
+          "reference/getattachment",
+          "reference/deleteattachmentfromaccount",
+          "reference/getmaximumnumberofattachmentsperaccount"
+        ]
+      },
+      {
+        "group": "BankTransactions",
+        "root": "reference/getbanktransactionpotentialinvoices",
+        "pages": [
+          "reference/getbanktransactionpotentialinvoices",
+          "reference/deletebanktransaction",
+          "reference/banktransactionscsv"
+        ]
+      },
+      {
+        "group": "Usage",
+        "root": "reference/addandapplybulkpaymentscsv",
+        "pages": [
+          "reference/addandapplybulkpaymentscsv",
+          "reference/banktransactionsmatch",
+          "reference/uploadsubscriptionusagecsv-1",
+          "reference/addusage-1",
+          "reference/getusageaggregatesforsubscription-1",
+          "reference/getusagestatsforsubscription-1",
+          "reference/getusagestatsforsubscriptioncsv-1",
+          "reference/getusagestatsforsubscriptionpdf-1",
+          "reference/getusagestatsforallsubscriptionscsv-1",
+          "reference/getusagearrivaltimecheckpoint-1",
+          "reference/performondemandusageaggregation"
+        ]
+      },
+      {
+        "group": "Product Catalog",
+        "root": "reference/addproductcategory",
+        "pages": [
+          "reference/addproductcategory",
+          "reference/getproductcategories",
+          "reference/getproductcategory",
+          "reference/updateproductcategory",
+          "reference/getplansfilterbycustomfields",
+          "reference/deleteproductcategory",
+          "reference/addproduct",
+          "reference/getproducts",
+          "reference/getproduct",
+          "reference/updateproduct",
+          "reference/exportproductcatalog",
+          "reference/deleteproduct",
+          "reference/addplan",
+          "reference/activateplan",
+          "reference/deactivateplan",
+          "reference/reactivateplan",
+          "reference/getplans",
+          "reference/getplan",
+          "reference/updateplan",
+          "reference/updateplanterms",
+          "reference/updateplanmetadata",
+          "reference/getchargeledgeraccounts",
+          "reference/mapledgeraccountstocharge",
+          "reference/duplicateplan",
+          "reference/getreplacedplans-2",
+          "reference/deprecateplan",
+          "reference/deleteplan",
+          "reference/addcharge",
+          "reference/getcharge",
+          "reference/updatecharge",
+          "reference/patchcharge",
+          "reference/backfillrevrecfields",
+          "reference/getrevrecfieldsascsv",
+          "reference/deletecharge",
+          "reference/getpriceattributescsv"
+        ]
+      },
+      {
+        "group": "Orders",
+        "root": "reference/addorder",
+        "pages": [
+          "reference/addorder",
+          "reference/getorder",
+          "reference/updateorderstatus",
+          "reference/updateorder",
+          "reference/deleteorder",
+          "reference/getcompositeorderdocument",
+          "reference/getdocumenttemplate",
+          "reference/deletecompositeorder",
+          "reference/createcompositeorderdocument",
+          "reference/getcompositeorder",
+          "reference/updatedocumenttemplate",
+          "reference/deletedocumenttemplate",
+          "reference/updatecompositeorderstatus",
+          "reference/getopportunitybyopportunityid",
+          "reference/getordersbycrmopportunityid",
+          "reference/getdocumenttemplates",
+          "reference/getopportunities",
+          "reference/adddocumenttemplate",
+          "reference/getopportunitybycrmopportunityid",
+          "reference/deleteopportunitybycrmid",
+          "reference/updatedocumenttemplatestatus",
+          "reference/getordermetrics",
+          "reference/rebaseamendment",
+          "reference/getorderdocument_1",
+          "reference/updateorderattributes",
+          "reference/getspecificorderdocument",
+          "reference/getorderdocument",
+          "reference/createorderdocument",
+          "reference/getorderdocumentdocx",
+          "reference/getorderdocumentdoc",
+          "reference/executeorder",
+          "reference/forceexecuteorder",
+          "reference/getorderlinemetrics",
+          "reference/getcustombillingschedule",
+          "reference/getorders",
+          "reference/executeorder_1"
+        ]
+      },
+      {
+        "group": "Credit Memo",
+        "root": "reference/getcreditmemoforaccount",
+        "pages": [
+          "reference/getcreditmemoforaccount",
+          "reference/createstandalonecreditmemo",
+          "reference/getcreditmemo",
+          "reference/updatedraftcreditmemo",
+          "reference/deletecreditmemo",
+          "reference/postcreditmemo",
+          "reference/getcreditmemodocumentpdf",
+          "reference/createcreditmemodocument",
+          "reference/getcreditmemoconfiguration",
+          "reference/updatecreditmemoconfiguration",
+          "reference/convertnegativedraftinvoice",
+          "reference/getcreditbalance"
+        ]
+      },
+      {
+        "group": "CRM field mapping",
+        "root": "reference/submitcrmfieldmappingimport",
+        "pages": [
+          "reference/submitcrmfieldmappingimport",
+          "reference/getallimportdetails_1",
+          "reference/uploadcrmfieldmappingcsv",
+          "reference/getcrmfieldmappingascsv",
+          "reference/getimportdetailsbyid_1",
+          "reference/getimportpreview_1"
+        ]
+      },
+      {
+        "group": "Custom Field",
+        "root": "reference/createcustomfielddefinition",
+        "pages": [
+          "reference/createcustomfielddefinition",
+          "reference/getcustomfielddefinitions",
+          "reference/updatecustomfielddefinition",
+          "reference/deletecustomfielddefinition",
+          "reference/updatecustomfield",
+          "reference/forceupdatecustomfields",
+          "reference/forceupdatecustomfield",
+          "reference/getcustomfields",
+          "reference/updatecustomfields"
+        ]
+      },
+      {
+        "group": "Customization",
+        "root": "reference/getordercreationcustomization",
+        "pages": [
+          "reference/getordercreationcustomization",
+          "reference/addordercreationcustomization",
+          "reference/getselectioncustomization",
+          "reference/addselectioncustomization"
+        ]
+      },
+      {
+        "group": "Deal Pulse",
+        "root": "reference/getdealpulse",
+        "pages": [
+          "reference/getdealpulse",
+          "reference/trackdealpulseevent",
+          "reference/getalldealpulses"
+        ]
+      },
+      {
+        "group": "Discounts",
+        "root": "reference/getdiscount",
+        "pages": [
+          "reference/getdiscount",
+          "reference/updatediscount",
+          "reference/deletediscount",
+          "reference/getdiscounts",
+          "reference/adddiscount",
+          "reference/updatediscountstatus"
+        ]
+      },
+      {
+        "group": "Documents",
+        "root": "reference/getdocumenttemplateversion",
+        "pages": [
+          "reference/getdocumenttemplateversion",
+          "reference/getdocumenttemplateversions"
+        ]
+      },
+      {
+        "group": "Email",
+        "root": "reference/getemailsettings",
+        "pages": [
+          "reference/getemailsettings",
+          "reference/addemailsetting",
+          "reference/updateemailsetting",
+          "reference/deleteemailsetting"
+        ]
+      },
+      {
+        "group": "Entities",
+        "root": "reference/getentities",
+        "pages": [
+          "reference/getentities",
+          "reference/create",
+          "reference/getentitybyid",
+          "reference/deleteentity",
+          "reference/getlogo",
+          "reference/uploadlogo"
+        ]
+      },
+      {
+        "group": "ERP",
+        "root": "reference/processsynctasks",
+        "pages": [
+          "reference/processsynctasks",
+          "reference/processdeletetasks",
+          "reference/synccreditmemotoerp",
+          "reference/syncvoidinvoicetoerp",
+          "reference/syncinvoice",
+          "reference/issyncinvoiceenabled",
+          "reference/syncinvoices"
+        ]
+      },
+      {
+        "group": "Import",
+        "root": "reference/getimportresult_1",
+        "pages": [
+          "reference/getimportresult_1",
+          "reference/getdataimports",
+          "reference/validatemultipartfileimport",
+          "reference/getdataimportbyid",
+          "reference/getneworderexportinimportformat",
+          "reference/getamendmentorderexportinimportformat",
+          "reference/getaccountcontactsinimportformat",
+          "reference/getcatalogdatainimportformat",
+          "reference/processimport",
+          "reference/getavailableschemas",
+          "reference/createflatfileworkbook",
+          "reference/getimportresult_2"
+        ]
+      },
+      {
+        "group": "MetricsReporting",
+        "root": "reference/getexternalarrmetrics_1",
+        "pages": [
+          "reference/getexternalarrmetrics_1",
+          "reference/addexternalarrmetrics",
+          "reference/getexternalarrmetrics",
+          "reference/populatearrmetricsforsubscription"
+        ]
+      },
+      {
+        "group": "Notifications",
+        "root": "reference/unsubscribetargetorevent",
+        "pages": [
+          "reference/unsubscribetargetorevent",
+          "reference/getallnotificationsubscriptionsfortenant",
+          "reference/addtargetandeventssubscriptions",
+          "reference/subscribeexistingnotificationtargettoevent"
+        ]
+      },
+      {
+        "group": "Opportunity",
+        "root": "reference/updateopportunity",
+        "pages": [
+          "reference/updateopportunity",
+          "reference/resetopportunityclosedstate",
+          "reference/createopportunity",
+          "reference/getopportunitiesbyaccountcrmid"
+        ]
+      },
+      {
+        "group": "Payments",
+        "root": "reference/getpaymentconfiguration",
+        "pages": [
+          "reference/getpaymentconfiguration",
+          "reference/updatepaymentconfiguration",
+          "reference/getledgeraccountsforpaymentbankaccount",
+          "reference/getpayment",
+          "reference/candeletepayment",
+          "reference/getaccountpayment",
+          "reference/getpayments",
+          "reference/getpaymentbalance",
+          "reference/voidpayment",
+          "reference/getaccountpaymentmanagementlink",
+          "reference/processpaymentforinvoice",
+          "reference/upsertbankaccount",
+          "reference/getpaymentretryconfig",
+          "reference/getbankaccount",
+          "reference/upsertpaymentretryconfig",
+          "reference/deletebankaccount",
+          "reference/deletepaymentretryconfig",
+          "reference/deletepayment",
+          "reference/manualpaymentretry",
+          "reference/getpaymentintegrations",
+          "reference/importstripepaymentmethodcsv"
+        ]
+      },
+      {
+        "group": "Health",
+        "root": "reference/ping_1",
+        "pages": [
+          "reference/ping_1"
+        ]
+      },
+      {
+        "group": "Platform Feature",
+        "root": "reference/isaccountingfeatureenabled",
+        "pages": [
+          "reference/isaccountingfeatureenabled"
+        ]
+      },
+      {
+        "group": "Settings",
+        "root": "reference/gettermsections",
+        "pages": [
+          "reference/gettermsections",
+          "reference/addtermsection",
+          "reference/gettermsection",
+          "reference/updatetermsection",
+          "reference/deletetermsection",
+          "reference/gettaxrates",
+          "reference/addtaxrate",
+          "reference/gettaxrate",
+          "reference/updatetaxrate",
+          "reference/deletetaxrate",
+          "reference/gettenant-1",
+          "reference/updatetenant-1",
+          "reference/gettenantlogo-1",
+          "reference/uploadtenantlogo-1",
+          "reference/getpaymenttermsettings",
+          "reference/getbillingcycledefinition",
+          "reference/updatepaymenttermsettings",
+          "reference/updatebillingcycledefinition",
+          "reference/gettenantsetting-1",
+          "reference/setdefaultbillingcycledefinition",
+          "reference/updatetenantsetting-1",
+          "reference/getsupportedcurrencies",
+          "reference/updatesupportedcurrencies",
+          "reference/gettenantuicustomizationconfig",
+          "reference/updatetenantuicustomizationconfig",
+          "reference/deletetenantuicustomizationconfig",
+          "reference/getautoreplaceplans",
+          "reference/updateautoreplaceplans",
+          "reference/updatedocxsettings",
+          "reference/getunitsofmeasure-1",
+          "reference/addunitofmeasure-1",
+          "reference/updateunitofmeasure",
+          "reference/deleteunitofmeasure-1",
+          "reference/activateunitofmeasure-1",
+          "reference/getbillingcycledefinitions",
+          "reference/deprecateunitofmeasure-1",
+          "reference/addbillingcycledefinition",
+          "reference/gettaxratestrategies",
+          "reference/addtaxratestrategy",
+          "reference/gettaxratestrategy",
+          "reference/updatetaxratestrategy",
+          "reference/deletetaxratestrategy",
+          "reference/gettaxratestrategiesbyid",
+          "reference/deletealltaxratestrategiesbyid"
+        ]
+      },
+      {
+        "group": "Prismatic",
+        "root": "reference/getschema",
+        "pages": [
+          "reference/getschema",
+          "reference/getappurl",
+          "reference/generatemarketplacejwt"
+        ]
+      },
+      {
+        "group": "RateCard",
+        "root": "reference/getratecards",
+        "pages": [
+          "reference/getratecards",
+          "reference/addratecardcsv",
+          "reference/updateratecardcsv",
+          "reference/importpriceattributes",
+          "reference/getratecardpricetable"
+        ]
+      },
+      {
+        "group": "Refunds",
+        "root": "reference/getrefunds",
+        "pages": [
+          "reference/getrefunds",
+          "reference/createandapplyrefund",
+          "reference/getrefundbyid"
+        ]
+      },
+      {
+        "group": "Reports",
+        "root": "reference/run",
+        "pages": [
+          "reference/run",
+          "reference/generate",
+          "reference/getreportoutput",
+          "reference/getpredefinedreportdefs"
+        ]
+      },
+      {
+        "group": "/accounts/{accountId}/crmId",
+        "root": "reference/updateaccountcrmid",
+        "pages": [
+          "reference/updateaccountcrmid"
+        ]
+      },
+      {
+        "group": "Revenue Enablement",
+        "root": "reference/enablerevenuerecognition",
+        "pages": [
+          "reference/enablerevenuerecognition",
+          "reference/doesopenaccountingperiodexist-2",
+          "reference/deleteallaccountingandrevenuerecognitiondata",
+          "reference/areallchargestaggedwithrevenuerules",
+          "reference/areallchargestaggedwithglaccounts",
+          "reference/doallorderlineshaveschedules",
+          "reference/areaccountingeventspresentforalltransactiontypes",
+          "reference/getrevenueenablementprogress",
+          "reference/upsertrevenueenablementprogress"
+        ]
+      },
+      {
+        "group": "Revenue Recognition",
+        "root": "reference/uploadcompletionevents",
+        "pages": [
+          "reference/uploadcompletionevents",
+          "reference/getrecognitioneventsbysubscriptionidchargeid",
+          "reference/createrecognitionevent",
+          "reference/createbulkrevenuerecognition",
+          "reference/getrecognitionrulebyid",
+          "reference/getbulkrevenuerecognitionitems",
+          "reference/addrecognitionrule",
+          "reference/getbulkrevenuerecognition",
+          "reference/getrecognitionrulebyid_1",
+          "reference/deleterule",
+          "reference/getrevenuewaterfall"
+        ]
+      },
+      {
+        "group": "Subscriptions",
+        "root": "reference/subscriptionmodifiable",
+        "pages": [
+          "reference/subscriptionmodifiable",
+          "reference/subscriptionreversible",
+          "reference/sendtestnotificationsforsubscription",
+          "reference/getsubscriptionbillingperiods",
+          "reference/getallchangeeventsforsubscription",
+          "reference/getsubscriptions",
+          "reference/deletesubscription",
+          "reference/revertsubscription",
+          "reference/updaterenewalopportunity",
+          "reference/getsubscriptionmetrics",
+          "reference/getsubscriptionbyid",
+          "reference/updatesubscription",
+          "reference/getdraftamendment",
+          "reference/getdraftrenewal",
+          "reference/renewsubscription",
+          "reference/getsubscriptionbyid_1",
+          "reference/getsubscriptions_1",
+          "reference/getsubscriptionlines",
+          "reference/getsubscriptionswithdetail",
+          "reference/amendsubscription",
+          "reference/cancelsubscription"
+        ]
+      },
+      {
+        "group": "/automatedInvoiceRules/internal/{id}",
+        "root": "reference/getautomatedinvoicerulebyinternalid",
+        "pages": [
+          "reference/getautomatedinvoicerulebyinternalid",
+          "reference/updateautomatedinvoiceruleusinginternalid"
+        ]
+      },
+      {
+        "group": "TemplateScript",
+        "root": "reference/gettemplatescripts",
+        "pages": [
+          "reference/gettemplatescripts",
+          "reference/addtemplatescript",
+          "reference/disabletemplatescript"
+        ]
+      },
+      {
+        "group": "/guidedSelling/usecase/{id}/qscript",
+        "root": "reference/getusecasescript",
+        "pages": [
+          "reference/getusecasescript",
+          "reference/putqscript"
+        ]
+      },
+      {
+        "group": "/guidedSelling/usecase",
+        "root": "reference/listusecases",
+        "pages": [
+          "reference/listusecases",
+          "reference/addusecase"
+        ]
+      },
+      {
+        "group": "/guidedSelling/usecase/{id}",
+        "root": "reference/getusecase",
+        "pages": [
+          "reference/getusecase",
+          "reference/updateusecase",
+          "reference/deleteusecase"
+        ]
+      },
+      {
+        "group": "Jobs",
+        "root": "reference/dispatch",
+        "pages": [
+          "reference/dispatch",
+          "reference/executetenantjob",
+          "reference/gettenantjob",
+          "reference/canceltenantjob"
+        ]
+      },
+      {
+        "group": "Foreign Exchange",
+        "root": "reference/refreshexchangerates",
+        "pages": [
+          "reference/refreshexchangerates",
+          "reference/getlatestexchangerates",
+          "reference/getexchangerateasof",
+          "reference/refreshexchangeratepair"
+        ]
+      },
+      {
+        "group": "Users",
+        "root": "reference/getusergroups-1",
+        "pages": [
+          "reference/getusergroups-1",
+          "reference/addusergroup-1",
+          "reference/updateusergroup-1",
+          "reference/getusergroup-1",
+          "reference/deleteusergroup-1",
+          "reference/getusers-1",
+          "reference/adduser-1",
+          "reference/accepttermsforcurrentuser-1",
+          "reference/resendemailforexistinguser-1",
+          "reference/uploadcsv-1",
+          "reference/disableuser-1",
+          "reference/enableuser-1",
+          "reference/getuser-1",
+          "reference/updateuser-1",
+          "reference/updateuserssoconfig"
+        ]
+      },
+      {
+        "group": "Order",
+        "root": "reference/getorder_1",
+        "pages": [
+          "reference/getorder_1",
+          "reference/getmemoizedinvoiceitems"
+        ]
+      },
+      {
+        "group": "Search",
+        "root": "reference/search-1",
+        "pages": [
+          "reference/search-1",
+          "reference/searchpost"
+        ]
+      },
+      {
+        "group": "/rh/accounts",
+        "root": "reference/addcpqsourcedaccount",
+        "pages": [
+          "reference/addcpqsourcedaccount"
+        ]
+      },
+      {
+        "group": "/rh/accounts/{accountId}",
+        "root": "reference/getcpqsourcedaccount",
+        "pages": [
+          "reference/getcpqsourcedaccount",
+          "reference/updatecpqsourcedaccount"
+        ]
+      },
+      {
+        "group": "/rh/accounts/{accountId}/contacts",
+        "root": "reference/getcpqsourcedaccountcontacts",
+        "pages": [
+          "reference/getcpqsourcedaccountcontacts",
+          "reference/addcpqsourcedaccountcontact"
+        ]
+      },
+      {
+        "group": "/rh/accounts/{accountId}/contacts/{contactId}",
+        "root": "reference/getcpqsourcedaccountcontact",
+        "pages": [
+          "reference/getcpqsourcedaccountcontact",
+          "reference/updatecpqsourcedaccountcontact"
+        ]
+      },
+      {
+        "group": "/rh/accounts/bulk",
+        "root": "reference/getcpqsourcedaccounts",
+        "pages": [
+          "reference/getcpqsourcedaccounts"
+        ]
+      },
+      {
+        "group": "/rh/accounts/cfac-id",
+        "root": "reference/getcpqsourcedaccountsbyuvcacfacid",
+        "pages": [
+          "reference/getcpqsourcedaccountsbyuvcacfacid"
+        ]
+      },
+      {
+        "group": "/rh/invoices",
+        "root": "reference/getcpqsourcedaccountinvoices",
+        "pages": [
+          "reference/getcpqsourcedaccountinvoices"
+        ]
+      },
+      {
+        "group": "/rh/invoices/{invoiceId}/erpSync",
+        "root": "reference/getinvoiceerpsyncdata",
+        "pages": [
+          "reference/getinvoiceerpsyncdata"
+        ]
+      },
+      {
+        "group": "/rh/orders",
+        "root": "reference/postbillableorder",
+        "pages": [
+          "reference/postbillableorder"
+        ]
+      },
+      {
+        "group": "/rh/payments/{paymentId}/erpSync",
+        "root": "reference/getpaymenterpsyncdata",
+        "pages": [
+          "reference/getpaymenterpsyncdata"
+        ]
+      },
+      {
+        "group": "/rh/product-provisioning",
+        "root": "reference/syncskus",
+        "pages": [
+          "reference/syncskus"
+        ]
+      },
+      {
+        "group": "/rh/tenants",
+        "root": "reference/createrevhubtenant",
+        "pages": [
+          "reference/createrevhubtenant"
+        ]
+      }
+    ]
+  }
+]

@@ -19,7 +19,7 @@ The `url` argument is optional if `readme.url` (or `source`) is set in `config.j
 
 | Argument | Description |
 |---|---|
-| `[url]` | URL of the readme.io docs page (e.g. `https://docs.example.com/docs`) |
+| `[url]` | URL of the readme.io docs or API reference page (e.g. `https://docs.example.com/docs` or `https://docs.example.com/reference`) |
 
 ## Options
 
@@ -37,6 +37,8 @@ The `url` argument is optional if `readme.url` (or `source`) is set in `config.j
 3. Parses the fully-expanded `nav.rm-Sidebar` element.
 4. Converts each `rm-Sidebar-section` into a Mintlify navigation group.
 5. Writes the result as a JSON array to `--output`.
+
+Sidebar links are collected whether they point to a guides project (`/docs/...`) or an API reference project (`/reference/...`) — readme.io uses `/reference/` for both standalone reference sites and OpenAPI-backed endpoint pages. Links under any other prefix (e.g. `/changelog/...`) are skipped.
 
 External links (those with `target="_blank"`) are written as stub `.mdx` files under `--links-dir`, each containing a `url` frontmatter field that Mintlify can use as an external link entry.
 
@@ -59,6 +61,8 @@ The command writes a JSON array of navigation groups:
   }
 ]
 ```
+
+A nested group only has a `root` field when its own sidebar link points to a distinct overview page. Many readme.io API reference groups instead set the group link's `href` to the same page as their first subpage (no dedicated overview page) — in that case `root` is omitted so the page isn't duplicated between `root` and `pages`.
 
 Paste this array as the value of `navigation.groups` (or a tab's `pages`) in your `docs.json`.
 

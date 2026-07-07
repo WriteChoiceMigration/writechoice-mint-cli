@@ -57,6 +57,10 @@ async function fetchSidebarHtml(url, verbose) {
 // Convert
 // ---------------------------------------------------------------------------
 
+// readme.io content lives under either a guides ("/docs/") or an
+// API reference ("/reference/") project — both are valid nav pages.
+const CONTENT_PREFIXES = ["/docs/", "/reference/"];
+
 function hrefToPage(href) {
   return href.replace(/^\//, "");
 }
@@ -100,7 +104,7 @@ function parseLi($, li, linksDir) {
     return writeLinkStub(linksDir, linkLabel($, a[0]), href);
   }
 
-  if (!href.startsWith("/docs/")) return null;
+  if (!CONTENT_PREFIXES.some((prefix) => href.startsWith(prefix))) return null;
 
   const subpagesUl = $(li).find("ul").filter((_, el) => {
     const cls = $(el).attr("class") || "";
@@ -114,7 +118,12 @@ function parseLi($, li, linksDir) {
       const entry = parseLi($, childLi, linksDir);
       if (entry !== null) pages.push(entry);
     });
-    return { group: groupName, root: hrefToPage(href), pages };
+
+    // readme.io sets the group link's own href to its first subpage when there's
+    // no dedicated overview page — only surface `root` when it points elsewhere.
+    const root = hrefToPage(href);
+    const isDuplicate = pages.some((p) => (typeof p === "string" ? p : p.root) === root);
+    return isDuplicate ? { group: groupName, pages } : { group: groupName, root, pages };
   }
 
   return hrefToPage(href);
@@ -136,7 +145,7 @@ function parseSection($, section, linksDir) {
   return { group: groupName, pages };
 }
 
-function htmlToNav(html, linksDir) {
+export function htmlToNav(html, linksDir) {
   const $ = load(html);
   const groups = [];
   $("section").filter((_, el) => {
