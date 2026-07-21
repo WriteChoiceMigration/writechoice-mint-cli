@@ -1,7 +1,7 @@
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { mkdirSync, writeFileSync, rmSync, existsSync } from "fs";
-import { join } from "path";
+import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "fs";
+import { join, dirname, basename } from "path";
 import { tmpdir } from "os";
 import {
   convertFrontmatter,
@@ -13,6 +13,7 @@ import {
   convertTableTags,
   convertInlineStyles,
   slugFromUrl,
+  segmentFromUrl,
   stripDocumentationIndex,
   convertH1ToFrontmatterTitle,
   listMarkdownFiles,
@@ -357,6 +358,30 @@ describe("slugFromUrl", () => {
   });
 });
 
+// ─── segmentFromUrl ─────────────────────────────────────────────────────────
+
+describe("segmentFromUrl", () => {
+  it("extracts 'docs' from a guides URL", () => {
+    assert.equal(segmentFromUrl("https://docs.asaas.com/docs/tokenization"), "docs");
+  });
+
+  it("extracts 'reference' from an API reference URL", () => {
+    assert.equal(segmentFromUrl("https://docs.asaas.com/reference/comece-por-aqui"), "reference");
+  });
+
+  it("extracts 'changelog' from a changelog URL", () => {
+    assert.equal(segmentFromUrl("https://docs.example.com/changelog/v1"), "changelog");
+  });
+
+  it("falls back to 'docs' when the URL has only one path segment", () => {
+    assert.equal(segmentFromUrl("https://docs.example.com/lonesome"), "docs");
+  });
+
+  it("falls back to 'docs' on an unparseable URL", () => {
+    assert.equal(segmentFromUrl("not a url"), "docs");
+  });
+});
+
 // ─── listMarkdownFiles / convertFile — nested directory structure ──────────
 
 describe("listMarkdownFiles + convertFile", () => {
@@ -394,5 +419,69 @@ describe("listMarkdownFiles + convertFile", () => {
     const opts = { imagesDir: join(tmp, "images"), verbose: false, dryRun: false, noImages: true };
     await convertFile(join(src, "top.md"), src, out, opts);
     assert.ok(existsSync(join(out, "src", "top.mdx")));
+  });
+});
+
+// ─── Fetch mode — per-segment output + images (docs vs reference) ─────────
+//
+// Mirrors exactly how readmeConvert's fetch branch calls convertFile: files
+// live at <sourceDir>/<segment>/<slug>.md, baseDir is the file's own parent
+// dir, and imagesDir is overridden per-file to images/<segment>.
+
+describe("fetch mode — per-segment output and images", () => {
+  let tmp, fetchedDir, out, imagesRoot;
+
+  before(() => {
+    tmp = join(tmpdir(), `wc-readme-fetch-segment-test-${Date.now()}`);
+    fetchedDir = join(tmp, "fetched");
+    out = join(tmp, "out");
+    imagesRoot = join(tmp, "images", "docs");
+    mkdirSync(join(fetchedDir, "docs"), { recursive: true });
+    mkdirSync(join(fetchedDir, "reference"), { recursive: true });
+    writeFileSync(
+      join(fetchedDir, "docs", "tokenization.md"),
+      "# Tokenization\n\n![alt](https://files.readme.io/hash1/pic.png)"
+    );
+    writeFileSync(
+      join(fetchedDir, "reference", "comece-por-aqui.md"),
+      "# Comece por aqui\n\n![alt](https://files.readme.io/hash2/pic.png)"
+    );
+    // Pre-seed the downloaded images so ensureImage's existsSync short-circuit
+    // is hit instead of making a real network request.
+    mkdirSync(join(dirname(imagesRoot), "docs", "hash1"), { recursive: true });
+    writeFileSync(join(dirname(imagesRoot), "docs", "hash1", "pic.png"), "fake-png");
+    mkdirSync(join(dirname(imagesRoot), "reference", "hash2"), { recursive: true });
+    writeFileSync(join(dirname(imagesRoot), "reference", "hash2", "pic.png"), "fake-png");
+  });
+
+  after(() => {
+    try { rmSync(tmp, { recursive: true, force: true }); } catch { /* ignore */ }
+  });
+
+  function convertFetchedFile(relPath) {
+    const src = join(fetchedDir, relPath);
+    const segment = basename(dirname(src));
+    const opts = {
+      imagesDir: join(dirname(imagesRoot), segment),
+      verbose: false,
+      dryRun: false,
+      noImages: false,
+    };
+    return convertFile(src, dirname(src), out, opts);
+  }
+
+  it("writes a /docs/ page under out/docs/ with images/docs image paths", async () => {
+    const outPath = await convertFetchedFile(join("docs", "tokenization.md"));
+    assert.equal(outPath, join(out, "docs", "tokenization.mdx"));
+    const content = readFileSync(outPath, "utf-8");
+    assert.ok(content.includes("/images/docs/hash1/pic.png"));
+  });
+
+  it("writes a /reference/ page under out/reference/ with images/reference image paths", async () => {
+    const outPath = await convertFetchedFile(join("reference", "comece-por-aqui.md"));
+    assert.equal(outPath, join(out, "reference", "comece-por-aqui.mdx"));
+    const content = readFileSync(outPath, "utf-8");
+    assert.ok(content.includes("/images/reference/hash2/pic.png"));
+    assert.ok(!content.includes("/images/docs/hash2"));
   });
 });

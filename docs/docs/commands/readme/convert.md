@@ -87,6 +87,13 @@ wcc readme convert --urls-file urls.json
 
 The command appends `.md` to each URL, downloads the raw readme markdown into `--from`, then converts every file to `--output`. The saved filename is derived from the last URL segment with any percent-encoding decoded, so `valida%C3%A7%C3%A3o-antifraude-pix` is saved as `validação-antifraude-pix.md` while the fetch itself still uses the original percent-encoded URL.
 
+Each URL's own section — the first path component, e.g. `docs` or `reference` (readme.io API reference pages use `/reference/...`) — determines the output subfolder, independent of `--from`'s own name:
+
+- `https://docs.example.com/docs/tokenization` → `pages/docs/tokenization.mdx`
+- `https://docs.example.com/reference/comece-por-aqui` → `pages/reference/comece-por-aqui.mdx`
+
+Downloaded images follow the same section: images referenced from a `/reference/` page are saved under `images/reference/` instead of `--images-dir`'s configured folder, so `/docs/` and `/reference/` pages never collide or get misfiled into each other's image folder.
+
 ## Config file
 
 Set defaults in `config.json` to run `wcc readme convert` without arguments:

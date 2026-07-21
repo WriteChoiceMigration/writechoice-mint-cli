@@ -319,7 +319,8 @@ async function ensureImage(url, imagesDir, verbose, dryRun) {
   if (!filename) return url;
 
   const localPath = join(imagesDir, filename);
-  const localSrc = `/images/docs/${filename}`;
+  const webDir = relative(process.cwd(), imagesDir).split(/[\\/]/).join("/");
+  const localSrc = `/${webDir}/${filename}`;
 
   if (existsSync(localPath)) return localSrc;
 
@@ -444,13 +445,15 @@ export async function convert(content, opts = {}) {
 
 export async function convertFile(src, sourceDir, targetDir, opts = {}) {
   const { dryRun, verbose } = opts;
-  const text = readFileSync(src, "utf-8");
-  const result = await convert(text, opts);
   // Preserve sourceDir's own folder name (e.g. "docs" in "readme/docs") plus any
   // nested subdirectories, so readme/docs/file.md -> <targetDir>/docs/file.mdx
   const relFromParent = relative(dirname(sourceDir), src);
   const out = join(targetDir, relFromParent.replace(/\.md$/, ".mdx"));
   const outDir = dirname(out);
+
+  // In --dry-run --urls-file mode, fetchUrls never actually wrote src to disk.
+  const text = existsSync(src) ? readFileSync(src, "utf-8") : "";
+  const result = await convert(text, opts);
 
   if (dryRun) {
     if (verbose) {
@@ -463,7 +466,7 @@ export async function convertFile(src, sourceDir, targetDir, opts = {}) {
   } else {
     mkdirSync(outDir, { recursive: true });
     writeFileSync(out, result, "utf-8");
-    if (verbose) console.log(`  ${chalk.dim(relative(sourceDir, src))}  →  ${chalk.green(out)}`);
+    if (verbose) console.log(`  ${chalk.dim(relFromParent)}  →  ${chalk.green(out)}`);
   }
 
   return out;
@@ -500,6 +503,20 @@ export function slugFromUrl(url) {
   }
 }
 
+/**
+ * Extracts the readme.io section a URL belongs to (e.g. "docs", "reference",
+ * "changelog") — the first path component after the domain. Falls back to
+ * "docs" when the URL has no such component.
+ */
+export function segmentFromUrl(url) {
+  try {
+    const parts = new URL(url).pathname.split("/").filter(Boolean);
+    return parts.length > 1 ? parts[0] : "docs";
+  } catch {
+    return "docs";
+  }
+}
+
 async function fetchUrls(urls, sourceDir, opts) {
   const { dryRun, verbose } = opts;
   if (verbose) console.log(chalk.cyan(`\nFetching ${urls.length} file(s)...`));
@@ -507,21 +524,23 @@ async function fetchUrls(urls, sourceDir, opts) {
   const fetched = [];
   for (const url of urls) {
     const mdUrl = url.replace(/\/$/, "") + ".md";
+    const segment = segmentFromUrl(url);
     const slug = slugFromUrl(url);
-    const dest = join(sourceDir, `${slug}.md`);
+    const relDest = join(segment, `${slug}.md`);
+    const dest = join(sourceDir, relDest);
 
     if (dryRun) {
-      if (verbose) console.log(chalk.dim(`  [would fetch] ${mdUrl}  →  ${slug}.md`));
+      if (verbose) console.log(chalk.dim(`  [would fetch] ${mdUrl}  →  ${relDest}`));
       fetched.push(dest);
       continue;
     }
 
-    mkdirSync(sourceDir, { recursive: true });
+    mkdirSync(dirname(dest), { recursive: true });
     try {
       const res = await fetch(mdUrl, { headers: { "User-Agent": UA } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       writeFileSync(dest, Buffer.from(await res.arrayBuffer()));
-      if (verbose) console.log(chalk.dim(`  Fetched: ${slug}.md`));
+      if (verbose) console.log(chalk.dim(`  Fetched: ${relDest}`));
       fetched.push(dest);
     } catch (e) {
       console.warn(chalk.yellow(`  WARNING: could not fetch ${mdUrl}: ${e.message}`));
@@ -587,8 +606,20 @@ export async function readmeConvert(options) {
     if (options.dryRun) console.log(chalk.yellow("  [dry-run] No files will be written\n"));
   }
 
+  // Fetched files live at <sourceDir>/<segment>/<slug>.md (segment = "docs",
+  // "reference", etc.), so each file's own parent dir is the right base for
+  // convertFile to derive its output segment from, and its images should be
+  // saved under the matching images/<segment> rather than always images/docs.
+  // Local-mode files all share one --from root and one configured imagesDir,
+  // unaffected by any subfolder structure underneath it.
   for (const f of files) {
-    await convertFile(f, sourceDir, targetDir, opts);
+    if (options.urlsFile) {
+      const segment = basename(dirname(f));
+      const fileOpts = { ...opts, imagesDir: join(dirname(imagesDir), segment) };
+      await convertFile(f, dirname(f), targetDir, fileOpts);
+    } else {
+      await convertFile(f, sourceDir, targetDir, opts);
+    }
   }
 
   if (verbose && !options.dryRun) {
