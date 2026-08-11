@@ -96,12 +96,12 @@ export function processContent(content) {
 
   text = text.replace(MD_IMAGE_RE, (match, indent, image) => {
     count++;
-    return `${indent}<Frame>\n${indent}${image}\n${indent}</Frame>`;
+    return `${indent}<Frame>${image}</Frame>`;
   });
 
   text = text.replace(HTML_IMG_RE, (match, indent, tag) => {
     count++;
-    return `${indent}<Frame>\n${indent}${tag}\n${indent}</Frame>`;
+    return `${indent}<Frame>${tag}</Frame>`;
   });
 
   // 6. Restore all protected regions (reverse order)
@@ -306,11 +306,13 @@ export async function fixImages(options) {
   if (!options.download) return;
 
   if (!options.downloadUrl) {
-    console.error(chalk.red(
-      '\n✗ --download requires a source URL.\n' +
-      '  Pass it after the flag: wc fix images --download https://docs.example.com\n' +
-      '  Or set "source" in config.json'
-    ));
+    console.error(
+      chalk.red(
+        "\n✗ --download requires a source URL.\n" +
+          "  Pass it after the flag: wc fix images --download https://docs.example.com\n" +
+          '  Or set "source" in config.json',
+      ),
+    );
     process.exit(1);
   }
 
