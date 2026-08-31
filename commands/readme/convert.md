@@ -31,7 +31,7 @@ Each `.md` file goes through these transforms in order:
 
 | Step | What it does |
 |---|---|
-| Documentation index | Strips a leading `> ## Documentation Index` blockquote (present in readme.com's LLM-friendly `.md` exports) |
+| Documentation index | Strips a leading "Documentation Index" notice (present in readme.com's LLM-friendly `.md` exports), as either a `> ## Documentation Index` blockquote or plain leading text (e.g. `Fetch the complete documentation index at: ...`) |
 | H1 title | If the file has no YAML frontmatter, promotes the first `# Heading` into a `title` frontmatter field and removes it from the body |
 | Frontmatter | Rewrites `title` + `excerpt` → Mintlify `title` + `description` |
 | Callout tags | `<Callout theme="info">` → `<Info>`, etc. |
@@ -43,6 +43,9 @@ Each `.md` file goes through these transforms in order:
 | Inline styles | `style="…"` → `style={{…}}` (React-compatible) |
 | Image components | `<Image src="…">` → `<Frame><img /></Frame>` (downloads from `files.readme.io`) |
 | Markdown images | `![alt](url)` → `<Frame>![](local)</Frame>` |
+| Void tags | Self-closes any remaining raw HTML void tags (`<img>`, `<br>`, …) so the output is valid JSX — same fixer as [`wcc fix void-tags`](/commands/fix/void-tags), skipping code fences and inline code |
+
+API reference pages converted from `/reference/...` URLs embed their OpenAPI spec inline as a `# OpenAPI definition` heading + JSON code block, which `convert` leaves as-is. Run [`wcc readme openapi`](/commands/readme/openapi) afterward to extract those into a shared spec file and `openapi` frontmatter.
 
 ## Local mode
 

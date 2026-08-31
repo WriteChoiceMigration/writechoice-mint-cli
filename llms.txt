@@ -38,6 +38,7 @@
 - [Fix Imports](/commands/fix/imports.md): Scans MDX files for custom JSX component usage, validates import statements, and automatically adds missing imports when the component file is found in the snippets/ folder.
 - [Fix Redirects](/commands/fix/redirects.md): Reads the redirects array from docs.json and replaces stale source paths with their destination paths inside MDX files. Fixes internal links that still point to old URLs after a navigation restructure.
 - [Fix Tabs](/commands/fix/tabs.md): Converts ` groups where every  contains a single fenced code block into a `, moving the tab title onto the code block fence.
+- [Fix Void Tags](/commands/fix/void-tags.md): Self-closes HTML void tags (`, , , ...) in MDX files:  → `.
 
 ### Nav
 
@@ -57,6 +58,7 @@
 ### Readme
 
 - [Readme Convert](/commands/readme/convert.md): Converts readme.com markdown exports to Mintlify MDX format. Supports two modes:
+- [Readme OpenAPI](/commands/readme/openapi.md): readme.io API reference pages (converted from /reference/... URLs) embed their full OpenAPI spec fragment inline in the page body:
 - [Readme Nav](/commands/readme/nav.md): Scrapes a readme.io documentation site, expands all collapsed sidebar sections, and converts the sidebar into Mintlify navigation JSON ready to paste into docs.json.
 - [Metadata](/commands/metadata.md): Fetches meta tags from your live documentation pages and writes them into the frontmatter of the corresponding MDX source files. Existing frontmatter keys are updated (overwritten); missing keys are appended.
 - [Session](/commands/session.md): Captures an authenticated browser session so wc scrape can access pages behind a login.
