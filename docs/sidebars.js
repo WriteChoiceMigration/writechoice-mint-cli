@@ -56,6 +56,7 @@ const sidebars = {
             "commands/fix/imports",
             "commands/fix/redirects",
             "commands/fix/tabs",
+            "commands/fix/void-tags",
           ],
         },
         {
@@ -76,7 +77,7 @@ const sidebars = {
         {
           type: "category",
           label: "Readme",
-          items: ["commands/readme/convert", "commands/readme/nav"],
+          items: ["commands/readme/convert", "commands/readme/openapi", "commands/readme/nav"],
         },
         "commands/metadata",
 

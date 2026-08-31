@@ -251,6 +251,24 @@ fix
     await fixH1(mergedOptions);
   });
 
+// Fix void-tags subcommand
+fix
+  .command("void-tags")
+  .description("Self-close HTML void tags (img, br, hr, ...) in MDX files so they're valid JSX")
+  .option("-f, --file <path>", "Fix a single MDX file directly")
+  .option("-d, --dir <path>", "Fix MDX files in a specific directory")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeVoidTagsConfig } = await import("../src/utils/config.js");
+    const { fixVoidTags } = await import("../src/commands/fix/void-tags.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeVoidTagsConfig(options, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await fixVoidTags(mergedOptions);
+  });
+
 // Fix imports subcommand
 fix
   .command("imports")
@@ -424,6 +442,24 @@ readme
     const config = loadConfig();
     const merged = mergeReadmeConvertConfig(options, config);
     await readmeConvert(merged);
+  });
+
+readme
+  .command("openapi")
+  .description("Extract inline '# OpenAPI definition' blocks into Mintlify openapi frontmatter")
+  .option("-f, --file <path>", "Fix a single MDX file directly")
+  .option("-d, --dir <path>", "Fix MDX files in a specific directory (default: pages/reference)")
+  .option("--openapi-dir <dir>", "Directory for extracted OpenAPI spec files (default: openapi)")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeReadmeOpenApiConfig } = await import("../src/utils/config.js");
+    const { extractOpenApi } = await import("../src/commands/readme/openapi.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeReadmeOpenApiConfig(options, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await extractOpenApi(mergedOptions);
   });
 
 readme

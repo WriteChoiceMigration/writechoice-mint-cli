@@ -121,6 +121,13 @@ export async function generateConfig(options) {
       quiet: false,
     },
 
+    "void-tags": {
+      file: null,
+      dir: null,
+      "dry-run": false,
+      quiet: false,
+    },
+
     find: {
       redirects: {
         base: null,
@@ -138,6 +145,13 @@ export async function generateConfig(options) {
         output: "pages",
         "images-dir": "images/docs",
         "no-images": false,
+        "dry-run": false,
+        quiet: false,
+      },
+      openapi: {
+        file: null,
+        dir: null,
+        "openapi-dir": "openapi",
         "dry-run": false,
         quiet: false,
       },

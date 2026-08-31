@@ -271,6 +271,25 @@ export function mergeTabsConfig(options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the fix void-tags command
+ * CLI options take precedence over config file
+ *
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeVoidTagsConfig(options, config) {
+  const voidTagsConfig = config?.["void-tags"] || {};
+
+  return {
+    file: options.file || voidTagsConfig.file || null,
+    dir: options.dir || voidTagsConfig.dir || null,
+    dryRun: options.dryRun !== undefined ? options.dryRun : (voidTagsConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (voidTagsConfig.quiet ?? false),
+  };
+}
+
+/**
  * Merges config file with CLI options for the nav folders command
  *
  * @param {Object} options - CLI options (docs, base, skipLevel, dryRun, quiet)
@@ -496,6 +515,26 @@ export function mergeReadmeConvertConfig(options, config) {
     noImages,
     dryRun: options.dryRun !== undefined ? options.dryRun : (convertConfig["dry-run"] ?? false),
     quiet: options.quiet !== undefined ? options.quiet : (convertConfig.quiet ?? false),
+  };
+}
+
+/**
+ * Merges config file with CLI options for the readme openapi command
+ * CLI options take precedence over config file
+ *
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeReadmeOpenApiConfig(options, config) {
+  const openapiConfig = config?.readme?.openapi || {};
+
+  return {
+    file: options.file || openapiConfig.file || null,
+    dir: options.dir || openapiConfig.dir || null,
+    openapiDir: options.openapiDir || openapiConfig["openapi-dir"] || "openapi",
+    dryRun: options.dryRun !== undefined ? options.dryRun : (openapiConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (openapiConfig.quiet ?? false),
   };
 }
 

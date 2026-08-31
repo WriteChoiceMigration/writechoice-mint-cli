@@ -12,6 +12,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "fs";
 import { resolve, join, basename, dirname, relative } from "path";
 import chalk from "chalk";
+import { selfCloseVoidTags } from "../fix/void-tags.js";
 
 const README_IMAGE_HOST = "files.readme.io";
 
@@ -78,8 +79,12 @@ function fmScalar(raw) {
 }
 
 export function stripDocumentationIndex(content) {
-  const m = content.match(/^(?:>.*\n)+\n*/);
-  if (!m || !/Documentation Index/i.test(m[0])) return content;
+  // readme.io's LLM-friendly .md export prepends a notice pointing at llms.txt,
+  // either as a blockquote ("> ## Documentation Index\n> Fetch the complete...")
+  // or as plain leading lines ("Fetch the complete documentation index at: ...").
+  // Match the whole leading paragraph (consecutive non-blank lines) either way.
+  const m = content.match(/^(?:[^\n]+\n)+\n*/);
+  if (!m || !/documentation index/i.test(m[0])) return content;
   return content.slice(m[0].length);
 }
 
@@ -440,6 +445,9 @@ export async function convert(content, opts = {}) {
   content = convertInlineStyles(content);
   content = await convertImageComponents(content, opts);
   content = await convertMarkdownImages(content, opts);
+  // Raw HTML from the readme.com source (<img>, <br>, ...) survives the steps
+  // above unclosed; MDX requires void elements to be self-closing JSX.
+  content = selfCloseVoidTags(content).content;
   return content;
 }
 

@@ -18,6 +18,7 @@ import {
   convertH1ToFrontmatterTitle,
   listMarkdownFiles,
   convertFile,
+  convert,
 } from "../src/commands/readme/convert.js";
 import { mergeReadmeConvertConfig } from "../src/utils/config.js";
 
@@ -128,6 +129,21 @@ describe("stripDocumentationIndex", () => {
     const input = "> Some other note\n\n# Title\n\nBody";
     assert.equal(stripDocumentationIndex(input), input);
   });
+
+  it("removes a plain (non-blockquote) Documentation Index notice", () => {
+    const input = "Fetch the complete documentation index at: https://example.com/llms.txt\nUse this file to discover all available pages before exploring further.\n\n# Title\n\nBody";
+    assert.equal(stripDocumentationIndex(input), "# Title\n\nBody");
+  });
+
+  it("removes a single-line plain Documentation Index notice", () => {
+    const input = "Fetch the complete documentation index at: https://example.com/llms.txt\n\n# Title\n\nBody";
+    assert.equal(stripDocumentationIndex(input), "# Title\n\nBody");
+  });
+
+  it("leaves unrelated plain leading text unchanged", () => {
+    const input = "Just some intro text.\n\n# Title\n\nBody";
+    assert.equal(stripDocumentationIndex(input), input);
+  });
 });
 
 // ─── convertH1ToFrontmatterTitle ───────────────────────────────────────────
@@ -153,6 +169,40 @@ describe("convertH1ToFrontmatterTitle", () => {
   it("leaves content unchanged when there is no H1", () => {
     const input = "## Not an H1\nBody";
     assert.equal(convertH1ToFrontmatterTitle(input), input);
+  });
+});
+
+// ─── convert() — end-to-end title placement past a plain-text notice ──────
+
+describe("convert — Documentation Index notice + title placement", () => {
+  it("places the title correctly when the notice is a blockquote", async () => {
+    const input = "> ## Documentation Index\n> Fetch the complete documentation index at: https://x/llms.txt\n> Use this file to discover all available pages before exploring further.\n\n# Follow the Money\n\nBody text";
+    const result = await convert(input, { noImages: true });
+    assert.equal(result, '---\ntitle: "Follow the Money"\n---\nBody text');
+  });
+
+  it("places the title correctly when the notice is plain (non-blockquote) text", async () => {
+    const input = "Fetch the complete documentation index at: https://x/llms.txt\nUse this file to discover all available pages before exploring further.\n\n# Follow the Money\n\nBody text";
+    const result = await convert(input, { noImages: true });
+    assert.equal(result, '---\ntitle: "Follow the Money"\n---\nBody text');
+  });
+});
+
+// ─── convert() — self-closes void tags automatically ───────────────────────
+
+describe("convert — automatic void tag self-closing", () => {
+  it("self-closes raw HTML void tags left over from the readme.com source", async () => {
+    const input = '# Title\n\n<img src="/pic.png" alt="pic">\n\nSome text<br>here.';
+    const result = await convert(input, { noImages: true });
+    assert.ok(result.includes('<img src="/pic.png" alt="pic" />'));
+    assert.ok(result.includes("<br />"));
+  });
+
+  it("does not touch void-tag-like text inside a fenced code block", async () => {
+    const input = '# Title\n\n```html\n<img src="/example.png">\n```';
+    const result = await convert(input, { noImages: true });
+    assert.ok(result.includes('<img src="/example.png">'));
+    assert.ok(!result.includes('<img src="/example.png" />'));
   });
 });
 
