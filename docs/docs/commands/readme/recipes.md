@@ -28,7 +28,7 @@ Unlike some legacy conversion scripts, this command never deletes the source `.m
 
 ## Input shape
 
-```md
+````md
 ---
 frontmatter
 ---
@@ -48,7 +48,7 @@ Step description text.
 <!-- lang@12-20 -->
 
 More description text.
-```
+````
 
 ## Output shape
 
