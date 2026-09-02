@@ -9,6 +9,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSy
 import { resolve, join, dirname, extname, relative } from "path";
 import chalk from "chalk";
 import { loadConfig, mergeDocusaurusConfig } from "../../utils/config.js";
+import { selfCloseVoidTags } from "../fix/void-tags.js";
 
 // ---------------------------------------------------------------------------
 // Admonition type → Mintlify component name
@@ -191,6 +192,9 @@ function convertFile(content, filePath, sourceRoot, staticRoot, options = {}) {
   content = convertSnippetImports(content, filePath, sourceRoot);
   if (options.headingAnchors) content = convertHeadingAnchors(content);
   content = convertHtmlComments(content);
+  // Raw HTML surviving from Docusaurus source (<img>, <br>, ...) is often
+  // left unclosed; MDX requires void elements to be self-closing JSX.
+  content = selfCloseVoidTags(content).content;
   return content;
 }
 

@@ -25,7 +25,7 @@
  */
 
 import { existsSync, readdirSync, statSync, readFileSync, writeFileSync, mkdirSync } from "fs";
-import { join, relative, resolve } from "path";
+import { join, basename, relative, resolve } from "path";
 import chalk from "chalk";
 
 const EXCLUDED_DIRS = ["node_modules", ".git"];
@@ -228,6 +228,121 @@ export function convertOpenApiDefinition(content, openapiDir, specs) {
   }
 
   return { content: newContent, changed: true, newSpec };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Duplicate-description comment-out
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// A page whose body is set up for Mintlify's OpenAPI-driven layout already
+// renders the spec operation's `description` automatically. If the page
+// body is just that same description repeated verbatim, it renders twice —
+// wrap the body in an MDX comment ({/* ... */}) so the source is preserved
+// but nothing is rendered twice.
+
+const FM_BODY_RE = /^(---\r?\n[\s\S]*?\r?\n---\r?\n?)([\s\S]*)$/;
+const OPENAPI_KEY_RE = /^openapi:\s*"(.+?)"\s*$/m;
+
+// Mirrors Python's `str.split(" ", 2)`: splits on the first two spaces only,
+// so the third part (the path) keeps any spaces it might contain.
+function splitOpenApiValue(value) {
+  const firstSpace = value.indexOf(" ");
+  if (firstSpace === -1) return null;
+  const rest = value.slice(firstSpace + 1);
+  const secondSpace = rest.indexOf(" ");
+  if (secondSpace === -1) return null;
+  return {
+    specPath: value.slice(0, firstSpace),
+    method: rest.slice(0, secondSpace),
+    path: rest.slice(secondSpace + 1),
+  };
+}
+
+function getSpecDescription(specs, openapiValue) {
+  const parsed = splitOpenApiValue(openapiValue);
+  if (!parsed) return null;
+  const spec = specs[basename(parsed.specPath)];
+  if (!spec) return null;
+  const op = spec?.paths?.[parsed.path]?.[parsed.method.toLowerCase()];
+  return op?.description ?? null;
+}
+
+/**
+ * Comments out a page's body when it duplicates the `description` of the
+ * OpenAPI operation its frontmatter `openapi` key points at.
+ * Returns { content, changed }.
+ */
+export function commentDuplicateOpenApiBody(content, specs) {
+  const m = FM_BODY_RE.exec(content);
+  if (!m) return { content, changed: false };
+  const [, frontmatter, body] = m;
+
+  const openapiMatch = OPENAPI_KEY_RE.exec(frontmatter);
+  if (!openapiMatch) return { content, changed: false };
+
+  const description = getSpecDescription(specs, openapiMatch[1]);
+  if (description == null) return { content, changed: false };
+
+  const trimmedBody = body.trim();
+  if (trimmedBody !== description.trim()) return { content, changed: false };
+  if (trimmedBody.startsWith("{/*")) return { content, changed: false }; // already commented out
+
+  const commentedBody = "\n{/*\n" + trimmedBody + "\n*/}\n";
+  return { content: frontmatter + commentedBody, changed: true };
+}
+
+/**
+ * Walks .mdx files and comments out bodies that duplicate their OpenAPI
+ * operation's description.
+ */
+export async function dedupeOpenApiDescription(options) {
+  const repoRoot = process.cwd();
+  const openapiDir = resolve(repoRoot, options.openapiDir || "openapi");
+
+  if (!options.quiet) {
+    console.log(chalk.bold("\n# Comment Out Duplicate OpenAPI Descriptions\n"));
+  }
+
+  const dir = options.file ? null : (options.dir || "pages/reference");
+  const files = findMdxFiles(repoRoot, dir, options.file);
+
+  if (files.length === 0) {
+    console.error(chalk.red("✗ No MDX files found."));
+    process.exit(1);
+  }
+
+  if (!options.quiet) {
+    console.log(`Found ${files.length} MDX file(s) to process\n`);
+    if (options.dryRun) console.log(chalk.yellow("Dry run — no files will be written\n"));
+  }
+
+  const specs = loadSpecs(openapiDir);
+  const changed = [];
+
+  for (const filePath of files) {
+    const content = readFileSync(filePath, "utf-8");
+    const { content: newContent, changed: didChange } = commentDuplicateOpenApiBody(content, specs);
+
+    if (didChange) {
+      const relPath = relative(repoRoot, filePath);
+      changed.push(relPath);
+
+      if (options.verbose) console.log(`${chalk.cyan(relPath)}: commented out duplicate body`);
+      if (!options.dryRun) writeFileSync(filePath, newContent, "utf-8");
+    }
+  }
+
+  if (!options.quiet) {
+    if (changed.length > 0) {
+      const verb = options.dryRun ? "Would comment out" : "Commented out";
+      console.log(chalk.green(`\n✓ ${verb} the duplicate body in ${changed.length} of ${files.length} file(s)`));
+      if (!options.verbose) {
+        for (const relPath of changed) console.log(`  ${chalk.cyan(relPath)}`);
+      }
+    } else {
+      console.log(chalk.yellow("⚠️  No duplicate OpenAPI description bodies found."));
+    }
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

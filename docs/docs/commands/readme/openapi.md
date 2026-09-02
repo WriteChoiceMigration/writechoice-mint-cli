@@ -23,11 +23,12 @@ Mintlify instead expects a single shared spec file referenced from frontmatter. 
 wcc readme openapi [options]
 ```
 
-Typically run right after `wcc readme convert`:
+Typically run right after `wcc readme convert`, followed by [`wcc readme openapi-dedupe`](/commands/readme/openapi-dedupe) to comment out any page body that just repeats its operation's description:
 
 ```bash
 wcc readme convert
 wcc readme openapi
+wcc readme openapi-dedupe
 ```
 
 ## Options

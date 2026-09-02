@@ -290,6 +290,63 @@ export function mergeVoidTagsConfig(options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the fix accordions command
+ * CLI options take precedence over config file
+ *
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeAccordionsConfig(options, config) {
+  const accordionsConfig = config?.accordions || {};
+
+  return {
+    file: options.file || accordionsConfig.file || null,
+    dir: options.dir || accordionsConfig.dir || null,
+    dryRun: options.dryRun !== undefined ? options.dryRun : (accordionsConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (accordionsConfig.quiet ?? false),
+  };
+}
+
+/**
+ * Merges config file with CLI options for the fix og-description command
+ * CLI options take precedence over config file
+ *
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeOgDescriptionConfig(options, config) {
+  const ogDescriptionConfig = config?.["og-description"] || {};
+
+  return {
+    file: options.file || ogDescriptionConfig.file || null,
+    dir: options.dir || ogDescriptionConfig.dir || null,
+    dryRun: options.dryRun !== undefined ? options.dryRun : (ogDescriptionConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (ogDescriptionConfig.quiet ?? false),
+  };
+}
+
+/**
+ * Merges config file with CLI options for the fix dollar-signs command
+ * CLI options take precedence over config file
+ *
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeDollarSignsConfig(options, config) {
+  const dollarSignsConfig = config?.["dollar-signs"] || {};
+
+  return {
+    file: options.file || dollarSignsConfig.file || null,
+    dir: options.dir || dollarSignsConfig.dir || null,
+    dryRun: options.dryRun !== undefined ? options.dryRun : (dollarSignsConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (dollarSignsConfig.quiet ?? false),
+  };
+}
+
+/**
  * Merges config file with CLI options for the nav folders command
  *
  * @param {Object} options - CLI options (docs, base, skipLevel, dryRun, quiet)
@@ -422,6 +479,8 @@ export function mergePagesConfig(baseUrl, options, config) {
       ? parseInt(options.batchPause, 10)
       : (pagesConfig.batchPause ?? 5000),
     local: options.local ?? pagesConfig.local ?? false,
+    includeOrphans: options.includeOrphans ?? pagesConfig["include-orphans"] ?? false,
+    verifyContent: options.verifyContent ?? pagesConfig["verify-content"] ?? false,
     quiet: options.quiet !== undefined ? options.quiet : (pagesConfig.quiet ?? false),
   };
 }
@@ -519,6 +578,25 @@ export function mergeReadmeConvertConfig(options, config) {
 }
 
 /**
+ * Merges config file with CLI options for the readme recipes command
+ * CLI options take precedence over config file
+ *
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeReadmeRecipesConfig(options, config) {
+  const recipesConfig = config?.readme?.recipes || {};
+
+  return {
+    from: options.from || recipesConfig.from || "readme/recipes",
+    output: options.output || recipesConfig.output || "pages/recipes",
+    dryRun: options.dryRun !== undefined ? options.dryRun : (recipesConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (recipesConfig.quiet ?? false),
+  };
+}
+
+/**
  * Merges config file with CLI options for the readme openapi command
  * CLI options take precedence over config file
  *
@@ -535,6 +613,26 @@ export function mergeReadmeOpenApiConfig(options, config) {
     openapiDir: options.openapiDir || openapiConfig["openapi-dir"] || "openapi",
     dryRun: options.dryRun !== undefined ? options.dryRun : (openapiConfig["dry-run"] ?? false),
     quiet: options.quiet !== undefined ? options.quiet : (openapiConfig.quiet ?? false),
+  };
+}
+
+/**
+ * Merges config file with CLI options for the readme openapi-dedupe command
+ * CLI options take precedence over config file
+ *
+ * @param {Object} options - CLI options
+ * @param {Object|null} config - Loaded config object
+ * @returns {Object} Merged options
+ */
+export function mergeReadmeOpenApiDedupeConfig(options, config) {
+  const dedupeConfig = config?.readme?.["openapi-dedupe"] || {};
+
+  return {
+    file: options.file || dedupeConfig.file || null,
+    dir: options.dir || dedupeConfig.dir || null,
+    openapiDir: options.openapiDir || dedupeConfig["openapi-dir"] || "openapi",
+    dryRun: options.dryRun !== undefined ? options.dryRun : (dedupeConfig["dry-run"] ?? false),
+    quiet: options.quiet !== undefined ? options.quiet : (dedupeConfig.quiet ?? false),
   };
 }
 

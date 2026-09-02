@@ -57,6 +57,9 @@ const sidebars = {
             "commands/fix/redirects",
             "commands/fix/tabs",
             "commands/fix/void-tags",
+            "commands/fix/accordions",
+            "commands/fix/og-description",
+            "commands/fix/dollar-signs",
           ],
         },
         {
@@ -77,7 +80,13 @@ const sidebars = {
         {
           type: "category",
           label: "Readme",
-          items: ["commands/readme/convert", "commands/readme/openapi", "commands/readme/nav"],
+          items: [
+            "commands/readme/convert",
+            "commands/readme/recipes",
+            "commands/readme/openapi",
+            "commands/readme/openapi-dedupe",
+            "commands/readme/nav",
+          ],
         },
         "commands/metadata",
 

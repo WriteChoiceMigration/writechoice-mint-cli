@@ -35,6 +35,34 @@
     "quiet": false
   },
 
+  // ── wc check pages ───────────────────────────────────────────────────────────
+  "pages": {
+    // Base URL to check pages against (falls back to "preview" if not set).
+    "url": null,
+    // Path to the Mintlify docs.json navigation file.
+    "docs": "docs.json",
+    // Output file for the failure report.
+    "output": "pages_report.json",
+    // Number of pages to check in parallel (default: 20 for HTTP, 3 for --local).
+    "concurrency": null,
+    // Pages per batch, with a pause between batches.
+    "batchSize": 100,
+    // Pause in ms between batches.
+    "batchPause": 5000,
+    // Use a headless browser (Playwright) to inspect div.mdx-content for parse
+    // errors / empty content, instead of a plain HTTP status check. Required
+    // for verify-content below, and for checking a local dev server.
+    "local": false,
+    // Also check .mdx/.md files not listed in docs.json's navigation.
+    "include-orphans": false,
+    // Local mode only: verify a distinctive phrase from each page's source
+    // file actually appears in the rendered output, catching pages that
+    // render as an empty shell rather than just checking for "not empty".
+    "verify-content": false,
+    // Suppress progress output.
+    "quiet": false
+  },
+
   // ── wc fix codeblocks ────────────────────────────────────────────────────────
   "codeblocks": {
     // Single MDX file to process. Mutually exclusive with dir.
@@ -121,6 +149,42 @@
 
   // ── wc fix void-tags ─────────────────────────────────────────────────────────
   "void-tags": {
+    // Single MDX file to process. Mutually exclusive with dir.
+    "file": null,
+    // Directory of MDX files to process recursively. Mutually exclusive with file.
+    "dir": null,
+    // Preview changes without writing files.
+    "dry-run": false,
+    // Suppress progress output.
+    "quiet": false
+  },
+
+  // ── wc fix accordions ────────────────────────────────────────────────────────
+  "accordions": {
+    // Single MDX file to process. Mutually exclusive with dir.
+    "file": null,
+    // Directory of MDX files to process recursively. Mutually exclusive with file.
+    "dir": null,
+    // Preview changes without writing files.
+    "dry-run": false,
+    // Suppress progress output.
+    "quiet": false
+  },
+
+  // ── wc fix og-description ────────────────────────────────────────────────────
+  "og-description": {
+    // Single MDX file to process. Mutually exclusive with dir.
+    "file": null,
+    // Directory of MDX files to process recursively. Mutually exclusive with file.
+    "dir": null,
+    // Preview changes without writing files.
+    "dry-run": false,
+    // Suppress progress output.
+    "quiet": false
+  },
+
+  // ── wc fix dollar-signs ──────────────────────────────────────────────────────
+  "dollar-signs": {
     // Single MDX file to process. Mutually exclusive with dir.
     "file": null,
     // Directory of MDX files to process recursively. Mutually exclusive with file.
@@ -376,6 +440,18 @@
       "quiet": false
     },
 
+    // ── wcc readme recipes ────────────────────────────────────────────────────
+    "recipes": {
+      // Source directory containing legacy recipe .md files.
+      "from": "readme/recipes",
+      // Output directory for the converted recipe .mdx files.
+      "output": "pages/recipes",
+      // Preview conversions without writing files.
+      "dry-run": false,
+      // Suppress progress output.
+      "quiet": false
+    },
+
     // ── wcc readme openapi ────────────────────────────────────────────────────
     "openapi": {
       // Single MDX file to process. Mutually exclusive with dir.
@@ -383,6 +459,20 @@
       // Directory of MDX files to process recursively (default: pages/reference).
       "dir": null,
       // Directory where extracted/deduped OpenAPI spec JSON files are stored.
+      "openapi-dir": "openapi",
+      // Preview changes without writing files.
+      "dry-run": false,
+      // Suppress progress output.
+      "quiet": false
+    },
+
+    // ── wcc readme openapi-dedupe ─────────────────────────────────────────────
+    "openapi-dedupe": {
+      // Single MDX file to process. Mutually exclusive with dir.
+      "file": null,
+      // Directory of MDX files to process recursively (default: pages/reference).
+      "dir": null,
+      // Directory of OpenAPI spec files to check page bodies against.
       "openapi-dir": "openapi",
       // Preview changes without writing files.
       "dry-run": false,

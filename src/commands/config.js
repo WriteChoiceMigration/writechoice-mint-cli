@@ -36,7 +36,12 @@ export async function generateConfig(options) {
       url: null,
       docs: "docs.json",
       output: "pages_report.json",
-      concurrency: 20,
+      concurrency: null,
+      batchSize: 100,
+      batchPause: 5000,
+      local: false,
+      "include-orphans": false,
+      "verify-content": false,
       quiet: false,
     },
 
@@ -128,6 +133,27 @@ export async function generateConfig(options) {
       quiet: false,
     },
 
+    accordions: {
+      file: null,
+      dir: null,
+      "dry-run": false,
+      quiet: false,
+    },
+
+    "og-description": {
+      file: null,
+      dir: null,
+      "dry-run": false,
+      quiet: false,
+    },
+
+    "dollar-signs": {
+      file: null,
+      dir: null,
+      "dry-run": false,
+      quiet: false,
+    },
+
     find: {
       redirects: {
         base: null,
@@ -148,7 +174,20 @@ export async function generateConfig(options) {
         "dry-run": false,
         quiet: false,
       },
+      recipes: {
+        from: "readme/recipes",
+        output: "pages/recipes",
+        "dry-run": false,
+        quiet: false,
+      },
       openapi: {
+        file: null,
+        dir: null,
+        "openapi-dir": "openapi",
+        "dry-run": false,
+        quiet: false,
+      },
+      "openapi-dedupe": {
         file: null,
         dir: null,
         "openapi-dir": "openapi",

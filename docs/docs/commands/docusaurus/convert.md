@@ -158,6 +158,18 @@ Files whose names start with `_` or that live inside a `_snippets/` directory ar
 {/* This is a comment */}
 ```
 
+### Void tags — self-closed for JSX
+
+Raw HTML void elements surviving from Docusaurus source (`<img>`, `<br>`, `<hr>`, ...) are self-closed, since MDX compiles as JSX and requires them to be — same fixer as [`wcc fix void-tags`](/commands/fix/void-tags), skipping code fences and inline code.
+
+```mdx
+<!-- Before -->
+<img src="/img/logo.png">
+
+<!-- After -->
+<img src="/img/logo.png" />
+```
+
 ## Examples
 
 ```bash

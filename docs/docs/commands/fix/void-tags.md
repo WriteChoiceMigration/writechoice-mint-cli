@@ -24,7 +24,7 @@ writechoice fix void-tags [options]
 
 ## Why This Is Needed
 
-Raw HTML void elements (`area`, `base`, `br`, `col`, `embed`, `hr`, `img`, `input`, `link`, `meta`, `source`, `track`, `wbr`) are valid unclosed in plain HTML, but MDX compiles as JSX, which requires every void element to be self-closing. A page with an unclosed `<img>` or `<br>` fails to build. This is common in docs converted from other formats or hand-written with raw HTML.
+Raw HTML void elements (`area`, `base`, `br`, `col`, `embed`, `hr`, `img`, `input`, `link`, `meta`, `param`, `source`, `track`, `wbr`) are valid unclosed in plain HTML, but MDX compiles as JSX, which requires every void element to be self-closing. A page with an unclosed `<img>` or `<br>` fails to build. This is common in docs converted from other formats or hand-written with raw HTML.
 
 `wcc readme convert` already calls this fixer automatically on every file it writes, so freshly converted `.mdx` files are closed by default. Use this command directly for anything convert doesn't touch — hand-written MDX, files converted before this fix landed, or other conversion pipelines (Docusaurus, scrape, etc.).
 

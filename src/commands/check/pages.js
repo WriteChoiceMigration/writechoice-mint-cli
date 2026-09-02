@@ -7,8 +7,8 @@
  * Local mode (--local): Puppeteer, inspects div.mdx-content for parse errors / empty content.
  */
 
-import { readFileSync, writeFileSync, existsSync, unlinkSync } from "fs";
-import { join } from "path";
+import { readFileSync, writeFileSync, existsSync, unlinkSync, readdirSync, statSync } from "fs";
+import { join, relative, sep } from "path";
 import chalk from "chalk";
 import { chromium } from "playwright";
 
@@ -29,6 +29,101 @@ function extractPages(node) {
     }
   }
   return pages;
+}
+
+// ── Orphan page discovery (--include-orphans) ───────────────────────────────
+
+const ORPHAN_IGNORED_DIRS = new Set(["node_modules", ".git", "snippets", "openapi", ".mintlify"]);
+
+/**
+ * Every .mdx/.md file in the repo, nav-listed or not — a page can be broken
+ * (or simply orphaned) without ever being linked from docs.json's navigation.
+ */
+export function collectAllPagePaths(repoRoot) {
+  const pages = new Set();
+
+  function walk(dir) {
+    const name = dir.split("/").pop();
+    if (ORPHAN_IGNORED_DIRS.has(name)) return;
+    let entries;
+    try {
+      entries = readdirSync(dir);
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const fullPath = join(dir, entry);
+      const stat = statSync(fullPath);
+      if (stat.isDirectory()) {
+        walk(fullPath);
+      } else if (entry.endsWith(".mdx") || entry.endsWith(".md")) {
+        const rel = relative(repoRoot, fullPath).replace(/\.(mdx|md)$/, "");
+        pages.add(rel.split(sep).join("/")); // normalise path separators to "/"
+      }
+    }
+  }
+
+  walk(repoRoot);
+  return [...pages].sort();
+}
+
+/** Absolute path to a page's source .mdx or .md file, or null if neither exists. */
+export function sourceFileForPage(repoRoot, pagePath) {
+  const mdx = join(repoRoot, `${pagePath}.mdx`);
+  if (existsSync(mdx)) return mdx;
+  const md = join(repoRoot, `${pagePath}.md`);
+  if (existsSync(md)) return md;
+  return null;
+}
+
+// ── Content phrase verification (--verify-content) ──────────────────────────
+
+const TYPOGRAPHIC_MAP = {
+  "‘": "'",
+  "’": "'",
+  "“": '"',
+  "”": '"',
+  "–": "-",
+  "—": "-",
+  "…": "...",
+  "​": "",
+};
+
+export function normalizeText(s) {
+  const translated = s.replace(/[‘’“”–—…​]/g, (c) => TYPOGRAPHIC_MAP[c]);
+  return translated.replace(/\s+/g, " ").trim().toLowerCase();
+}
+
+const FRONTMATTER_STRIP_RE = /^---\n[\s\S]*?\n---\n/;
+const FENCE_STRIP_RE = /```[\s\S]*?```/g;
+const JSX_COMMENT_STRIP_RE = /\{\/\*[\s\S]*?\*\/\}/g;
+
+/**
+ * Pulls a short, distinctive plain-text snippet from a page's source body
+ * to confirm it actually rendered, not just that *something* rendered.
+ * Returns null if no suitable line is found.
+ */
+export function extractPhrase(mdText) {
+  let body = mdText.replace(FRONTMATTER_STRIP_RE, "");
+  body = body.replace(FENCE_STRIP_RE, "");
+  body = body.replace(JSX_COMMENT_STRIP_RE, "");
+
+  for (const rawLine of body.split("\n")) {
+    let line = rawLine.trim();
+    if (!line) continue;
+    if (line.startsWith("#") || line.startsWith("<") || line.startsWith("![")) continue;
+    if ([...line].every((c) => "-=*_ ".includes(c))) continue;
+
+    line = line.replace(/!\[[^\]]*\]\([^)]*\)/g, "");
+    line = line.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1");
+    line = line.replace(/[`*_>#]/g, "");
+    line = normalizeText(line);
+    if (line.length < 20) continue;
+
+    const phrase = line.split(" ").slice(0, 10).join(" ").trim();
+    if (phrase.length >= 15) return phrase;
+  }
+  return null;
 }
 
 // ── HTTP check ───────────────────────────────────────────────────────────────
@@ -52,7 +147,7 @@ async function checkPageHttp(url) {
 
 // ── Local (Puppeteer) check ──────────────────────────────────────────────────
 
-async function checkPageLocal(page, url) {
+async function checkPageLocal(page, url, phrase = null) {
   try {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: TIMEOUT_MS });
 
@@ -75,7 +170,7 @@ async function checkPageLocal(page, url) {
             return null;
           }
           if (Date.now() - window.__mdxStable.since >= 800) {
-            return { ok: true, error: null };
+            return { ok: true, error: null, text };
           }
           return null;
         }
@@ -92,6 +187,17 @@ async function checkPageLocal(page, url) {
     );
 
     const result = await handle.jsonValue();
+
+    // Content is present and stable, but does it actually contain the
+    // expected page — not just a shell with no article content?
+    if (result.ok && phrase) {
+      const normalizedContent = normalizeText(result.text || "");
+      const normalizedPhrase = normalizeText(phrase);
+      if (!normalizedContent.includes(normalizedPhrase)) {
+        return { url, ok: false, status: null, error: `expected phrase not found: ${JSON.stringify(phrase)}` };
+      }
+    }
+
     return { url, ok: result.ok, status: null, error: result.error };
   } catch (err) {
     const msg = err.message?.includes("Timeout") ? "Timed out waiting for page content" : err.message;
@@ -112,7 +218,7 @@ async function runConcurrent(tasks, concurrency, onResult) {
   await Promise.all(Array.from({ length: Math.min(concurrency, tasks.length) }, worker));
 }
 
-async function runLocalConcurrent(urls, concurrency, browser, onResult) {
+async function runLocalConcurrent(urls, concurrency, browser, onResult, phraseByUrl = null) {
   const poolSize = Math.min(concurrency, urls.length);
   const pages = await Promise.all(Array.from({ length: poolSize }, () => browser.newPage()));
 
@@ -120,7 +226,7 @@ async function runLocalConcurrent(urls, concurrency, browser, onResult) {
   async function worker(page) {
     while (index < urls.length) {
       const url = urls[index++];
-      onResult(await checkPageLocal(page, url));
+      onResult(await checkPageLocal(page, url, phraseByUrl?.get(url) ?? null));
     }
   }
 
@@ -160,6 +266,8 @@ export async function checkPages(options) {
     batchSize = 100,
     batchPause = 5000,
     local = false,
+    includeOrphans = false,
+    verifyContent = false,
     verbose = true,
   } = options;
 
@@ -174,10 +282,37 @@ export async function checkPages(options) {
     process.exit(1);
   }
 
+  const repoRoot = process.cwd();
   const docs = JSON.parse(readFileSync(docsPath, "utf-8"));
-  const pages = [...new Set(extractPages(docs.navigation || {}))];
+  const navPages = new Set(extractPages(docs.navigation || {}));
+
+  let pages;
+  if (includeOrphans) {
+    const orphanPages = collectAllPagePaths(repoRoot);
+    pages = [...new Set([...navPages, ...orphanPages])];
+    const orphanCount = pages.length - navPages.size;
+    if (orphanCount > 0 && verbose) {
+      console.log(chalk.dim(`Including ${orphanCount} orphan page${orphanCount !== 1 ? "s" : ""} not in docs.json nav`));
+    }
+  } else {
+    pages = [...navPages];
+  }
+
   const base = baseUrl.replace(/\/$/, "");
   const allUrls = pages.map((p) => `${base}/${p}`);
+
+  // Only local mode can inspect rendered content, so phrase verification is
+  // local-only. Build url -> expected phrase once, up front.
+  let phraseByUrl = null;
+  if (local && verifyContent) {
+    phraseByUrl = new Map();
+    for (const p of pages) {
+      const src = sourceFileForPage(repoRoot, p);
+      if (!src) continue;
+      const phrase = extractPhrase(readFileSync(src, "utf-8"));
+      if (phrase) phraseByUrl.set(`${base}/${p}`, phrase);
+    }
+  }
 
   const outputPath = join(process.cwd(), output);
   const progPath = progressPath(outputPath);
@@ -240,7 +375,7 @@ export async function checkPages(options) {
       };
 
       if (local) {
-        await runLocalConcurrent(batchUrls, effectiveConcurrency, browser, onResult);
+        await runLocalConcurrent(batchUrls, effectiveConcurrency, browser, onResult, phraseByUrl);
       } else {
         const tasks = batchUrls.map((url) => async () => checkPageHttp(url));
         await runConcurrent(tasks, effectiveConcurrency, onResult);

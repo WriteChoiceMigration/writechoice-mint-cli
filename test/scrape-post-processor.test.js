@@ -91,11 +91,11 @@ describe("fixComponentSpacing", () => {
 describe("selfCloseVoidElements", () => {
   it("self-closes <img> tag", () => {
     const result = selfCloseVoidElements('<img src="x.png">');
-    assert.equal(result, '<img src="x.png"/>');
+    assert.equal(result, '<img src="x.png" />');
   });
 
   it("self-closes <br> tag", () => {
-    assert.equal(selfCloseVoidElements("<br>"), "<br/>");
+    assert.equal(selfCloseVoidElements("<br>"), "<br />");
   });
 
   it("does not double-close already-self-closed tags", () => {
@@ -105,13 +105,23 @@ describe("selfCloseVoidElements", () => {
 
   it("self-closes <hr> inside a paragraph", () => {
     const result = selfCloseVoidElements("before<hr>after");
-    assert.ok(result.includes("<hr/>"));
+    assert.ok(result.includes("<hr />"));
   });
 
   it("does not alter content inside fenced code blocks", () => {
     const input = "```\n<img src='x'>\n```";
     const result = selfCloseVoidElements(input);
     assert.ok(result.includes("<img src='x'>"), "img inside code block not modified");
+  });
+
+  it("does not alter content inside inline code spans", () => {
+    const input = "Use `<img src='x'>` in your markup.";
+    const result = selfCloseVoidElements(input);
+    assert.ok(result.includes("`<img src='x'>`"), "img inside inline code not modified");
+  });
+
+  it("self-closes <param>", () => {
+    assert.equal(selfCloseVoidElements("<param name=\"x\" value=\"y\">"), '<param name="x" value="y" />');
   });
 });
 
@@ -186,7 +196,7 @@ describe("postProcessAll", () => {
     const input = "# Getting Started\n\nSome text.\n\n<br>\n\n```\ncode\n```";
     const result = postProcessAll(input, "Getting Started");
     assert.ok(!result.includes("# Getting Started"), "duplicate H1 removed");
-    assert.ok(result.includes("<br/>"), "void element self-closed");
+    assert.ok(result.includes("<br />"), "void element self-closed");
   });
 
   it("returns a trimmed string", () => {

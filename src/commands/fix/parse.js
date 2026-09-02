@@ -15,7 +15,7 @@ import chalk from "chalk";
 // Void HTML elements that must be self-closing in JSX/MDX
 const VOID_ELEMENTS = [
   "area", "base", "br", "col", "embed", "hr", "img",
-  "input", "link", "meta", "source", "track", "wbr",
+  "input", "link", "meta", "param", "source", "track", "wbr",
 ];
 
 const VOID_PATTERN = new RegExp(

@@ -9,6 +9,8 @@
  *   5. Cleans up excessive blank lines
  */
 
+import { selfCloseVoidTags } from "../fix/void-tags.js";
+
 /**
  * Runs all post-processing steps.
  * @param {string} text - Markdown text
@@ -73,25 +75,16 @@ export function fixComponentSpacing(text) {
 
 /**
  * Self-closes all HTML void elements for JSX/MDX compatibility.
- * e.g. <img src="x.png"> → <img src="x.png"/>
- * Handles already-self-closed tags and skips code blocks.
+ * e.g. <img src="x.png"> → <img src="x.png" />
+ * Handles already-self-closed tags and skips fenced code blocks / inline code.
+ *
+ * Delegates to the shared fixer in fix/void-tags.js (also used by `wcc fix
+ * void-tags` and `wcc readme convert`) so all three pipelines stay in sync.
  * @param {string} text
  * @returns {string}
  */
 export function selfCloseVoidElements(text) {
-  const voidTags = "area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr";
-  const re = new RegExp(`<(${voidTags})(\\s[^>]*)?>`, "gi");
-  const parts = text.split(/(```[\s\S]*?```)/g);
-  return parts
-    .map((part, i) => {
-      if (i % 2 === 1) return part;
-      return part.replace(re, (match, tag, attrs) => {
-        if (match.endsWith("/>")) return match;
-        const cleanAttrs = attrs ? attrs.replace(/\s*\/$/, "").trimEnd() : "";
-        return `<${tag}${cleanAttrs}/>`;
-      });
-    })
-    .join("");
+  return selfCloseVoidTags(text).content;
 }
 
 /**

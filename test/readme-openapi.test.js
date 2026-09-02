@@ -10,6 +10,8 @@ import {
   newSpecFilename,
   convertOpenApiDefinition,
   extractOpenApi,
+  commentDuplicateOpenApiBody,
+  dedupeOpenApiDescription,
 } from "../src/commands/readme/openapi.js";
 
 function specFor(path, method, extra = {}) {
@@ -222,5 +224,95 @@ describe("extractOpenApi", () => {
     const mdx = readFileSync(join(tmp, "pages", "reference", "delete-order.mdx"), "utf-8");
     assert.ok(mdx.includes("# OpenAPI definition"));
     assert.ok(!existsSync(join(tmp, "openapi", "deleteorder.json")));
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// commentDuplicateOpenApiBody (pure, no I/O)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function specsFor(path, method, description) {
+  return { "getuser.json": { paths: { [path]: { [method]: { description } } } } };
+}
+
+describe("commentDuplicateOpenApiBody", () => {
+  it("comments out a body that exactly duplicates the operation description", () => {
+    const specs = specsFor("/users/{id}", "get", "Fetches a user by ID.");
+    const input = '---\ntitle: "Get User"\nopenapi: "/openapi/getuser.json GET /users/{id}"\n---\n\nFetches a user by ID.\n';
+    const result = commentDuplicateOpenApiBody(input, specs);
+    assert.equal(result.changed, true);
+    assert.ok(result.content.includes("{/*\nFetches a user by ID.\n*/}"));
+  });
+
+  it("leaves a body unchanged when it differs from the description", () => {
+    const specs = specsFor("/users/{id}", "get", "Fetches a user by ID.");
+    const input = '---\ntitle: "Get User"\nopenapi: "/openapi/getuser.json GET /users/{id}"\n---\n\nCustom body content.\n';
+    const result = commentDuplicateOpenApiBody(input, specs);
+    assert.equal(result.changed, false);
+    assert.equal(result.content, input);
+  });
+
+  it("is idempotent — a body already commented out is left alone", () => {
+    const specs = specsFor("/users/{id}", "get", "Fetches a user by ID.");
+    const input = '---\ntitle: "Get User"\nopenapi: "/openapi/getuser.json GET /users/{id}"\n---\n\nFetches a user by ID.\n';
+    const first = commentDuplicateOpenApiBody(input, specs);
+    const second = commentDuplicateOpenApiBody(first.content, specs);
+    assert.equal(second.changed, false);
+  });
+
+  it("returns changed:false when there is no openapi frontmatter key", () => {
+    const specs = specsFor("/users/{id}", "get", "Fetches a user by ID.");
+    const input = '---\ntitle: "Get User"\n---\n\nFetches a user by ID.\n';
+    const result = commentDuplicateOpenApiBody(input, specs);
+    assert.equal(result.changed, false);
+  });
+
+  it("returns changed:false when the referenced spec file is not loaded", () => {
+    const input = '---\ntitle: "Get User"\nopenapi: "/openapi/missing.json GET /users/{id}"\n---\n\nFetches a user by ID.\n';
+    const result = commentDuplicateOpenApiBody(input, {});
+    assert.equal(result.changed, false);
+  });
+
+  it("returns changed:false when the spec has no description for that operation", () => {
+    const specs = { "getuser.json": { paths: { "/users/{id}": { get: {} } } } };
+    const input = '---\ntitle: "Get User"\nopenapi: "/openapi/getuser.json GET /users/{id}"\n---\n\nSome body text.\n';
+    const result = commentDuplicateOpenApiBody(input, specs);
+    assert.equal(result.changed, false);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// dedupeOpenApiDescription (integration, temp dir)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("dedupeOpenApiDescription", () => {
+  let tmp, origCwd;
+
+  before(() => {
+    tmp = join(tmpdir(), `wc-readme-openapi-dedupe-test-${Date.now()}`);
+    mkdirSync(join(tmp, "pages", "reference"), { recursive: true });
+    mkdirSync(join(tmp, "openapi"), { recursive: true });
+    writeFileSync(
+      join(tmp, "openapi", "getuser.json"),
+      JSON.stringify({ paths: { "/users/{id}": { get: { description: "Fetches a user by ID." } } } })
+    );
+    writeFileSync(
+      join(tmp, "pages", "reference", "get-user.mdx"),
+      '---\ntitle: "Get User"\nopenapi: "/openapi/getuser.json GET /users/{id}"\n---\n\nFetches a user by ID.\n'
+    );
+    origCwd = process.cwd();
+    process.chdir(tmp);
+  });
+
+  after(() => {
+    process.chdir(origCwd);
+    try { rmSync(tmp, { recursive: true, force: true }); } catch { /* ignore */ }
+  });
+
+  it("comments out the duplicate body and writes the file", async () => {
+    await dedupeOpenApiDescription({ file: null, dir: null, openapiDir: "openapi", dryRun: false, quiet: true, verbose: false });
+    const content = readFileSync(join(tmp, "pages", "reference", "get-user.mdx"), "utf-8");
+    assert.ok(content.includes("{/*"));
+    assert.ok(content.includes("Fetches a user by ID."));
   });
 });

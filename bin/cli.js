@@ -115,6 +115,8 @@ check
   .option("-b, --batch-size <number>", "Pages per batch (pauses between batches)", "100")
   .option("--batch-pause <ms>", "Pause in ms between batches", "5000")
   .option("--local", "Local mode: use Puppeteer to check div.mdx-content (for localhost)")
+  .option("--include-orphans", "Also check .mdx/.md files not listed in docs.json navigation")
+  .option("--verify-content", "Local mode only: verify a phrase from the source file appears in the rendered page")
   .option("--quiet", "Suppress terminal output")
   .action(async (baseUrl, options) => {
     const { loadConfig, mergePagesConfig } = await import("../src/utils/config.js");
@@ -325,6 +327,60 @@ fix
     await fixTabs(mergedOptions);
   });
 
+// Fix accordions subcommand
+fix
+  .command("accordions")
+  .description("Wrap runs of 2+ sibling <Accordion> blocks in <AccordionGroup>")
+  .option("-f, --file <path>", "Fix a single MDX file directly")
+  .option("-d, --dir <path>", "Fix MDX files in a specific directory")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeAccordionsConfig } = await import("../src/utils/config.js");
+    const { fixAccordions } = await import("../src/commands/fix/accordions.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeAccordionsConfig(options, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await fixAccordions(mergedOptions);
+  });
+
+// Fix og-description subcommand
+fix
+  .command("og-description")
+  .description("Rename frontmatter 'description' to 'og:description'")
+  .option("-f, --file <path>", "Fix a single MDX file directly")
+  .option("-d, --dir <path>", "Fix MDX files in a specific directory")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeOgDescriptionConfig } = await import("../src/utils/config.js");
+    const { fixOgDescription } = await import("../src/commands/fix/og-description.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeOgDescriptionConfig(options, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await fixOgDescription(mergedOptions);
+  });
+
+// Fix dollar-signs subcommand
+fix
+  .command("dollar-signs")
+  .description("Escape a bare $ before a digit in prose, skipping code and LaTeX math")
+  .option("-f, --file <path>", "Fix a single MDX file directly")
+  .option("-d, --dir <path>", "Fix MDX files in a specific directory")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeDollarSignsConfig } = await import("../src/utils/config.js");
+    const { fixDollarSigns } = await import("../src/commands/fix/dollar-signs.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeDollarSignsConfig(options, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await fixDollarSigns(mergedOptions);
+  });
+
 // Scrape command
 program
   .command("scrape [urls...]")
@@ -445,6 +501,22 @@ readme
   });
 
 readme
+  .command("recipes")
+  .description("Convert legacy recipe .md files into MDX using <RequestExample>/<ResponseExample>/<Steps>")
+  .option("--from <dir>", "Source directory containing recipe .md files (default: readme/recipes)")
+  .option("-o, --output <dir>", "Output directory for .mdx files (default: pages/recipes)")
+  .option("--dry-run", "Preview output without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeReadmeRecipesConfig } = await import("../src/utils/config.js");
+    const { convertRecipes } = await import("../src/commands/readme/recipes.js");
+
+    const config = loadConfig();
+    const merged = mergeReadmeRecipesConfig(options, config);
+    await convertRecipes(merged);
+  });
+
+readme
   .command("openapi")
   .description("Extract inline '# OpenAPI definition' blocks into Mintlify openapi frontmatter")
   .option("-f, --file <path>", "Fix a single MDX file directly")
@@ -460,6 +532,24 @@ readme
     const mergedOptions = mergeReadmeOpenApiConfig(options, config);
     mergedOptions.verbose = !mergedOptions.quiet;
     await extractOpenApi(mergedOptions);
+  });
+
+readme
+  .command("openapi-dedupe")
+  .description("Comment out page bodies that duplicate their OpenAPI operation's description")
+  .option("-f, --file <path>", "Fix a single MDX file directly")
+  .option("-d, --dir <path>", "Fix MDX files in a specific directory (default: pages/reference)")
+  .option("--openapi-dir <dir>", "Directory of OpenAPI spec files to check against (default: openapi)")
+  .option("--dry-run", "Preview changes without writing files")
+  .option("--quiet", "Suppress terminal output")
+  .action(async (options) => {
+    const { loadConfig, mergeReadmeOpenApiDedupeConfig } = await import("../src/utils/config.js");
+    const { dedupeOpenApiDescription } = await import("../src/commands/readme/openapi.js");
+
+    const config = loadConfig();
+    const mergedOptions = mergeReadmeOpenApiDedupeConfig(options, config);
+    mergedOptions.verbose = !mergedOptions.quiet;
+    await dedupeOpenApiDescription(mergedOptions);
   });
 
 readme
