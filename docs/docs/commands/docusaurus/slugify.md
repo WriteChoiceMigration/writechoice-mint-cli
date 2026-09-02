@@ -7,12 +7,12 @@ title: Docusaurus Slugify
 
 Renames and moves converted MDX files so their paths match the `slug` (or `id`) in their frontmatter. Also updates any matching page paths in `docs.json`.
 
-Run this after [`wc docusaurus convert`](./convert.md) to ensure each file lives at the URL its frontmatter declares.
+Run this after [`writechoice docusaurus convert`](./convert.md) to ensure each file lives at the URL its frontmatter declares.
 
 ## Usage
 
 ```bash
-wc docusaurus slugify <folder> [options]
+writechoice docusaurus slugify <folder> [options]
 ```
 
 ## Arguments
@@ -63,7 +63,7 @@ slug: /cloud/manage/cloud-tiers
 ---
 ```
 
-Running `wc docusaurus slugify ./mintlify` moves it to:
+Running `writechoice docusaurus slugify ./mintlify` moves it to:
 
 ```
 mintlify/cloud/manage/cloud-tiers.mdx
@@ -83,26 +83,26 @@ And updates any reference in `docs.json`:
 
 ```bash
 # Rename files in the default output folder
-wc docusaurus slugify ./mintlify
+writechoice docusaurus slugify ./mintlify
 
 # Preview without writing
-wc docusaurus slugify ./mintlify --dry-run
+writechoice docusaurus slugify ./mintlify --dry-run
 
 # Specify a different docs.json path
-wc docusaurus slugify ./mintlify --docs path/to/docs.json
+writechoice docusaurus slugify ./mintlify --docs path/to/docs.json
 ```
 
 ## Typical Workflow
 
 ```bash
 # 1. Convert all files
-wc docusaurus convert ./my-docusaurus-site
+writechoice docusaurus convert ./my-docusaurus-site
 
 # 2. Rename files to match their frontmatter slug/id
-wc docusaurus slugify ./mintlify
+writechoice docusaurus slugify ./mintlify
 
 # 3. Generate Mintlify navigation from sidebars.js
-wc docusaurus nav ./my-docusaurus-site/sidebars.js --prefix mintlify
+writechoice docusaurus nav ./my-docusaurus-site/sidebars.js --prefix mintlify
 ```
 
 ## Notes

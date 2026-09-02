@@ -55,7 +55,7 @@ export async function generateConfig(options) {
 
     katex: {
       url: null,
-      reportFile: "katex_errors.json",
+      reportFile: null,
       docs: "docs.json",
       output: "katex_errors.json",
       concurrency: 50,

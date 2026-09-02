@@ -25,9 +25,7 @@ describe("processContent — markdown images", () => {
   it("preserves indentation when wrapping", () => {
     const content = "  ![icon](/img/icon.png)\n";
     const { newContent } = processContent(content);
-    assert.ok(newContent.includes("  <Frame>"));
-    assert.ok(newContent.includes("  ![icon](/img/icon.png)"));
-    assert.ok(newContent.includes("  </Frame>"));
+    assert.ok(newContent.includes("  <Frame>![icon](/img/icon.png)</Frame>"));
   });
 
   it("does not wrap images that already have text on the line", () => {

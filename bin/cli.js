@@ -111,7 +111,7 @@ check
   .description("Validate that every page in docs.json navigation loads successfully")
   .option("--docs <file>", "Path to docs.json (default: docs.json)")
   .option("-o, --output <path>", "Output file for failure report", "pages_report.json")
-  .option("-c, --concurrency <number>", "Number of parallel requests", "20")
+  .option("-c, --concurrency <number>", "Number of parallel requests (default: 20, or 3 for --local)")
   .option("-b, --batch-size <number>", "Pages per batch (pauses between batches)", "100")
   .option("--batch-pause <ms>", "Pause in ms between batches", "5000")
   .option("--local", "Local mode: use Puppeteer to check div.mdx-content (for localhost)")

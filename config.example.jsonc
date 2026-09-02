@@ -6,6 +6,10 @@
   "source": "https://docs.example.com",
   // Validation environment URL (e.g. localhost:3000) — used by the link checker.
   "target": "http://localhost:3000",
+  // Fallback base URL for commands that don't have their own dedicated URL setting
+  // (e.g. wc check pages, wc check images, wc check katex) when neither the
+  // command's own config nor a CLI argument provides one.
+  "preview": null,
 
   // ── wc check links ───────────────────────────────────────────────────────────
   "links": {
@@ -59,6 +63,36 @@
     // file actually appears in the rendered output, catching pages that
     // render as an empty shell rather than just checking for "not empty".
     "verify-content": false,
+    // Suppress progress output.
+    "quiet": false
+  },
+
+  // ── wc check images ──────────────────────────────────────────────────────────
+  "imageCheck": {
+    // Base URL to check images against (falls back to "preview" if not set).
+    "url": null,
+    // Path to the Mintlify docs.json navigation file.
+    "docs": "docs.json",
+    // Output file for the failure report.
+    "output": "images_report.json",
+    // Number of parallel requests per phase.
+    "concurrency": 10,
+    // Suppress progress output.
+    "quiet": false
+  },
+
+  // ── wc check katex ───────────────────────────────────────────────────────────
+  "katex": {
+    // Base URL to check pages against (falls back to "preview" if not set).
+    "url": null,
+    // Path to a previous error report to re-check (scan mode when null).
+    "reportFile": null,
+    // Path to the Mintlify docs.json navigation file.
+    "docs": "docs.json",
+    // Output file for the error report.
+    "output": "katex_errors.json",
+    // Number of parallel requests.
+    "concurrency": 50,
     // Suppress progress output.
     "quiet": false
   },
@@ -489,6 +523,19 @@
     "links-dir": "links",
     // Set to true to skip writing stub files for external links.
     "no-links": false,
+    // Suppress progress output.
+    "quiet": false
+  },
+
+  // ── wc docusaurus convert ────────────────────────────────────────────────────
+  "docusaurus": {
+    // Output directory for converted files.
+    "output": null,
+    // Convert explicit Docusaurus heading IDs (### Text {#id}) into a Mintlify
+    // <Heading> component so old #anchor links keep working.
+    "headingAnchors": false,
+    // Preview conversions without writing files.
+    "dry-run": false,
     // Suppress progress output.
     "quiet": false
   },

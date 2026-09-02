@@ -21,7 +21,6 @@ writechoice fix parse [options]
 | `--file <path>`   | `-f`  | Fix a single MDX file directly        | -                          |
 | `--dir <path>`    | `-d`  | Fix MDX files in a specific directory | -                          |
 | `--quiet`         | -     | Suppress terminal output              | `false`                    |
-| `--verbose`       | -     | Show detailed output for each fix     | `true` (if not quiet)      |
 
 ## What Gets Fixed
 

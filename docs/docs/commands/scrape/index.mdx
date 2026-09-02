@@ -10,9 +10,9 @@ Scrapes documentation URLs and converts each page into an MDX file ready for Min
 ## Usage
 
 ```bash
-wc scrape                          # reads urls.json by default
-wc scrape --urls-file custom.json
-wc scrape https://docs.example.com/page
+writechoice scrape                          # reads urls.json by default
+writechoice scrape --urls-file custom.json
+writechoice scrape https://docs.example.com/page
 ```
 
 ## Options
@@ -31,16 +31,16 @@ wc scrape https://docs.example.com/page
 
 ```bash
 # Scrape a single page
-wc scrape https://docs.example.com/getting-started
+writechoice scrape https://docs.example.com/getting-started
 
 # Scrape multiple URLs
-wc scrape https://docs.example.com/overview https://docs.example.com/api
+writechoice scrape https://docs.example.com/overview https://docs.example.com/api
 
 # Scrape from a JSON file
-wc scrape --urls-file urls.json --output my-docs
+writechoice scrape --urls-file urls.json --output my-docs
 
 # Use Playwright for a JavaScript-rendered site
-wc scrape --playwright --urls-file urls.json
+writechoice scrape --playwright --urls-file urls.json
 ```
 
 ## URL File Format
@@ -231,7 +231,7 @@ For components that accept `title` as a JSX prop (e.g. `<Accordion>`), omit `"ch
 | `wait_for_selector` | Wait for this CSS selector before capturing | `null` |
 | `wait_time` | Seconds to wait for JS to settle | `3` |
 | `page_load_timeout` | Max seconds to wait for page load | `30` |
-| `storage_state` | Path to a session file from `wc session` | `null` |
+| `storage_state` | Path to a session file from `writechoice session` | `null` |
 
 ### Script Hooks
 
@@ -239,4 +239,4 @@ For cases where config options aren't enough, inject custom JavaScript at two po
 
 ## Authenticated Scraping
 
-For sites behind a login, use [wc session](../session.md) to capture your authenticated session, then reference it in `playwright_config.storage_state`.
+For sites behind a login, use [writechoice session](../session.md) to capture your authenticated session, then reference it in `playwright_config.storage_state`.

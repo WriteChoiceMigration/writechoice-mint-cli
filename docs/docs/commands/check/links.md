@@ -10,13 +10,15 @@ Validates internal links and anchors in MDX documentation files using browser au
 ## Usage
 
 ```bash
-writechoice check links <baseUrl> [validationBaseUrl] [options]
+writechoice check links [baseUrl] [validationBaseUrl] [options]
 ```
+
+The `baseUrl` argument is optional if `source` is set in `config.json`; `validationBaseUrl` falls back to `target` in `config.json`, then `http://localhost:3000`.
 
 ## Arguments
 
-- `<baseUrl>` (required): Base URL for the documentation site (production)
-- `[validationBaseUrl]` (optional): Base URL for validation environment (default: `http://localhost:3000`)
+- `[baseUrl]`: Base URL for the documentation site (production) — required unless `source` is set in `config.json`
+- `[validationBaseUrl]`: Base URL for validation environment (default: `http://localhost:3000`)
 
 ## Options
 
@@ -204,4 +206,22 @@ writechoice check links docs.example.com --no-headless
 
 ```bash
 npx playwright install chromium
+```
+
+## Config File
+
+```json
+{
+  "source": "https://docs.example.com",
+  "target": "http://localhost:3000",
+  "links": {
+    "file": null,
+    "dir": null,
+    "output": "links_report",
+    "dry-run": false,
+    "quiet": false,
+    "concurrency": 25,
+    "headless": true
+  }
+}
 ```

@@ -10,7 +10,7 @@ Reads the `redirects` array from `docs.json` and replaces stale source paths wit
 ## Usage
 
 ```bash
-wc fix redirects
+writechoice fix redirects
 ```
 
 ## Options
@@ -42,28 +42,28 @@ Only **exact** path matches are replaced — `/docs/foo` will not replace `/docs
 Run after `nav folders` to fix any internal links that referenced the old paths:
 
 ```bash
-wc nav folders
-wc fix redirects
+writechoice nav folders
+writechoice fix redirects
 ```
 
 ## Examples
 
 ```bash
 # Preview all replacements without writing
-wc fix redirects --dry-run
+writechoice fix redirects --dry-run
 
 # Scope the scan to a specific folder
-wc fix redirects --dir docs/api
+writechoice fix redirects --dir docs/api
 
 # Use a custom docs.json
-wc fix redirects --docs path/to/docs.json
+writechoice fix redirects --docs path/to/docs.json
 ```
 
 ## Config File
 
 ```json
 {
-  "nav": {
+  "fix": {
     "redirects": {
       "docs": "docs.json",
       "dir": "docs",

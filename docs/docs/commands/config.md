@@ -39,31 +39,9 @@ writechoice config --quiet
 
 ## Generated Template
 
-```json
-{
-  "$schema": "https://json-schema.org/draft-07/schema#",
-  "description": "Configuration file for WriteChoice Mint CLI",
+The generated `config.json` includes a section for every command that supports configuration — `links`, `parse`, `pages`, `imageCheck`, `katex`, every `fix` subcommand, `find.redirects`, `nav.folders`/`nav.root`, `readme.*`, `docusaurus`, `metadata`, and the full `scrape` pipeline — each pre-filled with that command's actual defaults.
 
-  "source": "https://docs.example.com",
-  "target": "http://localhost:3000",
-
-  "links": {
-    "file": null,
-    "dir": null,
-    "output": "links_report",
-    "dry-run": false,
-    "quiet": false,
-    "concurrency": 25,
-    "headless": true
-  },
-
-  "parse": {
-    "file": null,
-    "dir": null,
-    "quiet": false
-  }
-}
-```
+For the exact, always-current shape, see `config.example.jsonc` in the repo root (every key is commented) or the [Configuration File](../configuration/config-file.md) reference.
 
 ## Next Steps
 

@@ -53,8 +53,12 @@ File     : docs/api/reference.mdx
 | `og:title` | `og:title` |
 | `og:description` | `og:description` |
 | `og:image` | `og:image` |
+| `og:url` | `og:url` |
 | `twitter:title` | `twitter:title` |
 | `twitter:description` | `twitter:description` |
+| `twitter:image` | `twitter:image` |
+
+Customize this list with `tags` in `config.json` (see below).
 
 ## Examples
 
@@ -82,6 +86,16 @@ writechoice metadata https://docs.example.com -c 5
   "source": "https://docs.example.com",
   "metadata": {
     "concurrency": 15,
+    "tags": [
+      "og:title",
+      "og:description",
+      "og:image",
+      "og:url",
+      "twitter:title",
+      "twitter:description",
+      "twitter:image"
+    ],
+    "dry-run": false,
     "quiet": false
   }
 }

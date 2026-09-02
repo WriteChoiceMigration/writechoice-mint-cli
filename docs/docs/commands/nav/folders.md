@@ -10,7 +10,7 @@ Restructures MDX files on disk to match the navigation hierarchy defined in `doc
 ## Usage
 
 ```bash
-wc nav folders
+writechoice nav folders
 ```
 
 ## Options
@@ -18,7 +18,7 @@ wc nav folders
 | Option | Description | Default |
 |---|---|---|
 | `--docs <file>` | Path to docs.json | `docs.json` |
-| `--base <dir>` | Base directory for all output paths | `docs` |
+| `--base [dir]` | Base directory for all output paths. Pass with no value to keep each file's own original base folder, a value (e.g. `docs`) to use a fixed prefix for every file, or omit entirely for the config/default | keep original folder |
 | `--skip-level <n>` | Skip a navigation level (repeatable, 1-based) | — |
 | `--rename` | Rename each file using a kebab-case slug of its frontmatter title | `false` |
 | `--dry-run` | Preview moves without writing files | `false` |
@@ -73,10 +73,10 @@ Navigation levels are numbered 1-based by their position in the path:
 
 ```bash
 # Skip tab folders (level 1)
-wc nav folders --skip-level 1
+writechoice nav folders --skip-level 1
 
 # Skip tabs and menu items
-wc nav folders --skip-level 1 --skip-level 2
+writechoice nav folders --skip-level 1 --skip-level 2
 ```
 
 ## Output Files
@@ -98,13 +98,13 @@ wc nav folders --skip-level 1 --skip-level 2
 
 ```bash
 # Preview changes without moving anything
-wc nav folders --dry-run
+writechoice nav folders --dry-run
 
 # Rename files from their frontmatter titles
-wc nav folders --rename
+writechoice nav folders --rename
 
 # Use a custom docs.json and skip tab-level folders
-wc nav folders --docs mintlify/docs.json --base pages --skip-level 1
+writechoice nav folders --docs mintlify/docs.json --base pages --skip-level 1
 ```
 
 ## Config File
@@ -114,7 +114,7 @@ wc nav folders --docs mintlify/docs.json --base pages --skip-level 1
   "nav": {
     "folders": {
       "docs": "docs.json",
-      "base": "docs",
+      "base": true,
       "skip_levels": [1],
       "rename": false,
       "dry-run": false,
@@ -123,3 +123,5 @@ wc nav folders --docs mintlify/docs.json --base pages --skip-level 1
   }
 }
 ```
+
+`base: true` keeps each file's own original base folder; a string value (e.g. `"docs"`) uses that as a fixed prefix for every file instead.

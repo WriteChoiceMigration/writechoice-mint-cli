@@ -5,13 +5,13 @@ title: Session
 
 # Session Command
 
-Captures an authenticated browser session so `wc scrape` can access pages behind a login.
+Captures an authenticated browser session so `writechoice scrape` can access pages behind a login.
 
 ## Usage
 
 ```bash
-wc session <url>
-wc session <url> --output my-session.json
+writechoice session <url>
+writechoice session <url> --output my-session.json
 ```
 
 ## Options
@@ -29,7 +29,7 @@ wc session <url> --output my-session.json
 4. The session (cookies + localStorage) is saved to the output file
 
 ```bash
-wc session https://docs.example.com/login
+writechoice session https://docs.example.com/login
 # → browser opens, you log in, press Enter
 # → session saved to session.json
 ```
@@ -72,5 +72,5 @@ Cookies from the session file are extracted and injected as a `Cookie` header in
 Sessions expire when the site's cookies expire. Re-run the command to capture a fresh one:
 
 ```bash
-wc session https://docs.example.com/login
+writechoice session https://docs.example.com/login
 ```

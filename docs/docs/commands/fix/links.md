@@ -19,7 +19,6 @@ writechoice fix links [options]
 | ----------------- | ----- | ------------------------------------ | -------------------- |
 | `--report <path>` | `-r`  | Path to JSON validation report       | `links_report.json`  |
 | `--quiet`         | -     | Suppress terminal output             | `false`              |
-| `--verbose`       | -     | Show detailed output for each fix    | `true` (if not quiet)|
 
 ## How It Works
 

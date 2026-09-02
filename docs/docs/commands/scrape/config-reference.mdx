@@ -226,7 +226,7 @@ Full `scrape` section for `config.json`, with every key explained.
     // ── Playwright ────────────────────────────────────────────────────────────
 
     // Only applies when "playwright": true (or --playwright flag is set).
-    // Also used to load a saved session for authenticated scraping (wc session).
+    // Also used to load a saved session for authenticated scraping (writechoice session).
     "playwright_config": {
       // Run Chromium without a visible window.
       "headless": true,
@@ -248,9 +248,9 @@ Full `scrape` section for `config.json`, with every key explained.
       // Max seconds to wait for the page to load before timing out.
       "page_load_timeout": 30,
 
-      // Path to a Playwright storageState file saved by "wc session".
+      // Path to a Playwright storageState file saved by "writechoice session".
       // Loads cookies and localStorage into the browser context.
-      // Run: wc session <url>  →  saves session.json  →  set this path to reuse it.
+      // Run: writechoice session <url>  →  saves session.json  →  set this path to reuse it.
       // Also works with "playwright": false — cookies are injected into native fetch.
       "storage_state": "session.json"
     }

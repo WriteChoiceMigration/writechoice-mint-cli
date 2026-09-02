@@ -10,13 +10,13 @@ Finds pages with KaTeX render errors by scanning for `.katex-error` elements in 
 ## Usage
 
 ```bash
-writechoice check katex <baseUrl> [options]
+writechoice check katex [baseUrl] [options]
 writechoice check katex --file <report.json> [options]
 ```
 
 ## Arguments
 
-- `<baseUrl>` (required for scan mode): Base URL of the deployed documentation site.
+- `[baseUrl]` (scan mode): Base URL of the deployed documentation site — required unless `katex.url` or `preview` is set in `config.json`.
 
 ## Options
 
@@ -109,7 +109,13 @@ writechoice check katex https://docs.example.com -c 10
 {
   "katex": {
     "url": "https://docs.example.com",
-    "reportFile": "katex_errors.json"
+    "docs": "docs.json",
+    "output": "katex_errors.json",
+    "reportFile": null,
+    "concurrency": 50,
+    "quiet": false
   }
 }
 ```
+
+`reportFile` corresponds to `--file` (a previous error report to re-check) — it's not the output path. `output` is the file this command writes to.
