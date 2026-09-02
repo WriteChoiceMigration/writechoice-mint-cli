@@ -7,7 +7,7 @@ For each group nested inside another group, checks whether the group's first pag
 ## Usage
 
 ```bash
-wc nav root
+writechoice nav root
 ```
 
 ## Options
@@ -67,10 +67,10 @@ For each eligible nested group:
 
 ```bash
 # Preview which pages would be promoted
-wc nav root --dry-run
+writechoice nav root --dry-run
 
 # Run against a custom docs.json
-wc nav root --docs path/to/docs.json
+writechoice nav root --docs path/to/docs.json
 ```
 
 ## Config File

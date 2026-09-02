@@ -4,7 +4,7 @@
 
 Reads a Mintlify broken-links report, probes each broken path against the live site (without following redirects), and writes any discovered `3xx` redirects to a JSON file.
 
-The output is compatible with Mintlify's `redirects.json` format and can be fed directly into [`wcc fix redirects`](/docs/commands/fix/redirects).
+The output is compatible with Mintlify's `redirects.json` format and can be fed directly into [`wcc fix redirects`](/commands/fix/redirects).
 
 ## Usage
 

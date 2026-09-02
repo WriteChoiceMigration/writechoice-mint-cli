@@ -7,7 +7,7 @@ Converts a Docusaurus docs folder to Mintlify-ready MDX files. Applies all known
 ## Usage
 
 ```bash
-wc docusaurus convert <folder> [options]
+writechoice docusaurus convert <folder> [options]
 ```
 
 ## Arguments
@@ -23,6 +23,8 @@ wc docusaurus convert <folder> [options]
 | `-o, --output <dir>` | Output directory for converted files | `mintlify` |
 | `--dry-run` | Preview conversions without writing files | `false` |
 | `--quiet` | Suppress terminal output | `false` |
+
+`headingAnchors` (config-only, no CLI flag — see [Config File](#config-file) below): when enabled, converts an explicit Docusaurus heading ID (`### Text {#id}`) into a Mintlify `<Heading>` component so old `#anchor` links keep resolving.
 
 ## What Gets Converted
 
@@ -155,20 +157,32 @@ Files whose names start with `_` or that live inside a `_snippets/` directory ar
 {/* This is a comment */}
 ```
 
+### Void tags — self-closed for JSX
+
+Raw HTML void elements surviving from Docusaurus source (`<img>`, `<br>`, `<hr>`, ...) are self-closed, since MDX compiles as JSX and requires them to be — same fixer as [`wcc fix void-tags`](/commands/fix/void-tags), skipping code fences and inline code.
+
+```mdx
+<!-- Before -->
+<img src="/img/logo.png">
+
+<!-- After -->
+<img src="/img/logo.png" />
+```
+
 ## Examples
 
 ```bash
 # Convert a Docusaurus project root
-wc docusaurus convert ./my-docusaurus-site
+writechoice docusaurus convert ./my-docusaurus-site
 
 # Convert just a docs subfolder
-wc docusaurus convert ./my-docusaurus-site/docs
+writechoice docusaurus convert ./my-docusaurus-site/docs
 
 # Preview without writing
-wc docusaurus convert ./my-docusaurus-site --dry-run
+writechoice docusaurus convert ./my-docusaurus-site --dry-run
 
 # Write to a custom output directory
-wc docusaurus convert ./my-docusaurus-site --output ./converted
+writechoice docusaurus convert ./my-docusaurus-site --output ./converted
 ```
 
 ## Output Structure
@@ -188,7 +202,7 @@ my-site/
         └── logo.png
 ```
 
-Running `wc docusaurus convert ./my-site` produces:
+Running `writechoice docusaurus convert ./my-site` produces:
 
 ```
 mintlify/
@@ -209,13 +223,13 @@ This command is step 1 of a three-step Docusaurus → Mintlify migration:
 
 ```bash
 # 1. Convert all files
-wc docusaurus convert ./my-docusaurus-site
+writechoice docusaurus convert ./my-docusaurus-site
 
 # 2. Rename files to match their frontmatter slug/id
-wc docusaurus slugify ./mintlify
+writechoice docusaurus slugify ./mintlify
 
 # 3. Generate Mintlify navigation from sidebars.js
-wc docusaurus nav ./my-docusaurus-site/sidebars.js --prefix mintlify
+writechoice docusaurus nav ./my-docusaurus-site/sidebars.js --prefix mintlify
 ```
 
 ## Config File
@@ -224,6 +238,7 @@ wc docusaurus nav ./my-docusaurus-site/sidebars.js --prefix mintlify
 {
   "docusaurus": {
     "output": "mintlify",
+    "headingAnchors": false,
     "dry-run": false,
     "quiet": false
   }

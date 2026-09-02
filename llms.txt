@@ -14,7 +14,7 @@
 ### Scrape
 
 - [Playwright Configuration](/commands/scrape/playwright.md): When "playwright": true is set (or --playwright is passed), the scraper uses headless Chromium instead of native fetch. The playwright_config block controls how that browser behaves.
-- [Authenticated Scraping](/commands/scrape/authenticated-scraping.md): Some sites require you to be logged in to view content. The wc session command opens a real browser window so you can log in manually, then saves the resulting cookies and localStorage to a file. The scraper can load that file on every subsequent run.
+- [Authenticated Scraping](/commands/scrape/authenticated-scraping.md): Some sites require you to be logged in to view content. The writechoice session command opens a real browser window so you can log in manually, then saves the resulting cookies and localStorage to a file. The scraper can load that file on every subsequent run.
 - [API Scraping](/commands/scrape/api-scraping.md): Some platforms expose a JSON API that returns the article content directly — cleaner than scraping the rendered HTML and immune to bot detection. When scrape.api is configured, the scraper fetches each URL as JSON and extracts the HTML body, file path, title, and any extra frontmatter fields using dot-notation paths you define.
 - [Script Hooks](/commands/scrape/script-hooks.md): Script hooks let you inject custom JavaScript into the scrape pipeline at two points — before and after the HTML-to-Markdown conversion. Use them when the config options alone can't express what you need: DOM cleanup, custom MDX component generation, or post-conversion string transformations.
 - [Config Reference](/commands/scrape/config-reference.md): Full scrape section for config.json, with every key explained.
@@ -24,7 +24,7 @@
 - [Check Links](/commands/check/links.md): Validates internal links and anchors in MDX documentation files using browser automation.
 - [Check Parse](/commands/check/parse.md): Validates MDX files for parsing errors using the official @mdx-js/mdx compiler.
 - [Check Images](/commands/check/images.md): Validates that all images on your deployed documentation pages load successfully.
-- [Check Pages](/commands/check/pages.md): Validates that every page listed in docs.json navigation loads successfully by checking HTTP response status.
+- [Check Pages](/commands/check/pages.md): Validates that every page listed in docs.json navigation loads successfully.
 - [Check KaTeX](/commands/check/katex.md): Finds pages with KaTeX render errors by scanning for .katex-error elements in the live HTML.
 
 ### Fix
@@ -39,6 +39,9 @@
 - [Fix Redirects](/commands/fix/redirects.md): Reads the redirects array from docs.json and replaces stale source paths with their destination paths inside MDX files. Fixes internal links that still point to old URLs after a navigation restructure.
 - [Fix Tabs](/commands/fix/tabs.md): Converts ` groups where every  contains a single fenced code block into a `, moving the tab title onto the code block fence.
 - [Fix Void Tags](/commands/fix/void-tags.md): Self-closes HTML void tags (`, , , ...) in MDX files:  → `.
+- [Fix Accordions](/commands/fix/accordions.md): Wraps runs of 2 or more consecutive sibling ` blocks in a shared `, as Mintlify expects.
+- [Fix OG Description](/commands/fix/og-description.md): Renames the frontmatter description key to og:description, keeping its original position in the frontmatter block.
+- [Fix Dollar Signs](/commands/fix/dollar-signs.md): Escapes a bare $ immediately before a digit in prose (e.g. $60 → \$60), which some downstream renderers otherwise treat as the start of KaTeX/LaTeX math.
 
 ### Nav
 
@@ -58,10 +61,12 @@
 ### Readme
 
 - [Readme Convert](/commands/readme/convert.md): Converts readme.com markdown exports to Mintlify MDX format. Supports two modes:
+- [Readme Recipes](/commands/readme/recipes.md): Converts legacy recipe .md files (fenced request/response code blocks followed by # Step Heading sections) into Mintlify recipe MDX, using `, , and /` components.
 - [Readme OpenAPI](/commands/readme/openapi.md): readme.io API reference pages (converted from /reference/... URLs) embed their full OpenAPI spec fragment inline in the page body:
+- [Readme OpenAPI Dedupe](/commands/readme/openapi-dedupe.md): A page whose body is set up for Mintlify's OpenAPI-driven layout (an openapi: "/openapi/ METHOD /path" frontmatter key, added by wcc readme openapi) already renders that operation's description automatically. If the page body just repeats the same description verbatim, it renders twice.
 - [Readme Nav](/commands/readme/nav.md): Scrapes a readme.io documentation site, expands all collapsed sidebar sections, and converts the sidebar into Mintlify navigation JSON ready to paste into docs.json.
 - [Metadata](/commands/metadata.md): Fetches meta tags from your live documentation pages and writes them into the frontmatter of the corresponding MDX source files. Existing frontmatter keys are updated (overwritten); missing keys are appended.
-- [Session](/commands/session.md): Captures an authenticated browser session so wc scrape can access pages behind a login.
+- [Session](/commands/session.md): Captures an authenticated browser session so writechoice scrape can access pages behind a login.
 - [Config](/commands/config.md): Generates a config.json template file with all available configuration options.
 - [Update](/commands/update.md): Updates the CLI to the latest version from npm.
 

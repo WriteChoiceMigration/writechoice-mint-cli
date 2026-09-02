@@ -71,3 +71,17 @@ writechoice fix imports --snippets src/components
 - Idempotent: already-imported components are not duplicated
 - Use `--dry-run` to preview before writing
 - Revert with `git checkout .` if needed
+
+## Config File
+
+```json
+{
+  "imports": {
+    "file": null,
+    "dir": null,
+    "snippets": "snippets",
+    "dry-run": false,
+    "quiet": false
+  }
+}
+```

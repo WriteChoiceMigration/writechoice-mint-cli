@@ -2,7 +2,7 @@
 
 # Authenticated Scraping
 
-Some sites require you to be logged in to view content. The `wc session` command opens a real browser window so you can log in manually, then saves the resulting cookies and localStorage to a file. The scraper can load that file on every subsequent run.
+Some sites require you to be logged in to view content. The `writechoice session` command opens a real browser window so you can log in manually, then saves the resulting cookies and localStorage to a file. The scraper can load that file on every subsequent run.
 
 ## When you need this
 
@@ -14,10 +14,10 @@ If the site is only blocked by Cloudflare's bot detection (but is otherwise publ
 
 ## Step 1 — Capture the session
 
-Run `wc session` with the URL of the page you want to scrape (or the login page, if the target redirects there):
+Run `writechoice session` with the URL of the page you want to scrape (or the login page, if the target redirects there):
 
 ```bash
-wc session https://app.example.com/docs
+writechoice session https://app.example.com/docs
 ```
 
 A visible Chrome window opens. Log in normally — including any MFA steps. When you're fully authenticated and the page content is visible, press **Enter** in the terminal.
@@ -25,7 +25,7 @@ A visible Chrome window opens. Log in normally — including any MFA steps. When
 The session is saved to `session.json` in your current directory. To save it elsewhere:
 
 ```bash
-wc session https://app.example.com/docs --output ./auth/example-session.json
+writechoice session https://app.example.com/docs --output ./auth/example-session.json
 ```
 
 ## Step 2 — Add to config
@@ -45,19 +45,19 @@ Point `playwright_config.storage_state` at the saved file:
 }
 ```
 
-The path is resolved relative to your working directory (where you run `wc scrape`).
+The path is resolved relative to your working directory (where you run `writechoice scrape`).
 
 ## Step 3 — Scrape
 
-Run `wc scrape` as normal. The saved cookies are injected into every Playwright browser context, so the scraper is already authenticated.
+Run `writechoice scrape` as normal. The saved cookies are injected into every Playwright browser context, so the scraper is already authenticated.
 
 ```bash
-wc scrape
+writechoice scrape
 ```
 
 ## Session expiry
 
-Sessions expire when the site's authentication cookies expire — typically hours to days depending on the site. If the scraper starts returning login pages or empty content, re-run `wc session` to refresh the file.
+Sessions expire when the site's authentication cookies expire — typically hours to days depending on the site. If the scraper starts returning login pages or empty content, re-run `writechoice session` to refresh the file.
 
 ## Using a session without Playwright
 
