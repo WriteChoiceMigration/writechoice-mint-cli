@@ -24,7 +24,41 @@ const EXCLUDED_DIRS = ["node_modules", ".git"];
 
 const TABS_RE = /<Tabs>\n([\s\S]*?)\n<\/Tabs>/g;
 const TAB_RE = /<Tab title="([^"]+)">\n([\s\S]*?)\n<\/Tab>/g;
-const CODEBLOCK_RE = /^```(\S*)\n([\s\S]*?)\n```$/;
+// Group 1: language. Group 2: rest of the info string (title/flags — see
+// classifyInfoString below). Group 3: body.
+const CODEBLOCK_RE = /^```(\S*)([^\n]*)\n([\s\S]*?)\n```$/;
+
+// Mintlify meta options that take no value (https://mintlify.com/docs/create/code).
+const BARE_FLAGS = new Set(["lines", "expandable", "wrap", "nocopy", "twoslash"]);
+// Mintlify meta options that take a value, either key="..." or key={...}.
+const KEY_ATTRS = new Set(["title", "icon", "highlight", "focus", "nocopy"]);
+// Tokenizes an info string into key="value" / key={value} / key=value / bare-word pieces.
+const TOKEN_RE = /([A-Za-z_-]+)="[^"]*"|([A-Za-z_-]+)=\{[^}]*\}|([A-Za-z_-]+)=\S+|(\S+)/g;
+
+/**
+ * Classifies the part of a fence's info string after the language.
+ * Returns null if it's empty or contains ONLY recognized flags/attributes
+ * (safe to append a title to). Returns the reason to skip otherwise — an
+ * existing title (bare words, or title="...") or anything unrecognized.
+ */
+function classifyInfoString(rest) {
+  const trimmed = rest.trim();
+  if (!trimmed) return null;
+
+  TOKEN_RE.lastIndex = 0;
+  let m;
+  while ((m = TOKEN_RE.exec(trimmed)) !== null) {
+    const key = m[1] ?? m[2] ?? m[3];
+    if (key !== undefined) {
+      if (!KEY_ATTRS.has(key)) return `unrecognized attribute "${key}"`;
+      if (key === "title") return "already has a title";
+      continue;
+    }
+    // Bare word: must be a known no-value flag, otherwise it's title text.
+    if (!BARE_FLAGS.has(m[4])) return "already has a title";
+  }
+  return null;
+}
 
 function isOnlyCodeblock(body) {
   return CODEBLOCK_RE.test(body.trim());
@@ -47,17 +81,24 @@ function convertTabsBlock(inner) {
   }
   if (reconstructed.replace(/\s+/g, "") !== inner.replace(/\s+/g, "")) return null;
 
-  // Every tab must contain exactly one code block
+  // Every tab must contain exactly one code block, and that fence's info
+  // string must not already carry a title or anything we don't recognize —
+  // we're about to append the Tab's own title onto the fence.
   for (const { body } of tabs) {
-    if (!isOnlyCodeblock(body.trim())) return null;
+    const trimmed = body.trim();
+    if (!isOnlyCodeblock(trimmed)) return null;
+    const cbMatch = CODEBLOCK_RE.exec(trimmed);
+    if (classifyInfoString(cbMatch[2]) !== null) return null;
   }
 
   const lines = ["<CodeGroup>"];
   for (const { title, body } of tabs) {
     const cbMatch = CODEBLOCK_RE.exec(body.trim());
     const lang = cbMatch[1];
-    const content = cbMatch[2];
-    lines.push(`\`\`\`${lang} ${title}`);
+    const flags = cbMatch[2].trim();
+    const content = cbMatch[3];
+    const header = flags ? `${lang} ${title} ${flags}` : `${lang} ${title}`;
+    lines.push(`\`\`\`${header}`);
     lines.push(content);
     lines.push("```");
   }

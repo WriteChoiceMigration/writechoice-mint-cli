@@ -46,6 +46,49 @@ echo hi
     assert.ok(newContent.includes("```bash Shell"), "language + title on fence");
   });
 
+  it("converts a fence with a flag (e.g. 'lines') after the language, preserving the flag", () => {
+    const input = `<Tabs>
+<Tab title="OpenAI">
+\`\`\`python lines
+from openai import OpenAI
+\`\`\`
+</Tab>
+<Tab title="Curl">
+\`\`\`bash
+curl -X POST 'http://example.com'
+\`\`\`
+</Tab>
+</Tabs>`;
+    const { newContent, count } = convertTabsToCodeGroup(input);
+    assert.equal(count, 1);
+    assert.ok(newContent.includes("```python OpenAI lines"), "title inserted before preserved flag");
+    assert.ok(newContent.includes("```bash Curl"), "unaffected sibling tab still converts");
+    assert.ok(!newContent.includes("<Tabs>"), "no Tabs left");
+  });
+
+  it("preserves multiple flags after the language", () => {
+    const input = `<Tabs>
+<Tab title="Example">
+\`\`\`js lines expandable
+console.log("hi")
+\`\`\`
+</Tab>
+</Tabs>`;
+    const { newContent, count } = convertTabsToCodeGroup(input);
+    assert.equal(count, 1);
+    assert.ok(newContent.includes("```js Example lines expandable"));
+  });
+
+  it("converts and preserves key=value / key={...} meta options (icon, highlight, focus, nocopy, twoslash)", () => {
+    const flags = ["icon=square-js", "highlight={1,3-5}", "focus={2,4-5}", "nocopy", 'nocopy="false"', "twoslash"];
+    for (const flag of flags) {
+      const input = `<Tabs>\n<Tab title="A">\n\`\`\`js ${flag}\ncode()\n\`\`\`\n</Tab>\n</Tabs>`;
+      const { newContent, count } = convertTabsToCodeGroup(input);
+      assert.equal(count, 1, `expected conversion for flag: ${flag}`);
+      assert.ok(newContent.includes(`\`\`\`js A ${flag}`), `expected flag preserved for: ${flag}`);
+    }
+  });
+
   it("handles a tab with no language (bare fence)", () => {
     const input = `<Tabs>
 <Tab title="Plain">
@@ -95,6 +138,51 @@ Some paragraph text here.
 Some intro text.
 
 \`\`\`js
+code()
+\`\`\`
+</Tab>
+</Tabs>`;
+    const { newContent, count } = convertTabsToCodeGroup(input);
+    assert.equal(count, 0);
+    assert.equal(newContent, input);
+  });
+
+  it("leaves a block unchanged when a fence already has title=\"...\"", () => {
+    const input = `<Tabs>
+<Tab title="Docker">
+\`\`\`sh title="docker run litellm" lines
+docker run image
+\`\`\`
+</Tab>
+<Tab title="Pip">
+\`\`\`sh title="pip install litellm" lines
+pip install litellm
+\`\`\`
+</Tab>
+</Tabs>`;
+    const { newContent, count } = convertTabsToCodeGroup(input);
+    assert.equal(count, 0);
+    assert.equal(newContent, input);
+  });
+
+  it("leaves a block unchanged when a fence has a bare title before a flag", () => {
+    // "Expandable example" is a bare title, "expandable" after it is the flag.
+    const input = `<Tabs>
+<Tab title="A">
+\`\`\`python Expandable example expandable
+code()
+\`\`\`
+</Tab>
+</Tabs>`;
+    const { newContent, count } = convertTabsToCodeGroup(input);
+    assert.equal(count, 0);
+    assert.equal(newContent, input);
+  });
+
+  it("leaves a block unchanged when a fence has an unrecognized attribute", () => {
+    const input = `<Tabs>
+<Tab title="A">
+\`\`\`js madeUpFlag="x"
 code()
 \`\`\`
 </Tab>

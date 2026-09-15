@@ -34,7 +34,7 @@ A `<Tabs>` block is converted **only when all of the following are true**:
 - Each tab body contains **exactly one** fenced code block and nothing else (no leading text, no trailing prose)
 - There is no content between `<Tab>` elements
 
-The tab title is appended to the opening code fence: ` ```lang Title `.
+The tab title is appended to the opening code fence: ` ```lang Title `. Any [Mintlify meta options](https://mintlify.com/docs/create/code) already on the fence — the no-value flags `lines`, `expandable`, `wrap`, `nocopy`, `twoslash`, and the key="value" / key={value} options `icon`, `highlight`, `focus`, `nocopy` — are kept, inserted after the title: ` ```lang Title lines `.
 
 ````mdx
 {/* Before */}
@@ -68,6 +68,8 @@ console.log("hello")
 - Mixed `<Tabs>` blocks where some tabs have code and others have text
 - Any content between `<Tab>` elements
 - Everything outside `<Tabs>` blocks
+- A fence that **already has a title** — either `title="..."` or bare title words before the flags (e.g. ` ```sh title="docker run litellm" lines ` or ` ```python Expandable example expandable `, where "Expandable example" is the title and `expandable` is the flag). Appending the Tab's own title on top would conflict with it, so the whole `<Tabs>` block is left untouched.
+- A fence with an attribute this command doesn't recognize as a valid Mintlify meta option — skipped defensively rather than guessed at
 
 ## Examples
 
