@@ -34,7 +34,7 @@ A `<Tabs>` block is converted **only when all of the following are true**:
 - Each tab body contains **exactly one** fenced code block and nothing else (no leading text, no trailing prose)
 - There is no content between `<Tab>` elements
 
-The tab title is appended to the opening code fence: ` ```lang Title `. Any [Mintlify meta options](https://mintlify.com/docs/create/code) already on the fence — the no-value flags `lines`, `expandable`, `wrap`, `nocopy`, `twoslash`, and the key="value" / key={value} options `icon`, `highlight`, `focus`, `nocopy` — are kept, inserted after the title: ` ```lang Title lines `.
+The tab title is appended to the opening code fence: ` ```lang Title `. Any [Mintlify meta options](https://mintlify.com/docs/create/code) already on the fence — the no-value flags `lines`, `expandable`, `wrap`, `nocopy`, `twoslash`, and the value-taking options `icon`, `highlight`, `focus`, `nocopy` (as `` key="value" `` or `` key={value} ``) — are kept, inserted after the title: ` ```lang Title lines `.
 
 ````mdx
 {/* Before */}

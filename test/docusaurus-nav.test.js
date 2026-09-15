@@ -159,7 +159,7 @@ describe("docusaurusNav — item types", () => {
     assert.equal(nav.anchors[0].pages[0].root, undefined);
   });
 
-  it('type:"link" items are skipped', async () => {
+  it('type:"link" items are stubbed as a page by default (title/url frontmatter)', async () => {
     const file = writeSidebars(`module.exports = {
       docs: [
         "intro",
@@ -168,7 +168,55 @@ describe("docusaurusNav — item types", () => {
       ],
     };`);
     const nav = await run(file);
+    assert.deepEqual(nav.anchors[0].pages, ["intro", "links/external", "guide"]);
+
+    const stub = readFileSync(join(tmp, "links", "external.mdx"), "utf-8");
+    assert.equal(stub, '---\ntitle: "External"\nurl: "https://example.com"\n---\n');
+  });
+
+  it('type:"link" with an internal absolute href is stubbed the same way', async () => {
+    const file = writeSidebars(`module.exports = {
+      docs: [
+        { type: "link", label: "Configuration Reference", href: "/docs/proxy/auto_routing" },
+      ],
+    };`);
+    const nav = await run(file);
+    assert.deepEqual(nav.anchors[0].pages, ["links/configuration-reference"]);
+
+    const stub = readFileSync(join(tmp, "links", "configuration-reference.mdx"), "utf-8");
+    assert.equal(stub, '---\ntitle: "Configuration Reference"\nurl: "/docs/proxy/auto_routing"\n---\n');
+  });
+
+  it('type:"link" items are dropped (not stubbed) with noLinks:true', async () => {
+    const file = writeSidebars(`module.exports = {
+      docs: [
+        "intro",
+        { type: "link", label: "External", href: "https://example.com" },
+        "guide",
+      ],
+    };`);
+    const nav = await run(file, { noLinks: true });
     assert.deepEqual(nav.anchors[0].pages, ["intro", "guide"]);
+  });
+
+  it('type:"link" with no href is dropped', async () => {
+    const file = writeSidebars(`module.exports = {
+      docs: ["intro", { type: "link", label: "Broken" }, "guide"],
+    };`);
+    const nav = await run(file);
+    assert.deepEqual(nav.anchors[0].pages, ["intro", "guide"]);
+  });
+
+  it("respects a custom linksDir for type:\"link\" stubs", async () => {
+    const file = writeSidebars(`module.exports = {
+      docs: [{ type: "link", label: "External", href: "https://example.com" }],
+    };`);
+    const nav = await run(file, { linksDir: "external-links" });
+    assert.deepEqual(nav.anchors[0].pages, ["external-links/external"]);
+    assert.equal(
+      readFileSync(join(tmp, "external-links", "external.mdx"), "utf-8"),
+      '---\ntitle: "External"\nurl: "https://example.com"\n---\n'
+    );
   });
 
   it('type:"html" items are skipped', async () => {
